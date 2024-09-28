@@ -2,22 +2,28 @@ package com.tanle.e_commerce.service.serviceimpl;
 
 
 import com.tanle.e_commerce.Repository.Jpa.AddressRepository;
+import com.tanle.e_commerce.Repository.Jpa.RoleRepository;
 import com.tanle.e_commerce.Repository.Jpa.UserRepository;
+import com.tanle.e_commerce.dto.PasswordChangeDTO;
+import com.tanle.e_commerce.dto.RegisterUserDTO;
 import com.tanle.e_commerce.dto.UserDTO;
-import com.tanle.e_commerce.entities.Address;
+import com.tanle.e_commerce.entities.*;
 import com.tanle.e_commerce.entities.CompositeKey.FollowerKey;
-import com.tanle.e_commerce.entities.Follower;
-import com.tanle.e_commerce.entities.User;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import com.tanle.e_commerce.payload.MessageResponse;
+import com.tanle.e_commerce.request.LoginRequest;
 import com.tanle.e_commerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -25,6 +31,10 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
     @Autowired
     private AddressRepository addressRepository;
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Override
     public List<UserDTO> findAllUser() {
@@ -44,7 +54,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO update(User user) {
+    @Transactional
+    public MessageResponse updateLastAccess(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
+        user.updateLastAcess();
+        return MessageResponse.builder()
+                .message("Update last access successfully")
+                .status(HttpStatus.OK)
+                .build();
+    }
+
+    @Override
+    public UserDTO update(UserDTO userDTO) {
         return null;
     }
 
@@ -120,6 +142,60 @@ public class UserServiceImpl implements UserService {
                 .status(HttpStatus.OK)
                 .data(addressDB)
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public UserDTO registerUser(RegisterUserDTO registerUserDTO) {
+        User user = User.builder()
+                .username(registerUserDTO.getUsername())
+                .password(passwordEncoder.encode(registerUserDTO.getPassword()))
+                .firstName(registerUserDTO.getFirstName())
+                .lastName(registerUserDTO.getLastName())
+                .phoneNumber(registerUserDTO.getPhoneNumber())
+                .sex(registerUserDTO.isSex())
+                .email(registerUserDTO.getEmail())
+                .isActive(true)
+                .createdAt(LocalDateTime.now())
+                .build();
+        Role role = roleRepository.findRoleByRoleName("CUSTOMER")
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found role"));
+        user.addUserRole(role);
+        userRepository.save(user);
+
+        return user.convertDTO();
+    }
+
+    @Override
+    public UserDTO authenticate(LoginRequest request) {
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new ResourceNotFoundExeption("User "+ request.getUsername()+" not exist"));
+        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Username/Password invalid");
+        }
+        return user.convertDTO();
+    }
+    @Override
+    @Transactional
+    public MessageResponse changePassword(Authentication authentication, PasswordChangeDTO passwordChangeDTO) {
+      try {
+          if(authentication.getName() != passwordChangeDTO.getUsername())
+              throw new BadCredentialsException("Username/password invalid");
+          User user = userRepository.findByUsername(passwordChangeDTO.getUsername()).get();
+
+          if(!passwordEncoder.matches(passwordChangeDTO.getOldPassword(), user.getPassword()))
+              throw new BadCredentialsException("Username/password invalid");
+
+          user.setPassword(passwordEncoder.encode(passwordChangeDTO.getNewPassword()));
+          userRepository.save(user);
+          return MessageResponse.builder()
+                  .message("Change password successfully")
+                  .status(HttpStatus.OK)
+                  .build();
+
+      }catch (BadCredentialsException e) {
+          throw new BadCredentialsException(e.getMessage());
+      }
     }
 
 }

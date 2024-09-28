@@ -2,6 +2,7 @@ package com.tanle.e_commerce.entities;
 
 
 import com.tanle.e_commerce.dto.UserDTO;
+import com.tanle.e_commerce.entities.CompositeKey.UserRoleKey;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -33,7 +34,7 @@ public class User implements UserDetails {
     @Column(name = "password")
     private String password;
     @Column(name = "sex")
-    private String sex;
+    private boolean sex;
     @Column(name = "email")
     private String email;
     @Column(name = "phone_number")
@@ -49,7 +50,7 @@ public class User implements UserDetails {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     private List<UserHasRole> roles;
     @OneToMany(mappedBy = "myUser")
     private List<Token> tokens;
@@ -108,6 +109,19 @@ public class User implements UserDetails {
                 .map(r -> new SimpleGrantedAuthority(r))
                 .collect(Collectors.toList());;
         return simpleGrantedAuthorityList;
+    }
+    public boolean addUserRole(Role role) {
+        if(roles == null) roles =new ArrayList<>();
+        UserRoleKey key = new UserRoleKey(this.getId(),role.getId(),LocalDateTime.now());
+        UserHasRole userHasRole = new UserHasRole();
+        userHasRole.setRole(role);
+        userHasRole.setUser(this);
+        userHasRole.setId(key);
+
+        return roles.add(userHasRole);
+    }
+    public void updateLastAcess() {
+        this.setLastAccess(LocalDateTime.now());
     }
 
     @Override

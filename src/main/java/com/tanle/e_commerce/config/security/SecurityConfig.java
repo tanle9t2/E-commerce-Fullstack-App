@@ -47,14 +47,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/user/register").permitAll()
+                        .requestMatchers("/api/v1/user/register","/api/v1/login").permitAll()
                         .requestMatchers("/api/v1/product_list").hasAuthority("ADMIN")
                         .requestMatchers("/api/v1/product/**").hasAuthority("ADMIN")
                         .requestMatchers("/api/v1/user/registerToken/**"
                                 ,"/api/v1/user/registerToken").hasAuthority("ADMIN")
+                        .anyRequest().authenticated()
                 )
-                .formLogin(Customizer.withDefaults())
                 .httpBasic(Customizer.withDefaults())
+                .logout(l -> {
+                    l.logoutUrl("/user/logout");
+                    l.logoutSuccessUrl("/login?logout");
+                })
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

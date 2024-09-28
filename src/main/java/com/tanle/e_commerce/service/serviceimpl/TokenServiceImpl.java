@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class TokenServiceImpl implements TokenSerice {
@@ -34,12 +35,19 @@ public class TokenServiceImpl implements TokenSerice {
     private UserRepository userRepository;
     @Override
     @Transactional
-    public MessageResponse registerToken(int userId) {
-        User user = userRepository.findById(userId)
+    public MessageResponse registerToken(String username) {
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
+        String roles = user.getRoles().stream()
+                .map( r -> r.getRole().getRoleName())
+                .collect(Collectors.toList())
+                .toString()
+                .replace("[","")
+                .replace("]", "");
         Map<String, Object> claims = new HashMap<>();
         claims.put("username",user.getUsername());
-        claims.put("roles",user.getRoles().toString());
+        claims.put("roles",roles);
+
         String token = jwtService.gernarateKey(claims,user);
 
         saveToken(user,token);
@@ -53,6 +61,29 @@ public class TokenServiceImpl implements TokenSerice {
     @Override
     public String authenticate(Map<String, String> request) {
         return null;
+    }
+
+    @Override
+    public Token findToken(String jwtToken) {
+        return tokenRepository.findTokenByToken(jwtToken).get();
+    }
+
+    @Override
+    public MessageResponse revokeToken(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found user: " + username));
+        List<Token> revokeToken = user.getTokens().stream()
+                .filter(t -> !t.isRevoked() && !t.isRevoked())
+                .collect(Collectors.toList());
+        revokeToken.forEach(t -> {
+            t.setRevoked(true);
+        });
+        tokenRepository.saveAll(revokeToken);
+        return MessageResponse.builder()
+                .data(revokeToken)
+                .message("Revoke token successfully")
+                .status(HttpStatus.OK)
+                .build();
     }
 
     private void saveToken(User myUser, String token) {
