@@ -1,0 +1,40 @@
+spring:
+  application:
+    name: e-commerce
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/economic_website
+    username: root
+    password: 090224Tan
+
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+    # Uncomment if needed
+    # hibernate:
+    #   ddl-auto: update
+
+  jackson:
+  # Uncomment if needed
+  # date-format: dd-MM-yyyy HH:mm:ss
+  # serialization:
+  #   write-dates-as-timestamps: false
+
+  elasticsearch:
+    uris: http://localhost:9200
+    username: docker-cluster
+    password: 090224T@n
+
+logging:
+  level:
+    root: warn
+    org:
+      hibernate:
+        SQL: debug
+      hibernate.orm.jdbc.bind: trace
+      springframework.security: DEBUG
+
+lombok:
+  anyConstructor:
+    addConstructorProperties: true
