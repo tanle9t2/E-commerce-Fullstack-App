@@ -30,4 +30,6 @@ public interface UserService {
     UserDTO authenticate(LoginRequest request);
 
     MessageResponse changePassword(Authentication authentication, PasswordChangeDTO passwordChangeDTO);
+
+    UserDTO findByUsername(String username);
 }

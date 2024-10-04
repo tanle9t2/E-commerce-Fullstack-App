@@ -34,6 +34,18 @@ public class Tenant {
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;
+    @OneToOne
+    @JoinColumn(name = "pickup_address")
+    private Address pickupAddress;
+    @OneToOne
+    @JoinColumn(name = "return_address")
+    private Address returnAddress;
+    @Column(name = "email")
+    private String email;
+    @Column(name = "phone_number")
+    private String phoneNumber;
+    @Column(name = "is_active")
+    private boolean isActive;
 
     public TenantDTO converDTO() {
         return TenantDTO.builder()

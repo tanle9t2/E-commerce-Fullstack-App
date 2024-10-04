@@ -198,4 +198,11 @@ public class UserServiceImpl implements UserService {
       }
     }
 
+    @Override
+    public UserDTO findByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
+        return user.convertDTO();
+    }
+
 }

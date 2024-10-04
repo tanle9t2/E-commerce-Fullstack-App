@@ -14,6 +14,11 @@ public class TenantDTO {
     private int id;
     private String name;
     private LocalDateTime creatAt;
+    private Integer pickupAddressId;
+    private Integer returnAddressId;
+    private String phoneNumber;
+    private String email;
+    private boolean isActive;
     private int userId;
     private long totalProduct;
     private long follower;

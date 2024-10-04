@@ -42,6 +42,11 @@ public class UserController {
         UserDTO userDTO = userService.findById(userId);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
+    @GetMapping("/user")
+    public ResponseEntity<UserDTO> findUserByUsername(@RequestParam(value = "username") String username) {
+        UserDTO userDTO = userService.findByUsername(username);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
+    }
     @PostMapping("/user/registerToken")
     public ResponseEntity<MessageResponse> registerToken(@RequestParam("username") String username) {
         MessageResponse response = tokenSerice.registerToken(username);
