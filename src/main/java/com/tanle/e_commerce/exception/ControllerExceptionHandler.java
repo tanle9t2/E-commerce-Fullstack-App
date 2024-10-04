@@ -2,6 +2,7 @@ package com.tanle.e_commerce.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
@@ -17,6 +18,18 @@ public class ControllerExceptionHandler {
                 .detail(exeption.getMessage())
                 .timeStamp(System.currentTimeMillis())
                 .status(HttpStatus.NOT_FOUND.value())
+                .build();
+
+        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ExceptionResponse> handleUnauthorization(AccessDeniedException exeption) {
+        ExceptionResponse response = ExceptionResponse.builder()
+                .type("/exception/"+ exeption.getClass().getSimpleName())
+                .title("You do not have permission to access this resource")
+                .detail(exeption.getMessage())
+                .timeStamp(System.currentTimeMillis())
+                .status(HttpStatus.UNAUTHORIZED.value())
                 .build();
 
         return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);

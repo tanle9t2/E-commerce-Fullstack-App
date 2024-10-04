@@ -13,7 +13,7 @@ import lombok.*;
 public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_token")
+    @Column(name = "token_id")
     private int id;
     @Column(name = "token")
     private String token;

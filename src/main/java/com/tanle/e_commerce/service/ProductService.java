@@ -7,6 +7,7 @@ import com.tanle.e_commerce.entities.Product;
 import com.tanle.e_commerce.payload.MessageResponse;
 import com.tanle.e_commerce.payload.PageResponse;
 import com.tanle.e_commerce.request.ProductCreationRequest;
+import com.tanle.e_commerce.service.authorization.OwnerService;
 import org.springframework.data.domain.Pageable;
 
 import javax.json.JsonPatch;
@@ -14,7 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public interface ProductService {
+public interface ProductService extends OwnerService<Product, Integer> {
 
     PageResponse<ProductDTO> findAll(int page, int size, String direction, String... field);
 

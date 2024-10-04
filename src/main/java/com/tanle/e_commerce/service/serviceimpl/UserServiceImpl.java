@@ -13,17 +13,22 @@ import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import com.tanle.e_commerce.payload.MessageResponse;
 import com.tanle.e_commerce.request.LoginRequest;
 import com.tanle.e_commerce.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -32,6 +37,7 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private AddressRepository addressRepository;
     @Autowired
+    @Lazy
     private PasswordEncoder passwordEncoder;
     @Autowired
     private RoleRepository roleRepository;
@@ -167,15 +173,6 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserDTO authenticate(LoginRequest request) {
-        User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new ResourceNotFoundExeption("User "+ request.getUsername()+" not exist"));
-        if(!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Username/Password invalid");
-        }
-        return user.convertDTO();
-    }
-    @Override
     @Transactional
     public MessageResponse changePassword(Authentication authentication, PasswordChangeDTO passwordChangeDTO) {
       try {
@@ -205,4 +202,10 @@ public class UserServiceImpl implements UserService {
         return user.convertDTO();
     }
 
+    @Override
+    public boolean userOwnEntity(Integer id, String username) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
+        return user.getUsername().equals(username);
+    }
 }

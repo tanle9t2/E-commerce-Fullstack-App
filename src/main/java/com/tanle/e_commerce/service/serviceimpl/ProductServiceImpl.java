@@ -267,4 +267,9 @@ public class ProductServiceImpl implements ProductService {
         productRepository.save(product);
         return productMapper.asInput(product);
     }
+
+    @Override
+    public boolean userOwnEntity(Integer integer, String username) {
+        return false;
+    }
 }

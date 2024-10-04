@@ -199,4 +199,8 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
+    @Override
+    public boolean userOwnEntity(Integer integer, String username) {
+        return false;
+    }
 }

@@ -29,93 +29,52 @@ import java.util.Map;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/api/v1/")
-public class UserController {
+@RequestMapping("/api/v1/user/")
+public class UserController extends BaseUserController{
     @Autowired
     private UserService userService;
-    @Autowired
-    private TokenSerice tokenSerice;
-    @Autowired
-    private AuthenticationManager authenticationManager;
-    @GetMapping("/user/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> findUserById(@PathVariable int userId) {
         UserDTO userDTO = userService.findById(userId);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
-    @GetMapping("/user")
+    @GetMapping("/")
     public ResponseEntity<UserDTO> findUserByUsername(@RequestParam(value = "username") String username) {
         UserDTO userDTO = userService.findByUsername(username);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
-    @PostMapping("/user/registerToken")
+    @PostMapping("/registerToken")
     public ResponseEntity<MessageResponse> registerToken(@RequestParam("username") String username) {
         MessageResponse response = tokenSerice.registerToken(username);
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
-    @PostMapping("/user/password")
+    @PostMapping("/password")
     public ResponseEntity<MessageResponse> changePassword(@RequestBody PasswordChangeDTO passwordChangeDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         MessageResponse response = userService.changePassword(authentication,passwordChangeDTO);
         tokenSerice.registerToken(authentication.getName());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-    @PostMapping("/login")
-    public ResponseEntity<MessageResponse> login(@RequestBody LoginRequest request) {
-       try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(),request.getPassword())
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            MessageResponse tokenMessage= tokenSerice.registerToken(request.getUsername());
-            MessageResponse messageResponse = MessageResponse.builder()
-                    .data(tokenMessage.getData())
-                    .status(HttpStatus.OK)
-                    .message("login successfully")
-                    .build();
-            return new ResponseEntity<>(messageResponse,HttpStatus.OK);
-       } catch (Exception e) {
-           return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-       }
-    }
-    @PostMapping("/user/register")
+
+    @PostMapping("/register")
     public ResponseEntity<UserDTO> registUser(@RequestBody RegisterUserDTO registerUserDTO) {
         UserDTO userDTO = userService.registerUser(registerUserDTO);
         tokenSerice.registerToken(userDTO.getUsername());
         return new ResponseEntity<>(userDTO,HttpStatus.OK);
     }
-    @PostMapping("/user/logout")
-    public MessageResponse logout() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null)
-            return MessageResponse.builder()
-                    .message("Unauthorized")
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .build();
-
-        String username= authentication.getName();
-        userService.updateLastAccess(username);
-        tokenSerice.revokeToken(username);
-        SecurityContextHolder.clearContext();
-
-        return MessageResponse.builder()
-                .status(HttpStatus.OK)
-                .message("Logout successfully")
-                .build();
-    }
-
-    @PostMapping("/user/follow")
+    @PostMapping("/follow")
     public ResponseEntity<UserDTO> followUser(@RequestParam(name = "userId") String userId
             ,@RequestParam(name = "followingId") String followingId) {
         UserDTO userDTO = userService.followUser(Integer.parseInt(userId),Integer.parseInt(followingId));
         return new ResponseEntity<>(userDTO,HttpStatus.OK);
     }
-    @PostMapping("/user/unfollow")
+    @PostMapping("/unfollow")
     public ResponseEntity<UserDTO> unfollowUser(@RequestParam(name = "userId") String userId
             ,@RequestParam(name = "followingId") String followingId) {
         UserDTO userDTO = userService.unfollowUser(Integer.parseInt(userId),Integer.parseInt(followingId));
         return new ResponseEntity<>(userDTO,HttpStatus.OK);
     }
-    @PostMapping("/user/address")
+    @PostMapping("/address")
     public ResponseEntity<UserDTO> addAddress(@RequestParam(value = "userId") String userId,
                                               @RequestBody Map<String, Object> data) {
         Address address = buildAddress(data);
@@ -123,13 +82,13 @@ public class UserController {
         UserDTO userDTO = userService.addAddress(Integer.parseInt(userId),address);
         return new ResponseEntity<>(userDTO,HttpStatus.OK);
     }
-    @PutMapping("/user/address")
+    @PutMapping("/address")
     public ResponseEntity<MessageResponse> updateAddress(@RequestBody Map<String, Object> data) {
         Address address = buildAddress(data);
         MessageResponse messageResponse = userService.updateAddress(address);
         return new ResponseEntity<>(messageResponse,HttpStatus.OK);
     }
-    @DeleteMapping("/user/address")
+    @DeleteMapping("/address")
     public ResponseEntity<MessageResponse> deleteAddress(@RequestParam(value = "userId") String userId,
                                                          @RequestParam(value = "addressId") String addressId) {
         MessageResponse messageResponse = userService.deleteAddress(Integer.parseInt(userId)

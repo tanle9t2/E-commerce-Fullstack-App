@@ -7,12 +7,13 @@ import com.tanle.e_commerce.payload.MessageResponse;
 import com.tanle.e_commerce.payload.PageResponse;
 import com.tanle.e_commerce.request.OrderRequest;
 import com.tanle.e_commerce.request.SearchRequest;
+import com.tanle.e_commerce.service.authorization.OwnerService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.Map;
 
-public interface OrderService {
+public interface OrderService extends OwnerService<Order,Integer> {
     OrderDTO createOrder(OrderDTO orderDTO);
 
     MessageResponse updateStatusOrder(Map<String,Object> request);

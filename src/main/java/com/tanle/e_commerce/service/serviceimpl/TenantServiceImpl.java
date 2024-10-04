@@ -60,7 +60,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public TenantDTO checkTenant(String username, Authentication authentication) {
+    public TenantDTO authenticate(String username, Authentication authentication) {
         Tenant tenant = tenantRepository.findByUser(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found tenant"));
         if(tenant.getUser().getUsername() != authentication.getName())
@@ -71,7 +71,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public TenantDTO checkTenant(int tenantId, Authentication authentication) {
+    public TenantDTO authenticate(int tenantId, Authentication authentication) {
         Tenant tenant = tenantRepository.findById(tenantId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found tenant"));
         if(tenant.getUser().getUsername() != authentication.getName())
@@ -80,4 +80,8 @@ public class TenantServiceImpl implements TenantService {
     }
 
 
+    @Override
+    public boolean userOwnEntity(Integer integer, String username) {
+        return false;
+    }
 }

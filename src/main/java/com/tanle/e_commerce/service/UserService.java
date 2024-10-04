@@ -8,11 +8,12 @@ import com.tanle.e_commerce.entities.User;
 import com.tanle.e_commerce.payload.MessageResponse;
 import com.tanle.e_commerce.request.LoginRequest;
 
+import com.tanle.e_commerce.service.authorization.OwnerService;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
 
-public interface UserService {
+public interface UserService extends OwnerService<User,Integer> {
     List<UserDTO> findAllUser();
     UserDTO findById(Integer id);
     void delete(Integer id);
@@ -27,7 +28,6 @@ public interface UserService {
     MessageResponse deleteAddress(Integer userId, Integer addressId);
     UserDTO registerUser(RegisterUserDTO registerUserDTO);
 
-    UserDTO authenticate(LoginRequest request);
 
     MessageResponse changePassword(Authentication authentication, PasswordChangeDTO passwordChangeDTO);
 
