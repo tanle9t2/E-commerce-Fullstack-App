@@ -1,11 +1,9 @@
 package com.tanle.e_commerce.controller;
 
 import com.tanle.e_commerce.dto.CartDTO;
-import com.tanle.e_commerce.dto.CartItemDTO;
 import com.tanle.e_commerce.entities.Cart;
-import com.tanle.e_commerce.entities.CartItem;
 import com.tanle.e_commerce.entities.CompositeKey.CartItemKey;
-import com.tanle.e_commerce.payload.MessageResponse;
+import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

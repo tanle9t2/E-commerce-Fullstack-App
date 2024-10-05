@@ -1,7 +1,7 @@
 package com.tanle.e_commerce.service;
 
 import com.tanle.e_commerce.entities.Comment;
-import com.tanle.e_commerce.payload.MessageResponse;
+import com.tanle.e_commerce.respone.MessageResponse;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;

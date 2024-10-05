@@ -38,3 +38,13 @@ logging:
 lombok:
   anyConstructor:
     addConstructorProperties: true
+
+application:
+  security:
+    jwt:
+      secret-key: VBLoLSe1wHc3a4SelQyKN2uExewLWNeTF1XY2EqrFQjuFGtgxtYBXKCPfwqGNrMP
+      expiration: 86400 # a day
+      refresh-token:
+        expiration: 604800 # a week
+
+

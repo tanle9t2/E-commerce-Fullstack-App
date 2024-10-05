@@ -2,7 +2,7 @@ package com.tanle.e_commerce.controller;
 
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.entities.Product;
-import com.tanle.e_commerce.payload.PageResponse;
+import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.service.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

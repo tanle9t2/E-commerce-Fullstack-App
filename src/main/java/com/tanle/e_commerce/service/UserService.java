@@ -5,8 +5,7 @@ import com.tanle.e_commerce.dto.RegisterUserDTO;
 import com.tanle.e_commerce.dto.UserDTO;
 import com.tanle.e_commerce.entities.Address;
 import com.tanle.e_commerce.entities.User;
-import com.tanle.e_commerce.payload.MessageResponse;
-import com.tanle.e_commerce.request.LoginRequest;
+import com.tanle.e_commerce.respone.MessageResponse;
 
 import com.tanle.e_commerce.service.authorization.OwnerService;
 import org.springframework.security.core.Authentication;

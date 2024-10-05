@@ -1,10 +1,7 @@
-package com.tanle.e_commerce.payload;
+package com.tanle.e_commerce.respone;
 
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.dto.SKUDTO;
-import com.tanle.e_commerce.entities.Category;
-import com.tanle.e_commerce.entities.Product;
-import com.tanle.e_commerce.entities.SKU;
 import lombok.*;
 
 import java.util.List;

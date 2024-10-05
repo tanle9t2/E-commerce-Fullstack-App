@@ -1,14 +1,10 @@
 package com.tanle.e_commerce.dao;
 
 import com.tanle.e_commerce.entities.Product;
-import com.tanle.e_commerce.payload.PageResponse;
+import com.tanle.e_commerce.respone.PageResponse;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;

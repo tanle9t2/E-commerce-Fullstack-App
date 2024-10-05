@@ -23,8 +23,9 @@ public class Token {
     private boolean expired;
     @Column(name = "revoked")
     private boolean revoked;
-
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User myUser;
+    @Column(name = "is_refresh")
+    private boolean isRefresh;
 }

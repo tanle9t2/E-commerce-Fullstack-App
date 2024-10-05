@@ -6,7 +6,7 @@ import com.tanle.e_commerce.dto.TenantDTO;
 import com.tanle.e_commerce.entities.Tenant;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import com.tanle.e_commerce.mapper.TenantMapper;
-import com.tanle.e_commerce.payload.MessageResponse;
+import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.TenantService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -79,9 +79,11 @@ public class TenantServiceImpl implements TenantService {
         return tenant.converDTO();
     }
 
-
     @Override
     public boolean userOwnEntity(Integer integer, String username) {
-        return false;
+        Tenant tenant = tenantRepository.findById(integer)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found tenant"));
+
+        return tenant.getUser().getUsername().equals(username);
     }
 }

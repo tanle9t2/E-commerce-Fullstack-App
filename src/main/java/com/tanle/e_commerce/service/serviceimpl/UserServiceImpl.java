@@ -10,25 +10,19 @@ import com.tanle.e_commerce.dto.UserDTO;
 import com.tanle.e_commerce.entities.*;
 import com.tanle.e_commerce.entities.CompositeKey.FollowerKey;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
-import com.tanle.e_commerce.payload.MessageResponse;
-import com.tanle.e_commerce.request.LoginRequest;
+import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 
 @Service
 public class UserServiceImpl implements UserService {

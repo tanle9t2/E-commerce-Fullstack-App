@@ -4,29 +4,16 @@ import com.tanle.e_commerce.dto.PasswordChangeDTO;
 import com.tanle.e_commerce.dto.RegisterUserDTO;
 import com.tanle.e_commerce.dto.UserDTO;
 import com.tanle.e_commerce.entities.Address;
-import com.tanle.e_commerce.entities.Token;
-import com.tanle.e_commerce.entities.User;
-import com.tanle.e_commerce.payload.MessageResponse;
-import com.tanle.e_commerce.request.LoginRequest;
-import com.tanle.e_commerce.service.TokenSerice;
+import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.UserService;
-import org.mapstruct.Mapping;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ldap.embedded.EmbeddedLdapProperties;
-import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/user/")

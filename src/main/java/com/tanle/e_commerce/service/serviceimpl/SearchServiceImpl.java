@@ -1,15 +1,13 @@
 package com.tanle.e_commerce.service.serviceimpl;
 
-import co.elastic.clients.elasticsearch._types.SortOptions;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.json.JsonData;
-import co.elastic.clients.util.ObjectBuilder;
 import com.tanle.e_commerce.Repository.Jpa.SearchRepository;
 import com.tanle.e_commerce.Repository.elasticsearch.ProductElasticsearchRepository;
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.entities.Product;
-import com.tanle.e_commerce.payload.PageResponse;
+import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.SearchRequest;
 import com.tanle.e_commerce.request.SortRequest;
 import com.tanle.e_commerce.service.SearchService;
@@ -17,8 +15,6 @@ import com.tanle.e_commerce.utils.filter.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -26,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service

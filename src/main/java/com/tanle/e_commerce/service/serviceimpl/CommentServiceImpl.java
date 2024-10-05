@@ -3,7 +3,7 @@ package com.tanle.e_commerce.service.serviceimpl;
 import com.tanle.e_commerce.Repository.Jpa.CommentRepository;
 import com.tanle.e_commerce.entities.Comment;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
-import com.tanle.e_commerce.payload.MessageResponse;
+import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

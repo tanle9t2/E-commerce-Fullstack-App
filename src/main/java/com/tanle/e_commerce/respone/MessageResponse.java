@@ -1,4 +1,4 @@
-package com.tanle.e_commerce.payload;
+package com.tanle.e_commerce.respone;
 
 import lombok.*;
 import org.springframework.http.HttpStatus;

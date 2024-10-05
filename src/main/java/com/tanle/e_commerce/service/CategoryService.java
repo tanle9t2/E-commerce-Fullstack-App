@@ -1,14 +1,9 @@
 package com.tanle.e_commerce.service;
 
 import com.tanle.e_commerce.dto.CategoryDTO;
-import com.tanle.e_commerce.entities.Category;
-import com.tanle.e_commerce.entities.Product;
-import com.tanle.e_commerce.payload.ApiResponse;
-import com.tanle.e_commerce.payload.MessageResponse;
-import com.tanle.e_commerce.payload.PageResponse;
-import org.springframework.data.domain.Page;
+import com.tanle.e_commerce.respone.MessageResponse;
+import com.tanle.e_commerce.respone.PageResponse;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.Map;

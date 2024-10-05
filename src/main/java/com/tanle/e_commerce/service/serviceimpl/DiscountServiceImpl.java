@@ -4,7 +4,7 @@ import com.tanle.e_commerce.Repository.Jpa.DiscountRepository;
 import com.tanle.e_commerce.dto.DiscountDTO;
 import com.tanle.e_commerce.entities.Discount;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
-import com.tanle.e_commerce.payload.MessageResponse;
+import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.DiscountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

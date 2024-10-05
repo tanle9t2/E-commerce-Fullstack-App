@@ -2,11 +2,8 @@ package com.tanle.e_commerce.service;
 
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.entities.Product;
-import com.tanle.e_commerce.payload.PageResponse;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
+import com.tanle.e_commerce.respone.PageResponse;
 
-import java.util.List;
 import java.util.Map;
 
 public interface SearchService {

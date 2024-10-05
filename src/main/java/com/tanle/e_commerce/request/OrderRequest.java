@@ -1,7 +1,5 @@
 package com.tanle.e_commerce.request;
 
-import com.tanle.e_commerce.dto.OrderDTO;
-import com.tanle.e_commerce.payload.PageResponse;
 import com.tanle.e_commerce.utils.filter.SpecSearchCriterial;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -4,7 +4,7 @@ import com.tanle.e_commerce.Repository.Jpa.OptionRepository;
 import com.tanle.e_commerce.entities.Option;
 import com.tanle.e_commerce.entities.OptionValue;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
-import com.tanle.e_commerce.payload.MessageResponse;
+import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.OptionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

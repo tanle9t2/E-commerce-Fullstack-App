@@ -2,14 +2,13 @@ package com.tanle.e_commerce.service.serviceimpl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.tanle.e_commerce.Repository.Jpa.*;
-import com.tanle.e_commerce.Repository.elasticsearch.ProductElasticsearchRepository;
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.entities.*;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import com.tanle.e_commerce.mapper.ProductMapper;
 import com.tanle.e_commerce.mapper.SKUMapper;
-import com.tanle.e_commerce.payload.MessageResponse;
-import com.tanle.e_commerce.payload.PageResponse;
+import com.tanle.e_commerce.respone.MessageResponse;
+import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.ProductCreationRequest;
 import com.tanle.e_commerce.service.ProductService;
 import com.tanle.e_commerce.utils.Patcher;

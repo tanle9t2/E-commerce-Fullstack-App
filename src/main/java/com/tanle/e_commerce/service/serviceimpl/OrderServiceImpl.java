@@ -7,14 +7,13 @@ import com.tanle.e_commerce.Repository.Jpa.OrderCancellationRepository;
 import com.tanle.e_commerce.Repository.Jpa.OrderJpaRepository;
 import com.tanle.e_commerce.Repository.Jpa.TenantRepository;
 import com.tanle.e_commerce.Repository.Jpa.UserRepository;
-import com.tanle.e_commerce.Repository.elasticsearch.OrderElasticsearchRepository;
 import com.tanle.e_commerce.dto.OrderDTO;
 import com.tanle.e_commerce.entities.*;
 import com.tanle.e_commerce.entities.enums.StatusOrder;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import com.tanle.e_commerce.mapper.OrderMapper;
-import com.tanle.e_commerce.payload.MessageResponse;
-import com.tanle.e_commerce.payload.PageResponse;
+import com.tanle.e_commerce.respone.MessageResponse;
+import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.SearchRequest;
 import com.tanle.e_commerce.service.OrderService;
 import com.tanle.e_commerce.utils.filter.FilterSpecification;
@@ -29,10 +28,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -198,9 +195,11 @@ public class OrderServiceImpl implements OrderService {
                 .status(HttpStatus.OK)
                 .build();
     }
-
     @Override
     public boolean userOwnEntity(Integer integer, String username) {
-        return false;
+        Order order = orderJPARepository.findById(integer)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found order"));
+
+        return order.getUser().getUsername().equals(username);
     }
 }

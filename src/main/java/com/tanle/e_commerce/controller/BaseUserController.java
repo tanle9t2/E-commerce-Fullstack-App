@@ -1,9 +1,12 @@
 package com.tanle.e_commerce.controller;
 
-import com.tanle.e_commerce.payload.MessageResponse;
+import com.tanle.e_commerce.respone.AuthenticationRespone;
+import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.request.LoginRequest;
 import com.tanle.e_commerce.service.TokenSerice;
 import com.tanle.e_commerce.service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +18,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/")
@@ -34,12 +39,7 @@ public abstract class BaseUserController {
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
             MessageResponse tokenMessage= tokenSerice.registerToken(request.getUsername());
-            MessageResponse messageResponse = MessageResponse.builder()
-                    .data(tokenMessage.getData())
-                    .status(HttpStatus.OK)
-                    .message("login successfully")
-                    .build();
-            return new ResponseEntity<>(messageResponse,HttpStatus.OK);
+            return new ResponseEntity<>(tokenMessage,HttpStatus.OK);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
@@ -61,5 +61,10 @@ public abstract class BaseUserController {
                 .status(HttpStatus.OK)
                 .message("Logout successfully")
                 .build();
+    }
+    @PostMapping("/refreshToken")
+    public void refreshToken(HttpServletRequest request
+            , HttpServletResponse response) throws IOException {
+        tokenSerice.refreshToken(request,response);
     }
 }

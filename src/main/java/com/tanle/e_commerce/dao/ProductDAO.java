@@ -1,8 +1,7 @@
 package com.tanle.e_commerce.dao;
 
 import com.tanle.e_commerce.entities.Product;
-import com.tanle.e_commerce.payload.PageResponse;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.tanle.e_commerce.respone.PageResponse;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

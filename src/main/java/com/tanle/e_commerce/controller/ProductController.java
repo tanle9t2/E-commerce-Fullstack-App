@@ -4,10 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.dto.SKUDTO;
 import com.tanle.e_commerce.entities.Option;
-import com.tanle.e_commerce.entities.OptionValue;
-import com.tanle.e_commerce.payload.ApiResponse;
-import com.tanle.e_commerce.payload.MessageResponse;
-import com.tanle.e_commerce.payload.PageResponse;
+import com.tanle.e_commerce.respone.ApiResponse;
+import com.tanle.e_commerce.respone.MessageResponse;
+import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.ProductCreationRequest;
 import com.tanle.e_commerce.service.OptionService;
 import com.tanle.e_commerce.service.ProductService;
@@ -24,7 +23,6 @@ import javax.json.JsonPatch;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static com.tanle.e_commerce.utils.AppConstant.*;
 
