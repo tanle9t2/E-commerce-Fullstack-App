@@ -9,6 +9,7 @@ import com.tanle.e_commerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -30,11 +31,6 @@ public class UserController extends BaseUserController{
         UserDTO userDTO = userService.findByUsername(username);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
-    @PostMapping("/registerToken")
-    public ResponseEntity<MessageResponse> registerToken(@RequestParam("username") String username) {
-        MessageResponse response = tokenSerice.registerToken(username);
-        return new ResponseEntity<>(response,HttpStatus.OK);
-    }
     @PostMapping("/password")
     public ResponseEntity<MessageResponse> changePassword(@RequestBody PasswordChangeDTO passwordChangeDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -42,7 +38,6 @@ public class UserController extends BaseUserController{
         tokenSerice.registerToken(authentication.getName());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
-
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registUser(@RequestBody RegisterUserDTO registerUserDTO) {
         UserDTO userDTO = userService.registerUser(registerUserDTO);
@@ -65,7 +60,6 @@ public class UserController extends BaseUserController{
     public ResponseEntity<UserDTO> addAddress(@RequestParam(value = "userId") String userId,
                                               @RequestBody Map<String, Object> data) {
         Address address = buildAddress(data);
-
         UserDTO userDTO = userService.addAddress(Integer.parseInt(userId),address);
         return new ResponseEntity<>(userDTO,HttpStatus.OK);
     }
@@ -80,7 +74,6 @@ public class UserController extends BaseUserController{
                                                          @RequestParam(value = "addressId") String addressId) {
         MessageResponse messageResponse = userService.deleteAddress(Integer.parseInt(userId)
                 ,Integer.parseInt(addressId));
-
         return new ResponseEntity<>(messageResponse,HttpStatus.OK);
     }
     private Address buildAddress(Map<String,Object> data) {

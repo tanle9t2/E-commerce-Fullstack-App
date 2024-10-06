@@ -1,5 +1,7 @@
 package com.tanle.e_commerce.service.authorization;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tanle.e_commerce.entities.Product;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +12,11 @@ import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -24,17 +30,50 @@ public class MyAuthorizationManager implements AuthorizationManager<RequestAutho
     @Override
     public AuthorizationDecision check(Supplier<Authentication> authentication, RequestAuthorizationContext context) {
         HttpServletRequest request = context.getRequest();
-        String username = authentication.get().getName();  // Get the authenticated user
-        // Example: Path might look like /api/v1/orders/{orderId}
+        String entityType;
+        int entityId;
         String[] pathSplit = request.getRequestURI().split("/");
-        String entityType = pathSplit[pathSplit.length-2];
-        Integer entityId = Integer.parseInt(pathSplit[pathSplit.length-1]);
+        String username = authentication.get().getName();  // Get the authenticated user
+        if (request.getRequestURI().matches("^/api/([a-zA-Z]+)/([a-zA-Z]+)/(\\d+)$")) {
+            // Example: Path might look like /api/v1/orders/{orderId}
+            entityType = pathSplit[pathSplit.length - 2];
+            entityId = Integer.parseInt(pathSplit[pathSplit.length - 1]);
+        } else {
+            //Example: Path: /api/v1/user/address
+            String body = getRequestBody(request);
+            entityType = pathSplit[pathSplit.length - 1];
+            entityId = extractEntityIdFromRequestBody(body);
+        }
         // Find the correct OwnershipService based on the entity type
         OwnerService<?, Integer> ownershipService = getOwnershipService(entityType);
-
         // Check if the user owns the entity
         boolean userOwnsEntity = ownershipService.userOwnEntity(entityId, username);
         return new AuthorizationDecision(userOwnsEntity);
+    }
+
+    private String getRequestBody(HttpServletRequest request) {
+        StringBuilder stringBuilder = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                stringBuilder.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle exception as appropriate (logging, etc.)
+        }
+        return stringBuilder.toString();
+    }
+
+    private Integer extractEntityIdFromRequestBody(String requestBody) {
+        // Assuming the request body is a JSON object with an "id" field
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            JsonNode jsonNode = objectMapper.readTree(requestBody);
+            return jsonNode.get("id").asInt(); // Extract and return the "id" field
+        } catch (IOException e) {
+            e.printStackTrace(); // Handle JSON parsing error
+        }
+        return null; // Return null if the extraction fails
     }
 
     private OwnerService<?, Integer> getOwnershipService(String entityType) {

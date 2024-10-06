@@ -11,8 +11,8 @@ public class TenantRegisterRequest {
     private int tenantId;
     private String storeName;
     private String description;
-    private int pickupAddressId;
-    private int returnAddressId;
+    private Integer pickupAddressId;
+    private Integer returnAddressId;
     private String phoneNumber;
     private String email;
 }

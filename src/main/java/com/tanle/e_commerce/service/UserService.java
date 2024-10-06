@@ -14,6 +14,7 @@ import java.util.List;
 
 public interface UserService extends OwnerService<User,Integer> {
     List<UserDTO> findAllUser();
+    MessageResponse grantRole(Integer userId,String nameRole);
     UserDTO findById(Integer id);
     void delete(Integer id);
     UserDTO update(UserDTO user);

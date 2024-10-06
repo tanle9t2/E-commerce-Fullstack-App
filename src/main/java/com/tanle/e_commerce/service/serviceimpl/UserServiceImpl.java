@@ -42,17 +42,30 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
+    public MessageResponse grantRole(Integer userId,String nameRole) {
+        Role role  = roleRepository.findRoleByRoleName(nameRole.toUpperCase())
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found role"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
+        user.addUserRole(role);
+
+        return MessageResponse.builder()
+                .status(HttpStatus.OK)
+                .message("Successfully grant role " + role.getRoleName()+ " for " + user.getUsername())
+                .build();
+    }
+
+    @Override
     public UserDTO findById(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
         return user.convertDTO();
     }
-
     @Override
     public void delete(Integer id) {
 
     }
-
     @Override
     @Transactional
     public MessageResponse updateLastAccess(String username) {
@@ -64,7 +77,6 @@ public class UserServiceImpl implements UserService {
                 .status(HttpStatus.OK)
                 .build();
     }
-
     @Override
     public UserDTO update(UserDTO userDTO) {
         return null;
@@ -115,7 +127,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         return user.convertDTO();
     }
-
     @Override
     @Transactional
     public MessageResponse updateAddress(Address address) {

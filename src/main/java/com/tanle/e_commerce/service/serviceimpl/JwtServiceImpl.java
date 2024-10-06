@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,10 +31,12 @@ public class JwtServiceImpl implements JwtService {
     public String extractUserName(String token) {
         return extractClaims(token, Claims::getSubject);
     }
-    public <T> T extractClaims(String token, Function<Claims,T> claimsResolver) {
+
+    public <T> T extractClaims(String token, Function<Claims, T> claimsResolver) {
         Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
+
     private Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()
@@ -42,37 +45,45 @@ public class JwtServiceImpl implements JwtService {
                 .parseClaimsJws(token)
                 .getBody();
     }
+
     public String genarateToken(UserDetails userDetails) {
-        return genarateToken(new HashMap<>(),userDetails);
+        return genarateToken(new HashMap<>(), userDetails);
     }
+
     public String genarateToken(Map<String, Object> extralClaims, UserDetails userDetails) {
-        return buildToken(extralClaims,userDetails,jwtExpiration);
+        return buildToken(extralClaims, userDetails, jwtExpiration);
     }
+
     public String genarateRefreshToken(Map<String, Object> extralClaims, UserDetails userDetails) {
-        return buildToken(extralClaims,userDetails,refreshExpiration);
+        return buildToken(extralClaims, userDetails, refreshExpiration);
     }
+
     private String buildToken(Map<String, Object> extralClaims, UserDetails userDetails, Long expiration) {
         return Jwts
                 .builder()
                 .setClaims(extralClaims)
                 .setSubject(userDetails.getUsername())
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + expiration))
+                .setExpiration(Date.from(Instant.now().plusSeconds(expiration)))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
     public boolean isValidToken(UserDetails userDetails, String token) {
         String userName = extractUserName(token);
         return userName.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
+
     public boolean isTokenExpired(String token) {
         return extractExpiredClaims(token).before(new Date());
     }
+
     public Date extractExpiredClaims(String token) {
-        return extractClaims(token,Claims::getExpiration);
+        return extractClaims(token, Claims::getExpiration);
     }
+
     private Key getSignKey() {
-        byte [] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
+        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 }

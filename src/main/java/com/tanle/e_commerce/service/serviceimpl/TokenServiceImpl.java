@@ -83,11 +83,12 @@ public class TokenServiceImpl implements TokenSerice {
     }
 
     @Override
+    @Transactional
     public MessageResponse revokeToken(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user: " + username));
         List<Token> revokeToken = user.getTokens().stream()
-                .filter(t -> !t.isRevoked() && !t.isRevoked() && !t.isRefresh())
+                .filter(t -> !t.isRevoked() && !t.isRevoked())
                 .collect(Collectors.toList());
         revokeToken.forEach(t -> {
             t.setRevoked(true);
@@ -99,9 +100,8 @@ public class TokenServiceImpl implements TokenSerice {
                 .status(HttpStatus.OK)
                 .build();
     }
-
-
     @Override
+    @Transactional
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String refreshToken = null;
         try {
@@ -119,6 +119,7 @@ public class TokenServiceImpl implements TokenSerice {
                         .map(t -> !t.isRevoked() && !t.isExpired() && t.isRefresh())
                         .orElse(false);
                 if (jwtService.isValidToken(userDetails, refreshToken) && isTokenValid) {
+                    //genarate new access token
                     String roles = userDetails.getRoles().stream()
                             .map(r -> r.getRole().getRoleName())
                             .collect(Collectors.toList())
@@ -129,7 +130,10 @@ public class TokenServiceImpl implements TokenSerice {
                     claims.put("username", userDetails.getUsername());
                     claims.put("roles", roles);
                     String accessToken = jwtService.genarateToken(claims, userDetails);
-                    revokeToken(userName);
+                    //set expired
+                    Token expiredToken = tokenRepository.findTokenByToken(accessToken).get();
+                    expiredToken.setExpired(true);
+
                     saveAccessToken(userDetails, accessToken);
                     new ObjectMapper().writeValue(response.getOutputStream(),
                             AuthenticationRespone.builder()
