@@ -20,8 +20,8 @@ public interface UserService extends OwnerService<User,Integer> {
     UserDTO update(UserDTO user);
     MessageResponse updateLastAccess(String username);
 
-    UserDTO followUser(Integer userId, Integer followingId);
-    UserDTO unfollowUser(Integer userId, Integer followingId);
+    MessageResponse followUser(Integer userId, Integer followingId);
+    MessageResponse unfollowUser(Integer userId, Integer followingId);
     UserDTO addAddress(Integer userId, Address address);
 
     MessageResponse updateAddress(Address address);

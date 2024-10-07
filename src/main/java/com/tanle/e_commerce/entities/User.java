@@ -2,6 +2,7 @@ package com.tanle.e_commerce.entities;
 
 
 import com.tanle.e_commerce.dto.UserDTO;
+import com.tanle.e_commerce.entities.CompositeKey.FollowerKey;
 import com.tanle.e_commerce.entities.CompositeKey.UserRoleKey;
 import jakarta.persistence.*;
 import lombok.*;
@@ -119,6 +120,36 @@ public class User implements UserDetails {
         userHasRole.setId(key);
 
         return roles.add(userHasRole);
+    }
+    public boolean followUser(User following) {
+        if(this.following == null) this.following = new ArrayList<>();
+        LocalDateTime followDate = LocalDateTime.now();
+        FollowerKey followerKey = new FollowerKey(this.id, following.getId(), followDate);
+        Follower follow = Follower.builder()
+                .followerKey(followerKey)
+                .following(following)
+                .follower(this)
+                .build();
+        return this.following.add(follow);
+    }
+    public void unfollowUser(Follower follower) {
+        LocalDateTime unfollowDate = LocalDateTime.now();
+        follower.setUnfollowDate(unfollowDate);
+    }
+    public int countFollowing() {
+        return (int) following.stream()
+                .filter(f -> f.getUnfollowDate() == null)
+                .count();
+    }
+    public int countFollower() {
+        return (int) followers.stream()
+                .filter(f -> f.getUnfollowDate() == null)
+                .count();
+    }
+
+    public boolean addAddress(Address address) {
+        if(addresses == null) addresses = new ArrayList<>();
+        return addresses.add(address);
     }
     public void updateLastAcess() {
         this.setLastAccess(LocalDateTime.now());

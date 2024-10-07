@@ -13,12 +13,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Component
 public class MyAuthorizationManager implements AuthorizationManager<RequestAuthorizationContext> {
@@ -34,14 +37,14 @@ public class MyAuthorizationManager implements AuthorizationManager<RequestAutho
         int entityId;
         String[] pathSplit = request.getRequestURI().split("/");
         String username = authentication.get().getName();  // Get the authenticated user
-        if (request.getRequestURI().matches("^/api/([a-zA-Z]+)/([a-zA-Z]+)/(\\d+)$")) {
+        if (request.getRequestURI().matches("^/api/([a-zA-Z0-9]+)/([a-zA-Z]+)/(\\d+)$")) {
             // Example: Path might look like /api/v1/orders/{orderId}
             entityType = pathSplit[pathSplit.length - 2];
             entityId = Integer.parseInt(pathSplit[pathSplit.length - 1]);
         } else {
             //Example: Path: /api/v1/user/address
             String body = getRequestBody(request);
-            entityType = pathSplit[pathSplit.length - 1];
+            entityType = pathSplit[pathSplit.length - 2];
             entityId = extractEntityIdFromRequestBody(body);
         }
         // Find the correct OwnershipService based on the entity type
@@ -52,16 +55,12 @@ public class MyAuthorizationManager implements AuthorizationManager<RequestAutho
     }
 
     private String getRequestBody(HttpServletRequest request) {
-        StringBuilder stringBuilder = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream()))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                stringBuilder.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace(); // Handle exception as appropriate (logging, etc.)
+        try {
+            return request.getReader().lines().collect(Collectors.joining());
+        }catch (Exception e){
+            e.printStackTrace();
+            return "{}";
         }
-        return stringBuilder.toString();
     }
 
     private Integer extractEntityIdFromRequestBody(String requestBody) {
@@ -69,7 +68,7 @@ public class MyAuthorizationManager implements AuthorizationManager<RequestAutho
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             JsonNode jsonNode = objectMapper.readTree(requestBody);
-            return jsonNode.get("id").asInt(); // Extract and return the "id" field
+            return jsonNode.get("userIdRequest").asInt(); // Extract and return the "id" field
         } catch (IOException e) {
             e.printStackTrace(); // Handle JSON parsing error
         }

@@ -1,6 +1,7 @@
 package com.tanle.e_commerce.config.security;
 
 import com.tanle.e_commerce.exception.CustomAccessDeniedExceptionHandler;
+import com.tanle.e_commerce.filter.ContentCachingFilter;
 import com.tanle.e_commerce.filter.JwtFilter;
 import com.tanle.e_commerce.service.authorization.MyAuthorizationManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +29,12 @@ public class SecurityConfig {
     @Autowired
     private JwtFilter jwtFilter;
     @Autowired
+    private ContentCachingFilter contentCachingFilter;
+    @Autowired
     private MyAuthorizationManager authorizationManager;
     @Autowired
     private CustomAccessDeniedExceptionHandler accessDeniedException;
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -68,6 +72,7 @@ public class SecurityConfig {
                     l.logoutUrl("/user/logout");
                     l.logoutSuccessUrl("/login?logout");
                 })
+//                .addFilterBefore(contentCachingFilter,UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

@@ -23,6 +23,6 @@ public class UserDTO {
     private LocalDateTime lastAccess;
     private LocalDateTime createdAt;
     private List<Address> addresses;
-    private List<FollowerDTO> following;
-    private List<FollowerDTO> follower;
+    private List<Integer> following;
+    private List<Integer> follower;
 }

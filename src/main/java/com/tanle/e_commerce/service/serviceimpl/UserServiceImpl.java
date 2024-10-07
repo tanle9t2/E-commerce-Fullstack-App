@@ -10,6 +10,7 @@ import com.tanle.e_commerce.dto.UserDTO;
 import com.tanle.e_commerce.entities.*;
 import com.tanle.e_commerce.entities.CompositeKey.FollowerKey;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
+import com.tanle.e_commerce.mapper.UserMapper;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -35,6 +37,8 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private RoleRepository roleRepository;
+    @Autowired
+    private UserMapper mapper;
 
     @Override
     public List<UserDTO> findAllUser() {
@@ -60,7 +64,7 @@ public class UserServiceImpl implements UserService {
     public UserDTO findById(Integer id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        return user.convertDTO();
+        return mapper.convertDTO(user);
     }
     @Override
     public void delete(Integer id) {
@@ -84,38 +88,41 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserDTO followUser(Integer userId, Integer followingId) {
+    public MessageResponse followUser(Integer userId, Integer followingId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
         User following = userRepository.findById(followingId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        LocalDateTime followDate = LocalDateTime.now();
-
-        FollowerKey followerKey = new FollowerKey(userId, followingId, followDate);
-        Follower follower = Follower.builder()
-                .followerKey(followerKey)
-                .following(following)
-                .follower(user)
-                .build();
-
-        user.getFollowing().add(follower);
+        user.followUser(following);
         userRepository.save(user);
-        return user.convertDTO();
+        Map<String, Integer> date = Map.of(
+                "Total following",user.countFollowing()
+                ,"Total follower",user.countFollower());
+        return MessageResponse.builder()
+                .data(date)
+                .message("Follower user succefully")
+                .status(HttpStatus.OK)
+                .build();
     }
 
     @Override
     @Transactional
-    public UserDTO unfollowUser(Integer userId, Integer followingId) {
+    public MessageResponse unfollowUser(Integer userId, Integer followingId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
         Follower unfollower = user.getFollowing().stream()
-                .filter(f -> f.getFollowing().getId() == followingId && f.getUnfollowDate() == null)
+                .filter(f -> f.getFollowing ().getId() == followingId && f.getUnfollowDate() == null)
                 .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundExeption("Not found"));
-        LocalDateTime unfollowDate = LocalDateTime.now();
-        unfollower.setUnfollowDate(unfollowDate);
-        userRepository.save(user);
-        return user.convertDTO();
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
+        user.unfollowUser(unfollower);
+        Map<String, Integer> date = Map.of(
+                "Total following",user.countFollowing()
+                ,"Total follower",user.countFollower());
+        return MessageResponse.builder()
+                .data(date)
+                .message("Unfollower user succefully")
+                .status(HttpStatus.OK)
+                .build();
     }
 
     @Override
@@ -123,9 +130,9 @@ public class UserServiceImpl implements UserService {
     public UserDTO addAddress(Integer userId, Address address) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        user.getAddresses().add(address);
+        user.addAddress(address);
         userRepository.save(user);
-        return user.convertDTO();
+        return mapper.convertDTO(user);
     }
     @Override
     @Transactional

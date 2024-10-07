@@ -18,67 +18,74 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/user/")
-public class UserController extends BaseUserController{
+public class UserController extends BaseUserController {
     @Autowired
     private UserService userService;
+
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> findUserById(@PathVariable int userId) {
         UserDTO userDTO = userService.findById(userId);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
+
     @GetMapping("/")
     public ResponseEntity<UserDTO> findUserByUsername(@RequestParam(value = "username") String username) {
         UserDTO userDTO = userService.findByUsername(username);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
+
     @PostMapping("/password")
     public ResponseEntity<MessageResponse> changePassword(@RequestBody PasswordChangeDTO passwordChangeDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        MessageResponse response = userService.changePassword(authentication,passwordChangeDTO);
+        MessageResponse response = userService.changePassword(authentication, passwordChangeDTO);
         tokenSerice.registerToken(authentication.getName());
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
     @PostMapping("/register")
     public ResponseEntity<UserDTO> registUser(@RequestBody RegisterUserDTO registerUserDTO) {
         UserDTO userDTO = userService.registerUser(registerUserDTO);
         tokenSerice.registerToken(userDTO.getUsername());
-        return new ResponseEntity<>(userDTO,HttpStatus.OK);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
+
     @PostMapping("/follow")
-    public ResponseEntity<UserDTO> followUser(@RequestParam(name = "userId") String userId
-            ,@RequestParam(name = "followingId") String followingId) {
-        UserDTO userDTO = userService.followUser(Integer.parseInt(userId),Integer.parseInt(followingId));
-        return new ResponseEntity<>(userDTO,HttpStatus.OK);
+    public ResponseEntity<MessageResponse> followUser(@RequestBody Map<String, Integer> request) {
+        MessageResponse userDTO = userService.followUser(request.get("userIdRequest"),request.get("followerId"));
+        return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
     @PostMapping("/unfollow")
-    public ResponseEntity<UserDTO> unfollowUser(@RequestParam(name = "userId") String userId
-            ,@RequestParam(name = "followingId") String followingId) {
-        UserDTO userDTO = userService.unfollowUser(Integer.parseInt(userId),Integer.parseInt(followingId));
-        return new ResponseEntity<>(userDTO,HttpStatus.OK);
+    public ResponseEntity<MessageResponse> unfollowUser(@RequestBody Map<String, Integer> request) {
+        MessageResponse userDTO = userService.unfollowUser(request.get("userIdRequest"),request.get("followingId"));
+        return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
+
     @PostMapping("/address")
     public ResponseEntity<UserDTO> addAddress(@RequestParam(value = "userId") String userId,
                                               @RequestBody Map<String, Object> data) {
         Address address = buildAddress(data);
-        UserDTO userDTO = userService.addAddress(Integer.parseInt(userId),address);
-        return new ResponseEntity<>(userDTO,HttpStatus.OK);
+        UserDTO userDTO = userService.addAddress(Integer.parseInt(userId), address);
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
+
     @PutMapping("/address")
     public ResponseEntity<MessageResponse> updateAddress(@RequestBody Map<String, Object> data) {
         Address address = buildAddress(data);
         MessageResponse messageResponse = userService.updateAddress(address);
-        return new ResponseEntity<>(messageResponse,HttpStatus.OK);
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
+
     @DeleteMapping("/address")
-    public ResponseEntity<MessageResponse> deleteAddress(@RequestParam(value = "userId") String userId,
-                                                         @RequestParam(value = "addressId") String addressId) {
-        MessageResponse messageResponse = userService.deleteAddress(Integer.parseInt(userId)
-                ,Integer.parseInt(addressId));
-        return new ResponseEntity<>(messageResponse,HttpStatus.OK);
+    public ResponseEntity<MessageResponse> deleteAddress(@RequestBody Map<String, Integer> request) {
+        MessageResponse messageResponse = userService.deleteAddress(
+                request.get("userIdRequest")
+                , request.get("addressId"));
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
-    private Address buildAddress(Map<String,Object> data) {
+
+    private Address buildAddress(Map<String, Object> data) {
         return Address.builder()
-                .id(Integer.parseInt(data.get("id") != null ?data.get("id").toString():"0"))
+                .id(Integer.parseInt(data.get("id") != null ? data.get("id").toString() : "0"))
                 .city(String.valueOf(data.get("city")))
                 .district(String.valueOf(data.get("district")))
                 .street(String.valueOf(data.get("street")))
