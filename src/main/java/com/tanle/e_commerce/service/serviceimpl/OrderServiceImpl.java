@@ -115,6 +115,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<OrderDTO> getPurchaseUser(Map<String, Integer> request, String type) {
+        List<Order> orders = orderJPARepository.findOrderId(request.get("userIdRequest")
+                ,StatusOrder.valueOf(type.toUpperCase()));
+
+        return orders.stream()
+                .map(o -> orderMapper.convertDTO(o))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public OrderDTO createOrder(OrderDTO orderDTO) {
         Order order = orderMapper.convertEntity(orderDTO);

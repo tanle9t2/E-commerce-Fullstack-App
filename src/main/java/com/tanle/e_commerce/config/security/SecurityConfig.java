@@ -43,7 +43,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) throws Exception {
-        AuthenticationManagerBuilder builder =httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
+        AuthenticationManagerBuilder builder = httpSecurity.getSharedObject(AuthenticationManagerBuilder.class);
         builder.userDetailsService(userDetailsService);
 
         return builder.build();
@@ -54,16 +54,18 @@ public class SecurityConfig {
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers("/api/v1/user/register"
-                                ,"/api/v1/user/login"
-                                ,"/api/v1/tenant/login"
+                                , "/api/v1/user/login"
+                                , "/api/v1/tenant/login"
                                 , "/api/v1/user/refreshToken").permitAll()
                         .requestMatchers("/api/v1/product_list").hasAuthority("ADMIN")
                         .requestMatchers("/api/v1/product/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/v1/cart/{cartId}").hasAuthority("ADMIN")
                         .requestMatchers("/api/v1/user/{userId}"
-                                ,"/api/v1/tenant/**"
-                                ,"/api/v1/order/**").access(authorizationManager)
+                                , "/api/v1/tenant/**"
+                                , "/api/v1/order/**"
+                                , "/api/v1/cart/**").access(authorizationManager)
                         .requestMatchers("/api/v1/user/registerToken/**"
-                                ,"/api/v1/user/registerToken").hasAuthority("ADMIN")
+                                , "/api/v1/user/registerToken").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())

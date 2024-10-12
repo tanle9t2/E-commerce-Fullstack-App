@@ -92,6 +92,7 @@ public class TokenServiceImpl implements TokenSerice {
                 .collect(Collectors.toList());
         revokeToken.forEach(t -> {
             t.setRevoked(true);
+            t.setExpired(true);
         });
         tokenRepository.saveAll(revokeToken);
         return MessageResponse.builder()
@@ -127,12 +128,11 @@ public class TokenServiceImpl implements TokenSerice {
                             .replace("[", "")
                             .replace("]", "");
                     Map<String, Object> claims = new HashMap<>();
-                    claims.put("username", userDetails.getUsername());
+                    claims.put("username", userName);
                     claims.put("roles", roles);
                     String accessToken = jwtService.genarateToken(claims, userDetails);
-                    //set expired
-                    Token expiredToken = tokenRepository.findTokenByToken(accessToken).get();
-                    expiredToken.setExpired(true);
+
+                    revokeToken(userName);
 
                     saveAccessToken(userDetails, accessToken);
                     new ObjectMapper().writeValue(response.getOutputStream(),

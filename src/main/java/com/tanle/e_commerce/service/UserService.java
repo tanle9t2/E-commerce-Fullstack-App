@@ -1,5 +1,6 @@
 package com.tanle.e_commerce.service;
 
+import com.tanle.e_commerce.dto.OrderDTO;
 import com.tanle.e_commerce.dto.PasswordChangeDTO;
 import com.tanle.e_commerce.dto.RegisterUserDTO;
 import com.tanle.e_commerce.dto.UserDTO;
@@ -11,6 +12,7 @@ import com.tanle.e_commerce.service.authorization.OwnerService;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
+import java.util.Map;
 
 public interface UserService extends OwnerService<User,Integer> {
     List<UserDTO> findAllUser();
@@ -32,4 +34,5 @@ public interface UserService extends OwnerService<User,Integer> {
     MessageResponse changePassword(Authentication authentication, PasswordChangeDTO passwordChangeDTO);
 
     UserDTO findByUsername(String username);
+
 }

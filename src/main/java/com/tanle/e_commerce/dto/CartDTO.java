@@ -19,6 +19,10 @@ public class CartDTO {
     private int id;
     private List<GroupCartItemDTO> shopOrders;
     private UserDTO user;
+
+    public GroupCartItemDTO createGroupCartItemDTO(TenantDTO tenant, List<CartItemDTO> itemDTOS) {
+        return new GroupCartItemDTO(tenant,itemDTOS);
+    }
     @Data
     public class GroupCartItemDTO {
         private TenantDTO tenant;

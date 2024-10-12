@@ -8,6 +8,7 @@ import com.tanle.e_commerce.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -18,27 +19,29 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    @RequestMapping("/cart/{cartId}")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @GetMapping("/cart/{cartId}")
     public ResponseEntity<CartDTO> getCart(@PathVariable int cartId) {
         CartDTO cartDTO = cartService.findById(cartId);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
-
-
+    @GetMapping("/cart")
+    public ResponseEntity<CartDTO> getCart(@RequestBody Map<String, Integer> request) {
+        CartDTO cartDTO = cartService.findByUserid(request);
+        return new ResponseEntity<>(cartDTO, HttpStatus.OK);
+    }
     @PatchMapping("/cart")
     public ResponseEntity<CartDTO> updateCart(@RequestBody Cart cart) throws Exception {
         CartDTO result = cartService.updateCart(cart);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-
-    @PutMapping("/cart")
+    @PostMapping("/cart")
     public ResponseEntity<MessageResponse> addProductToCart(
             @RequestBody Map<String, Integer> cartItem,
             @RequestParam("cartId") String cartId) {
         MessageResponse cartDTO = cartService.addCartItem(Integer.parseInt(cartId), cartItem);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
-
     @PutMapping("/cart/cartItem")
     public ResponseEntity<MessageResponse> updateCartItem(@RequestBody Map<String, Integer> cartItem,
                                                           @RequestParam("cartId") String cartId,
@@ -47,7 +50,6 @@ public class CartController {
                 , Integer.parseInt(skuId), cartItem);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
 
     @DeleteMapping("/cart/cartItem")
     public ResponseEntity<MessageResponse> deleteCartItem(

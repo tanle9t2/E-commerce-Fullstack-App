@@ -1,10 +1,7 @@
 package com.tanle.e_commerce.config;
 
 import com.tanle.e_commerce.entities.Product;
-import com.tanle.e_commerce.service.OrderService;
-import com.tanle.e_commerce.service.ProductService;
-import com.tanle.e_commerce.service.TenantService;
-import com.tanle.e_commerce.service.UserService;
+import com.tanle.e_commerce.service.*;
 import com.tanle.e_commerce.service.authorization.OwnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -20,13 +17,16 @@ public class OwnerServiceConfig {
     private final TenantService tenantService;
     private final OrderService orderService;
 
+    private final CartService cartService;
+
     @Autowired
     public OwnerServiceConfig(UserService userService, ProductService productService,
-                              TenantService tenantService, OrderService orderService) {
+                              TenantService tenantService, OrderService orderService, CartService cartService) {
         this.userService = userService;
         this.productService = productService;
         this.tenantService = tenantService;
         this.orderService = orderService;
+        this.cartService = cartService;
     }
 
     @Bean("ownerService")
@@ -35,7 +35,8 @@ public class OwnerServiceConfig {
                "order", orderService,
                 "product", productService,
                 "user",userService,
-                "tenant",tenantService
+                "tenant",tenantService,
+               "cart", cartService
         );
        return mp;
     }

@@ -4,13 +4,15 @@ import com.tanle.e_commerce.dto.CartDTO;
 import com.tanle.e_commerce.entities.Cart;
 import com.tanle.e_commerce.entities.CompositeKey.CartItemKey;
 import com.tanle.e_commerce.respone.MessageResponse;
+import com.tanle.e_commerce.service.authorization.OwnerService;
 
 import java.util.Map;
 
-public interface CartService {
+public interface CartService extends OwnerService<Cart,Integer> {
     CartDTO findById(Integer id);
+    CartDTO findByUserid(Map<String, Integer> request);
 
-    CartDTO createCart(CartDTO cart);
+    CartDTO createCart(Integer userId);
 
     CartDTO updateCart(Cart cart) throws Exception;
 

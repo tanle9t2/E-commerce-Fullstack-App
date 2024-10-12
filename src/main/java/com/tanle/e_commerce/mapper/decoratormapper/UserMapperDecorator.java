@@ -11,10 +11,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 
 @NoArgsConstructor
-@Mapper
 public abstract class UserMapperDecorator implements UserMapper {
-
-    @Autowired
+    @Qualifier("delegate")
     private UserMapper delegate;
 
     @Override

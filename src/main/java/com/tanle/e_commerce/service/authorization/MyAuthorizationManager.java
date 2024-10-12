@@ -19,6 +19,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -43,8 +45,9 @@ public class MyAuthorizationManager implements AuthorizationManager<RequestAutho
             entityId = Integer.parseInt(pathSplit[pathSplit.length - 1]);
         } else {
             //Example: Path: /api/v1/user/address
+            //Example: Path: /api/v1/cart
             String body = getRequestBody(request);
-            entityType = pathSplit[pathSplit.length - 2];
+            entityType = "user";
             entityId = extractEntityIdFromRequestBody(body);
         }
         // Find the correct OwnershipService based on the entity type
@@ -80,6 +83,7 @@ public class MyAuthorizationManager implements AuthorizationManager<RequestAutho
             case "order" -> ownershipServices.get("order");
             case "user" -> ownershipServices.get("user");
             case "product" -> ownershipServices.get("product");
+            case "cart" -> ownershipServices.get("cart");
             case "tenant" -> ownershipServices.get("tenant");
             default -> throw new RuntimeException("No OwnerService found for entity type: " + entityType);
         };

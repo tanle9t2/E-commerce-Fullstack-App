@@ -20,7 +20,6 @@ import static com.tanle.e_commerce.utils.AppConstant.*;
 public class OrderController {
     @Autowired
     private OrderService orderService;
-
     @GetMapping("/orders")
     public ResponseEntity<PageResponse<OrderDTO>> getOrders(
             @RequestParam(name = "page", required = false, defaultValue = PAGE_DEFAULT) String page,
@@ -67,6 +66,7 @@ public class OrderController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     @GetMapping("/order/{orderId}")
     public ResponseEntity<OrderDTO> getOrder(@PathVariable int orderId) {
         OrderDTO orderDTO = orderService.getOrders(orderId);

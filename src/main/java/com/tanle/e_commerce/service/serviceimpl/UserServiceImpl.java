@@ -161,7 +161,6 @@ public class UserServiceImpl implements UserService {
                 .data(addressDB)
                 .build();
     }
-
     @Override
     @Transactional
     public UserDTO registerUser(RegisterUserDTO registerUserDTO) {

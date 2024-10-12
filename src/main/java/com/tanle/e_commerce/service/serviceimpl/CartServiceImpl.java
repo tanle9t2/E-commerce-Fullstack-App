@@ -9,6 +9,7 @@ import com.tanle.e_commerce.entities.*;
 import com.tanle.e_commerce.entities.CompositeKey.CartItemKey;
 import com.tanle.e_commerce.exception.ResourceDeleteException;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
+import com.tanle.e_commerce.mapper.CartMapper;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.CartService;
 import com.tanle.e_commerce.utils.Patcher;
@@ -32,7 +33,7 @@ public class CartServiceImpl implements CartService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private ModelMapper modelMapper;
+    private CartMapper cartMapper;
 
     @Override
     public CartDTO findById(Integer id) {
@@ -40,11 +41,24 @@ public class CartServiceImpl implements CartService {
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
         return cart.converDTO();
     }
+
+    @Override
+    public CartDTO findByUserid(Map<String, Integer> request) {
+        Cart cart = cartRepository.findByUserId(request.get("userIdRequest"))
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart of user"));
+        return cartMapper.convertDTO(cart);
+    }
+
     @Override
     @Transactional
-    public CartDTO createCart(CartDTO cart) {
-        Cart source = modelMapper.map(cart, Cart.class);
-        return null;
+    public CartDTO createCart(Integer userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
+        Cart cart = Cart.builder()
+                .user(user)
+                .build();
+        cartRepository.save(cart);
+        return cartMapper.convertDTO(cart);
     }
 
     @Override
@@ -160,4 +174,11 @@ public class CartServiceImpl implements CartService {
                 .build();
     }
 
+    @Override
+    public boolean userOwnEntity(Integer integer, String username) {
+        Cart cart = cartRepository.findById(integer)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
+
+        return cart.getUser().getUsername().equals(username);
+    }
 }

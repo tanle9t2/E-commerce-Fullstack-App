@@ -1,10 +1,13 @@
 package com.tanle.e_commerce.controller;
 
+import com.tanle.e_commerce.dto.OrderDTO;
 import com.tanle.e_commerce.dto.PasswordChangeDTO;
 import com.tanle.e_commerce.dto.RegisterUserDTO;
 import com.tanle.e_commerce.dto.UserDTO;
 import com.tanle.e_commerce.entities.Address;
 import com.tanle.e_commerce.respone.MessageResponse;
+import com.tanle.e_commerce.service.CartService;
+import com.tanle.e_commerce.service.OrderService;
 import com.tanle.e_commerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -21,6 +25,10 @@ import java.util.Map;
 public class UserController extends BaseUserController {
     @Autowired
     private UserService userService;
+    @Autowired
+    private OrderService orderService;
+    @Autowired
+    private CartService cartService;
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserDTO> findUserById(@PathVariable int userId) {
@@ -46,9 +54,16 @@ public class UserController extends BaseUserController {
     public ResponseEntity<UserDTO> registUser(@RequestBody RegisterUserDTO registerUserDTO) {
         UserDTO userDTO = userService.registerUser(registerUserDTO);
         tokenSerice.registerToken(userDTO.getUsername());
+        cartService.createCart(userDTO.getUserId());
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
+    @GetMapping("/purchase")
+    public ResponseEntity<List<OrderDTO>> getOrderByUser(@RequestBody Map<String,Integer> request
+            , @RequestParam(name = "type", required = false) String type) {
+        List<OrderDTO> orderDTOS = orderService.getPurchaseUser(request, type);
+        return ResponseEntity.status(HttpStatus.OK).body(orderDTOS);
+    }
     @PostMapping("/follow")
     public ResponseEntity<MessageResponse> followUser(@RequestBody Map<String, Integer> request) {
         MessageResponse userDTO = userService.followUser(request.get("userIdRequest"),request.get("followerId"));
