@@ -97,15 +97,14 @@ public class CartServiceImpl implements CartService {
             Optional<CartItem> cartItemOptional = cart.getCartItems().stream()
                     .filter(c -> c.getSku().getId() == sku.getId())
                     .findFirst();
+            if (!cartItemOptional.isEmpty())
+                throw new ResourceNotFoundExeption("Product have already exist");
             CartItem cartItemDB = cartItemOptional.orElse(new CartItem());
             cartItemDB.setSku(sku);
             cartItemDB.setQuantity(cartItem.get("quantity") + cartItemDB.getQuantity());
             cartItemDB.setCreateAt(LocalDateTime.now());
-
-            if (!cartItemOptional.isPresent()) {
-                if (!cart.addCartItem(cartItemDB)) {
-                    throw new ResourceNotFoundExeption("Add cart item failed!!!");
-                }
+            if (!cart.addCartItem(cartItemDB)) {
+                throw new ResourceNotFoundExeption("Add cart item failed!!!");
             }
             cartRepository.save(cart);
         }
@@ -122,17 +121,18 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public MessageResponse updateCartItem(Integer cartId, Integer oldSKU ,Map<String, Integer> cartItem) {
-        Cart cart = cartRepository.findById(cartId)
+    public MessageResponse updateCartItem(Map<String, Integer> cartItem) {
+        Cart cart = cartRepository.findById(cartItem.get("cartId"))
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
         CartItem cartItemDB = cart.getCartItems().stream()
-                .filter(c -> c.getSku().getId() == oldSKU)
+                .filter(c -> c.getSku().getId() == cartItem.get("oldSkuId"))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart item"));
-        if(cartItem.get("quantity") != null) {
+
+        if (cartItem.get("quantity") != null) {
             cartItemDB.setQuantity(cartItem.get("quantity"));
         }
-        if(cartItem.get("skuId") != null) {
+        if (cartItem.get("skuId") != null) {
             SKU sku = skuRepository.findById(cartItem.get("skuId"))
                     .orElseThrow(() -> new ResourceNotFoundExeption("Not found sku"));
 
@@ -149,9 +149,13 @@ public class CartServiceImpl implements CartService {
             cart.deleteCartItem(cartItemDB);
         }
         cartRepository.save(cart);
+        Map<String, Object> mp = new HashMap<>();
+        mp.put("cartId", cart.getId());
+        mp.put("current item", cart.getCartItems().size());
         return MessageResponse.builder()
                 .message("Successfully update cart item")
                 .status(HttpStatus.OK)
+                .data(mp)
                 .build();
     }
 

@@ -19,7 +19,7 @@ public interface CartService extends OwnerService<Cart,Integer> {
     void deleteCart(Integer id);
 
     MessageResponse addCartItem(Integer cartId, Map<String, Integer> cartItem);
-    MessageResponse updateCartItem(Integer cartId, Integer oldSKU ,Map<String,Integer> cartItem);
+    MessageResponse updateCartItem(Map<String,Integer> cartItem);
 
     MessageResponse deleteCartItem(Integer cartId, CartItemKey cartItemKey);
 }

@@ -59,11 +59,12 @@ public class SecurityConfig {
                                 , "/api/v1/user/refreshToken").permitAll()
                         .requestMatchers("/api/v1/product_list").hasAuthority("ADMIN")
                         .requestMatchers("/api/v1/product/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/v1/cart/{cartId}").hasAuthority("ADMIN")
+                        .requestMatchers("/api/v1/cart").hasAuthority("ADMIN")
                         .requestMatchers("/api/v1/user/{userId}"
                                 , "/api/v1/tenant/**"
                                 , "/api/v1/order/**"
-                                , "/api/v1/cart/**").access(authorizationManager)
+                                ).access(authorizationManager)
+                        .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
                         .requestMatchers("/api/v1/user/registerToken/**"
                                 , "/api/v1/user/registerToken").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
@@ -74,7 +75,6 @@ public class SecurityConfig {
                     l.logoutUrl("/user/logout");
                     l.logoutSuccessUrl("/login?logout");
                 })
-//                .addFilterBefore(contentCachingFilter,UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

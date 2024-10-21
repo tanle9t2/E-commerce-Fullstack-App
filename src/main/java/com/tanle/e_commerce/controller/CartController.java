@@ -25,16 +25,19 @@ public class CartController {
         CartDTO cartDTO = cartService.findById(cartId);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
+
     @GetMapping("/cart")
     public ResponseEntity<CartDTO> getCart(@RequestBody Map<String, Integer> request) {
         CartDTO cartDTO = cartService.findByUserid(request);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
+
     @PatchMapping("/cart")
     public ResponseEntity<CartDTO> updateCart(@RequestBody Cart cart) throws Exception {
         CartDTO result = cartService.updateCart(cart);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
+
     @PostMapping("/cart")
     public ResponseEntity<MessageResponse> addProductToCart(
             @RequestBody Map<String, Integer> cartItem,
@@ -42,12 +45,10 @@ public class CartController {
         MessageResponse cartDTO = cartService.addCartItem(Integer.parseInt(cartId), cartItem);
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
+
     @PutMapping("/cart/cartItem")
-    public ResponseEntity<MessageResponse> updateCartItem(@RequestBody Map<String, Integer> cartItem,
-                                                          @RequestParam("cartId") String cartId,
-                                                          @RequestParam("skuId") String skuId) {
-        MessageResponse response = cartService.updateCartItem(Integer.parseInt(cartId)
-                , Integer.parseInt(skuId), cartItem);
+    public ResponseEntity<MessageResponse> updateCartItem(@RequestBody Map<String, Integer> cartItem) {
+        MessageResponse response = cartService.updateCartItem(cartItem);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
@@ -56,7 +57,7 @@ public class CartController {
             @RequestParam("cartId") String cartId,
             @RequestBody CartItemKey cartItemKey
     ) {
-        MessageResponse messageResponse = cartService.deleteCartItem(Integer.parseInt(cartId),cartItemKey);
-        return new ResponseEntity<>(messageResponse,HttpStatus.OK);
+        MessageResponse messageResponse = cartService.deleteCartItem(Integer.parseInt(cartId), cartItemKey);
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 }

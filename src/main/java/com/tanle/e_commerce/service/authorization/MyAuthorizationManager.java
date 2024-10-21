@@ -54,6 +54,7 @@ public class MyAuthorizationManager implements AuthorizationManager<RequestAutho
         OwnerService<?, Integer> ownershipService = getOwnershipService(entityType);
         // Check if the user owns the entity
         boolean userOwnsEntity = ownershipService.userOwnEntity(entityId, username);
+
         return new AuthorizationDecision(userOwnsEntity);
     }
 
