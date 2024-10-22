@@ -58,12 +58,6 @@ public class UserController extends BaseUserController {
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
-    @GetMapping("/purchase")
-    public ResponseEntity<List<OrderDTO>> getOrderByUser(@RequestBody Map<String,Integer> request
-            , @RequestParam(name = "type", required = false) String type) {
-        List<OrderDTO> orderDTOS = orderService.getPurchaseUser(request, type);
-        return ResponseEntity.status(HttpStatus.OK).body(orderDTOS);
-    }
     @PostMapping("/follow")
     public ResponseEntity<MessageResponse> followUser(@RequestBody Map<String, Integer> request) {
         MessageResponse userDTO = userService.followUser(request.get("userIdRequest"),request.get("followerId"));

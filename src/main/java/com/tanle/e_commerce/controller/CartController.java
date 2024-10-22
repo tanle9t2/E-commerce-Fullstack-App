@@ -19,7 +19,6 @@ public class CartController {
     @Autowired
     private CartService cartService;
 
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
     @GetMapping("/cart/{cartId}")
     public ResponseEntity<CartDTO> getCart(@PathVariable int cartId) {
         CartDTO cartDTO = cartService.findById(cartId);
@@ -27,8 +26,8 @@ public class CartController {
     }
 
     @GetMapping("/cart")
-    public ResponseEntity<CartDTO> getCart(@RequestBody Map<String, Integer> request) {
-        CartDTO cartDTO = cartService.findByUserid(request);
+    public ResponseEntity<CartDTO> getCart(@RequestParam(value = "cartId") String cartId) {
+        CartDTO cartDTO = cartService.findByUserid(Integer.parseInt(cartId));
         return new ResponseEntity<>(cartDTO, HttpStatus.OK);
     }
 
@@ -54,10 +53,9 @@ public class CartController {
 
     @DeleteMapping("/cart/cartItem")
     public ResponseEntity<MessageResponse> deleteCartItem(
-            @RequestParam("cartId") String cartId,
-            @RequestBody CartItemKey cartItemKey
+            @RequestBody Map<String, Integer> cartItem
     ) {
-        MessageResponse messageResponse = cartService.deleteCartItem(Integer.parseInt(cartId), cartItemKey);
+        MessageResponse messageResponse = cartService.deleteCartItem(cartItem.get("cartId"), cartItem.get("skuId"));
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 }

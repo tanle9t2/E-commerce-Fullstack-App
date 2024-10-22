@@ -43,19 +43,22 @@ public class MyAuthorizationManager implements AuthorizationManager<RequestAutho
             // Example: Path might look like /api/v1/orders/{orderId}
             entityType = pathSplit[pathSplit.length - 2];
             entityId = Integer.parseInt(pathSplit[pathSplit.length - 1]);
+        } else if (request.getRequestURI().matches("^/api/([a-zA-Z0-9]+)/([a-zA-Z]+)")) {
+            //Example: Path: /api/v1/cart
+            entityType = pathSplit[pathSplit.length - 1];
+            entityId = Integer.parseInt(request.getParameter(entityType+"Id"));
         } else {
             //Example: Path: /api/v1/user/address
-            //Example: Path: /api/v1/cart
             String body = getRequestBody(request);
-            entityType = "user";
-            entityId = extractEntityIdFromRequestBody(body);
+            entityType = pathSplit[pathSplit.length-2];
+            entityId = extractEntityIdFromRequestBody(body,entityType);
         }
         // Find the correct OwnershipService based on the entity type
         OwnerService<?, Integer> ownershipService = getOwnershipService(entityType);
         // Check if the user owns the entity
         boolean userOwnsEntity = ownershipService.userOwnEntity(entityId, username);
-
         return new AuthorizationDecision(userOwnsEntity);
+
     }
 
     private String getRequestBody(HttpServletRequest request) {
@@ -67,18 +70,17 @@ public class MyAuthorizationManager implements AuthorizationManager<RequestAutho
         }
     }
 
-    private Integer extractEntityIdFromRequestBody(String requestBody) {
+    private Integer extractEntityIdFromRequestBody(String requestBody,String entityType) {
         // Assuming the request body is a JSON object with an "id" field
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             JsonNode jsonNode = objectMapper.readTree(requestBody);
-            return jsonNode.get("userIdRequest").asInt(); // Extract and return the "id" field
+            return jsonNode.get(entityType+"Id").asInt(); // Extract and return the "id" field
         } catch (IOException e) {
             e.printStackTrace(); // Handle JSON parsing error
         }
         return null; // Return null if the extraction fails
     }
-
     private OwnerService<?, Integer> getOwnershipService(String entityType) {
         return switch (entityType) {
             case "order" -> ownershipServices.get("order");

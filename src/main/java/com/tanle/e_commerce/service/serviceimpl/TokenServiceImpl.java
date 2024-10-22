@@ -45,15 +45,11 @@ public class TokenServiceImpl implements TokenSerice {
     public MessageResponse registerToken(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        String roles = user.getRoles().stream()
-                .map(r -> r.getRole().getRoleName())
-                .collect(Collectors.toList())
-                .toString()
-                .replace("[", "")
-                .replace("]", "");
         Map<String, Object> claims = new HashMap<>();
         claims.put("username", user.getUsername());
-        claims.put("roles", roles);
+        claims.put("roles", user.getRoles().stream()
+                .map(r -> r.getRole().getRoleName())
+                .collect(Collectors.toList()));
 
         String accessToken = jwtService.genarateToken(claims, user);
         String refreshToken = jwtService.genarateRefreshToken(claims, user);

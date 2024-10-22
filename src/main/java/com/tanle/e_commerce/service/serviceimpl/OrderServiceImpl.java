@@ -25,6 +25,8 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,8 +45,6 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private TenantRepository tenantRepository;
     @Autowired
-    private UserRepository userRepository;
-    @Autowired
     private OrderMapper orderMapper;
     @Autowired
     private OrderCancellationRepository orderCancellationRepository;
@@ -58,70 +58,72 @@ public class OrderServiceImpl implements OrderService {
         return orderMapper.convertDTO(order);
     }
 
+
     @Override
     public PageResponse<OrderDTO> getOrders(SearchRequest orderRequest) {
         FilterSpecification specification = new FilterSpecification<>(orderRequest);
-        Page<Order> orderPage = orderJPARepository.findAll(specification,orderRequest.getPageable());
+        Page<Order> orderPage = orderJPARepository.findAll(specification, orderRequest.getPageable());
         return getResult(orderPage);
     }
 
     @Override
     public PageResponse<OrderDTO> searchOrder(Map<String, String> params, int page, int size) {
+        Pageable pageable = size != 0 ? PageRequest.of(page, size) : Pageable.unpaged();
         var builderQuery = QueryBuilders.bool();
         String startDate = params.get("startDate") != null
                 ? params.get("startDate")
-                : LocalDateTime.of(1000,1,1,1,1,1)
+                : LocalDateTime.of(1000, 1, 1, 1, 1, 1)
                 .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
         String endDate = params.get("endDate") != null
                 ? params.get("endDate")
-                : LocalDateTime.of(9999,12,31,12,59,59)
+                : LocalDateTime.of(9999, 12, 31, 12, 59, 59)
                 .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        if(params.get("orderId") != null) {
+        if (params.get("orderId") != null) {
             builderQuery.must(builder ->
                     builder.term(t -> t.field("id").value(Integer.parseInt(params.get("orderId")))));
         }
-        if(params.get("username") != null) {
+        if (params.get("username") != null) {
             builderQuery.must(builder -> builder.matchPhrase(
                     m -> m.field("userOrder.fullName").query(params.get("username"))));
         }
-        if(params.get("status") != null) {
+        if (params.get("status") != null) {
             builderQuery.must(builder -> builder.match(
                     t -> t.field("status").query(params.get("status"))));
         }
-        if(params.get("paymentId") != null) {
+        if (params.get("paymentId") != null) {
             builderQuery.must(builder ->
                     builder.term(t -> t.field("paymentId").value(Integer.parseInt(params.get("paymentId")))));
         }
         NativeQuery query = new NativeQueryBuilder()
                 .withQuery(builderQuery.build()._toQuery())
-                .withFilter(f -> f.range( r-> r.field("createdAt")
+                .withFilter(f -> f.range(r -> r.field("createdAt")
                         .lte(JsonData.of(endDate))
                         .gte(JsonData.of(startDate))))
                 .withSort(s -> {
-                    if(params.get("sortBy") != null && params.get("order") != null) {
-                        return s.field( f -> f.field(params.get("sortBy"))
+                    if (params.get("sortBy") != null && params.get("order") != null) {
+                        return s.field(f -> f.field(params.get("sortBy"))
                                 .order(params.get("order").equals("asc") ? SortOrder.Asc : SortOrder.Desc));
                     }
-                    return s.field(f-> f.field("_score").order(SortOrder.Desc));
+                    return s.field(f -> f.field("_score").order(SortOrder.Desc));
                 })
-                .withPageable(PageRequest.of(page,size))
+                .withPageable(pageable)
                 .build();
 
-        Long totalOrder =  elasticsearchOperations.count(query,OrderDTO.class);
-        List<OrderDTO> orderDTOS = elasticsearchOperations.search(query,OrderDTO.class).stream()
+        Long totalOrder = elasticsearchOperations.count(query, OrderDTO.class);
+        List<OrderDTO> orderDTOS = elasticsearchOperations.search(query, OrderDTO.class).stream()
                 .map(hits -> hits.getContent())
                 .collect(Collectors.toList());
-        return new PageResponse<>(orderDTOS,page,orderDTOS.size(),totalOrder,HttpStatus.OK);
+        return new PageResponse<>(orderDTOS, page, orderDTOS.size(), totalOrder, HttpStatus.OK);
     }
 
     @Override
-    public List<OrderDTO> getPurchaseUser(Map<String, Integer> request, String type) {
-        List<Order> orders = orderJPARepository.findOrderId(request.get("userIdRequest")
-                ,StatusOrder.valueOf(type.toUpperCase()));
-
-        return orders.stream()
+    public PageResponse<OrderDTO> getPurchaseUser(Map<String, Integer> request, String type) {
+        List<Order> orders = orderJPARepository.findOrderId(request.get("userId")
+                , type != null ? StatusOrder.valueOf(type.toUpperCase()) : null);
+        List<OrderDTO> orderDTOS = orders.stream()
                 .map(o -> orderMapper.convertDTO(o))
                 .collect(Collectors.toList());
+        return new PageResponse<>(orderDTOS, 0, orderDTOS.size(), (long) orderDTOS.size(), HttpStatus.OK);
     }
 
     @Override
@@ -132,7 +134,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(StatusOrder.PROCESSING);
         for (var item : order.getOrderDetails()) {
             SKU sku = item.getSku();
-            if( !sku.descreaseStock(item.getQuantity()) ) throw new RuntimeException("Something wrong");
+            if (!sku.descreaseStock(item.getQuantity())) throw new RuntimeException("Something wrong");
         }
         orderJPARepository.save(order);
         return orderMapper.convertDTO(order);
@@ -187,7 +189,7 @@ public class OrderServiceImpl implements OrderService {
 
         for (var item : order.getOrderDetails()) {
             SKU sku = item.getSku();
-            if( !sku.increaseStock(item.getQuantity()) ) throw new RuntimeException("Something wrong");
+            if (!sku.increaseStock(item.getQuantity())) throw new RuntimeException("Something wrong");
         }
         order.setStatus(StatusOrder.CANCELED);
 
@@ -205,11 +207,18 @@ public class OrderServiceImpl implements OrderService {
                 .status(HttpStatus.OK)
                 .build();
     }
+
     @Override
     public boolean userOwnEntity(Integer integer, String username) {
+        var roles = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
         Order order = orderJPARepository.findById(integer)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found order"));
-
-        return order.getUser().getUsername().equals(username);
+        if (roles.stream()
+                .filter(a -> a.getAuthority().equals("customer"))
+                .findFirst()
+                .isPresent())  {
+            return order.getUser().getUsername().equals(username);
+        }
+        return order.getTenant().getUser().getUsername().equals(username);
     }
 }

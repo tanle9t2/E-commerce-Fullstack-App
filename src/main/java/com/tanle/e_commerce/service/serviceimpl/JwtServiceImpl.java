@@ -13,10 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.security.Key;
 import java.time.Instant;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.function.Function;
 
 @Service
@@ -56,6 +53,12 @@ public class JwtServiceImpl implements JwtService {
 
     public String genarateRefreshToken(Map<String, Object> extralClaims, UserDetails userDetails) {
         return buildToken(extralClaims, userDetails, refreshExpiration);
+    }
+
+    @Override
+    public List<String> extractRoles(String token) {
+        Claims claims = extractAllClaims(token);
+        return (List<String>) claims.get("roles");
     }
 
     private String buildToken(Map<String, Object> extralClaims, UserDetails userDetails, Long expiration) {

@@ -21,6 +21,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
@@ -49,10 +51,16 @@ public class JwtFilter extends OncePerRequestFilter {
                         .map(t -> !t.isRevoked() && !t.isExpired())
                         .orElse(false);
                 if (jwtService.isValidToken(userDetails, jwtToken) && isTokenValid) {
+                    List<String> roles = jwtService.extractRoles(jwtToken);
+                    var currentAuthorities = userDetails.getAuthorities()
+                            .stream()
+                            .filter(a -> roles.contains(a.getAuthority()))
+                            .collect(Collectors.toList());
+
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
-                            userDetails.getAuthorities()
+                            currentAuthorities
                     );
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);

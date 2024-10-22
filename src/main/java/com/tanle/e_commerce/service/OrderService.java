@@ -24,5 +24,5 @@ public interface OrderService extends OwnerService<Order,Integer> {
 
     PageResponse<OrderDTO> searchOrder(Map<String,String> params, int page ,int size);
 
-    List<OrderDTO> getPurchaseUser(Map<String, Integer> request,String type);
+    PageResponse<OrderDTO> getPurchaseUser(Map<String, Integer> request,String type);
 }

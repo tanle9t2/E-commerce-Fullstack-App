@@ -35,6 +35,17 @@ public class SecurityConfig {
     @Autowired
     private CustomAccessDeniedExceptionHandler accessDeniedException;
 
+    private final String[] URL_ADMIN = new String[] {
+            "/api/v1/cart/{cartId:[0-9]+}",
+            "/api/v1/order/{orderId:[0-9]+}"
+    };
+    private final String[] URL_PERMIT_ALL = new String[] {
+            "/api/v1/user/register"
+            , "/api/v1/user/login"
+            , "/api/v1/tenant/login"
+            , "/api/v1/user/logout"
+            , "/api/v1/user/refreshToken"
+    };
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -53,16 +64,13 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         return httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/api/v1/user/register"
-                                , "/api/v1/user/login"
-                                , "/api/v1/tenant/login"
-                                , "/api/v1/user/refreshToken").permitAll()
-                        .requestMatchers("/api/v1/product_list").hasAuthority("ADMIN")
-                        .requestMatchers("/api/v1/product/**").hasAuthority("ADMIN")
-                        .requestMatchers("/api/v1/cart").hasAuthority("ADMIN")
+                        .requestMatchers(URL_PERMIT_ALL).permitAll()
+                        .requestMatchers(URL_ADMIN).hasAuthority("ADMIN")
+                        .requestMatchers("/api/v1/order/status"
+                                ,"/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN","SELLER")
                         .requestMatchers("/api/v1/user/{userId}"
                                 , "/api/v1/tenant/**"
-                                , "/api/v1/order/**"
+                                , "/api/v1/cart/**"
                                 ).access(authorizationManager)
                         .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
                         .requestMatchers("/api/v1/user/registerToken/**"

@@ -10,7 +10,7 @@ import java.util.Map;
 
 public interface CartService extends OwnerService<Cart,Integer> {
     CartDTO findById(Integer id);
-    CartDTO findByUserid(Map<String, Integer> request);
+    CartDTO findByUserid(Integer cartId);
 
     CartDTO createCart(Integer userId);
 
@@ -21,5 +21,5 @@ public interface CartService extends OwnerService<Cart,Integer> {
     MessageResponse addCartItem(Integer cartId, Map<String, Integer> cartItem);
     MessageResponse updateCartItem(Map<String,Integer> cartItem);
 
-    MessageResponse deleteCartItem(Integer cartId, CartItemKey cartItemKey);
+    MessageResponse deleteCartItem(Integer cartId, Integer skuId);
 }

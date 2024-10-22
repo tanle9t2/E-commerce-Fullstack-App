@@ -8,15 +8,19 @@ import com.tanle.e_commerce.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.tanle.e_commerce.utils.AppConstant.*;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/")
 public class OrderController {
     @Autowired
     private OrderService orderService;
@@ -72,6 +76,12 @@ public class OrderController {
         OrderDTO orderDTO = orderService.getOrders(orderId);
         return new ResponseEntity<>(orderDTO,HttpStatus.OK);
     }
+    @GetMapping("/user/purchase")
+    public ResponseEntity<PageResponse<OrderDTO>> getOrderByUser(@RequestBody Map<String,Integer> request
+            , @RequestParam(name = "type", required = false) String type) {
+        PageResponse<OrderDTO>  orderDTOS= orderService.getPurchaseUser(request, type);
+        return ResponseEntity.status(HttpStatus.OK).body(orderDTOS);
+    }
     @PostMapping("/order")
     public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO orderDTO) {
         OrderDTO response = orderService.createOrder(orderDTO);
@@ -82,7 +92,6 @@ public class OrderController {
         MessageResponse messageResponse = orderService.updateStatusOrder(request);
         return new ResponseEntity<>(messageResponse,HttpStatus.OK);
     }
-
     @PostMapping("/order/cancelOrder")
     public ResponseEntity<MessageResponse> cancelOrder(@RequestBody Map<String, Object> request) {
         MessageResponse messageResponse = orderService.handleOrderCancellation(request);

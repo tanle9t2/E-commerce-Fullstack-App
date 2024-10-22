@@ -35,4 +35,5 @@ public class TenantController extends BaseUserController{
         userService.grantRole(tenantDTO.getUserId(),"SELLER");
         return ResponseEntity.status(HttpStatus.OK).body(tenant);
     }
+
 }

@@ -43,8 +43,8 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartDTO findByUserid(Map<String, Integer> request) {
-        Cart cart = cartRepository.findByUserId(request.get("userIdRequest"))
+    public CartDTO findByUserid(Integer cartId) {
+        Cart cart = cartRepository.findByUserId(cartId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart of user"));
         return cartMapper.convertDTO(cart);
     }
@@ -161,16 +161,17 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public MessageResponse deleteCartItem(Integer cartId, CartItemKey cartItemKey) {
+    public MessageResponse deleteCartItem(Integer cartId, Integer skuId) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
-        CartItem cartItem = cartItemRepository.findById(cartItemKey)
+        CartItem cartItem = cart.getCartItems().stream()
+                .filter(c -> c.getSku().getId() == skuId)
+                .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart item"));
         if (!cart.deleteCartItem(cartItem)) {
             throw new ResourceDeleteException("Something wrong!!!!");
         }
         cartItemRepository.delete(cartItem);
-
         return MessageResponse.builder()
                 .status(HttpStatus.OK)
                 .message("Successfully delete cart item")
