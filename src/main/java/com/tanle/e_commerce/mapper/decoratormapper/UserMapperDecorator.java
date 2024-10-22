@@ -2,11 +2,9 @@ package com.tanle.e_commerce.mapper.decoratormapper;
 
 
 import com.tanle.e_commerce.dto.UserDTO;
-import com.tanle.e_commerce.entities.User;
+import com.tanle.e_commerce.entities.MyUser;
 import com.tanle.e_commerce.mapper.UserMapper;
 import lombok.NoArgsConstructor;
-import org.mapstruct.Mapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 
@@ -16,10 +14,10 @@ public abstract class UserMapperDecorator implements UserMapper {
     private UserMapper delegate;
 
     @Override
-    public User convertEntity(UserDTO userDTO) {
-        User user = delegate.convertEntity(userDTO);
-        user.setFollowing(null);
-        user.setFollowers(null);
-        return user;
+    public MyUser convertEntity(UserDTO userDTO) {
+        MyUser myUser = delegate.convertEntity(userDTO);
+        myUser.setFollowing(null);
+        myUser.setFollowers(null);
+        return myUser;
     }
 }

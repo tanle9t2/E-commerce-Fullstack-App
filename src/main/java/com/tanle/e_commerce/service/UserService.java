@@ -1,20 +1,18 @@
 package com.tanle.e_commerce.service;
 
-import com.tanle.e_commerce.dto.OrderDTO;
 import com.tanle.e_commerce.dto.PasswordChangeDTO;
 import com.tanle.e_commerce.dto.RegisterUserDTO;
 import com.tanle.e_commerce.dto.UserDTO;
 import com.tanle.e_commerce.entities.Address;
-import com.tanle.e_commerce.entities.User;
+import com.tanle.e_commerce.entities.MyUser;
 import com.tanle.e_commerce.respone.MessageResponse;
 
 import com.tanle.e_commerce.service.authorization.OwnerService;
 import org.springframework.security.core.Authentication;
 
 import java.util.List;
-import java.util.Map;
 
-public interface UserService extends OwnerService<User,Integer> {
+public interface UserService extends OwnerService<MyUser,Integer> {
     List<UserDTO> findAllUser();
     MessageResponse grantRole(Integer userId,String nameRole);
     UserDTO findById(Integer id);

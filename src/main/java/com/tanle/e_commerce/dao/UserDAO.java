@@ -2,16 +2,16 @@ package com.tanle.e_commerce.dao;
 
 
 
-import com.tanle.e_commerce.entities.User;
+import com.tanle.e_commerce.entities.MyUser;
 
 import java.util.List;
 
 
 public  interface UserDAO {
-    List<User> findAllUser();
-    User findById(Integer id);
+    List<MyUser> findAllUser();
+    MyUser findById(Integer id);
     void delete(Integer id);
-    User update(User user);
+    MyUser update(MyUser myUser);
 
 }
 

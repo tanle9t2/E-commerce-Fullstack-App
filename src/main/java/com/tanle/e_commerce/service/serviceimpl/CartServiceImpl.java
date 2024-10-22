@@ -6,14 +6,12 @@ import com.tanle.e_commerce.Repository.Jpa.SKURepository;
 import com.tanle.e_commerce.Repository.Jpa.UserRepository;
 import com.tanle.e_commerce.dto.CartDTO;
 import com.tanle.e_commerce.entities.*;
-import com.tanle.e_commerce.entities.CompositeKey.CartItemKey;
 import com.tanle.e_commerce.exception.ResourceDeleteException;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import com.tanle.e_commerce.mapper.CartMapper;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.CartService;
 import com.tanle.e_commerce.utils.Patcher;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -52,10 +50,10 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public CartDTO createCart(Integer userId) {
-        User user = userRepository.findById(userId)
+        MyUser myUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
         Cart cart = Cart.builder()
-                .user(user)
+                .myUser(myUser)
                 .build();
         cartRepository.save(cart);
         return cartMapper.convertDTO(cart);
@@ -66,10 +64,10 @@ public class CartServiceImpl implements CartService {
     public CartDTO updateCart(Cart cart) throws Exception {
         Cart cartdb = cartRepository.findById(cart.getId())
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
-        if (cart.getUser() != null) {
-            User userDb = userRepository.findById(cart.getUser().getId())
+        if (cart.getMyUser() != null) {
+            MyUser myUserDb = userRepository.findById(cart.getMyUser().getId())
                     .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-            cart.setUser(userDb);
+            cart.setMyUser(myUserDb);
         }
         Patcher.patch(cartdb, cart);
         cartRepository.save(cartdb);
@@ -184,6 +182,6 @@ public class CartServiceImpl implements CartService {
         Cart cart = cartRepository.findById(integer)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
 
-        return cart.getUser().getUsername().equals(username);
+        return cart.getMyUser().getUsername().equals(username);
     }
 }

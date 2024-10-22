@@ -28,8 +28,8 @@ public abstract class OrderMapperDecorator implements OrderMapper {
     public OrderDTO convertDTO(Order order) {
         OrderDTO orderDTO = delegate.convertDTO(order);
 
-        orderDTO.setUserOrder(orderDTO.buildUserOrder(order.getUser().getId(),
-                order.getUser().getFirstName()+ " " + order.getUser().getLastName()));
+        orderDTO.setUserOrder(orderDTO.buildUserOrder(order.getMyUser().getId(),
+                order.getMyUser().getFirstName()+ " " + order.getMyUser().getLastName()));
         if (order.getOrderDetails() != null) {
             double totalPrice = order.getOrderDetails().stream()
                     .mapToDouble(o -> o.getSku().getPrice() * o.getQuantity())
@@ -45,9 +45,9 @@ public abstract class OrderMapperDecorator implements OrderMapper {
     public Order convertEntity(OrderDTO orderDTO) {
         Tenant tenant = tenantRepository.findById(orderDTO.getTenantId())
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found tenant"));
-        User user = userRepository.findById(orderDTO.getUserOrder().getUserId())
+        MyUser myUser = userRepository.findById(orderDTO.getUserOrder().getUserId())
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        Address address = user.getAddresses().stream()
+        Address address = myUser.getAddresses().stream()
                 .filter(a -> a.getId() == orderDTO.getReceiptAddress().getId())
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found address"));
@@ -58,7 +58,7 @@ public abstract class OrderMapperDecorator implements OrderMapper {
         order.addOrderDetail(orderDetails);
         order.setAddress(address);
         order.setTenant(tenant);
-        order.setUser(user);
+        order.setMyUser(myUser);
         return order;
     }
 }

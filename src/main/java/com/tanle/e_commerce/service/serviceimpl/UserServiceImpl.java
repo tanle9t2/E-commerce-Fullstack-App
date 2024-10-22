@@ -8,7 +8,6 @@ import com.tanle.e_commerce.dto.PasswordChangeDTO;
 import com.tanle.e_commerce.dto.RegisterUserDTO;
 import com.tanle.e_commerce.dto.UserDTO;
 import com.tanle.e_commerce.entities.*;
-import com.tanle.e_commerce.entities.CompositeKey.FollowerKey;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import com.tanle.e_commerce.mapper.UserMapper;
 import com.tanle.e_commerce.respone.MessageResponse;
@@ -50,21 +49,21 @@ public class UserServiceImpl implements UserService {
     public MessageResponse grantRole(Integer userId,String nameRole) {
         Role role  = roleRepository.findRoleByRoleName(nameRole.toUpperCase())
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found role"));
-        User user = userRepository.findById(userId)
+        MyUser myUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        user.addUserRole(role);
+        myUser.addUserRole(role);
 
         return MessageResponse.builder()
                 .status(HttpStatus.OK)
-                .message("Successfully grant role " + role.getRoleName()+ " for " + user.getUsername())
+                .message("Successfully grant role " + role.getRoleName()+ " for " + myUser.getUsername())
                 .build();
     }
 
     @Override
     public UserDTO findById(Integer id) {
-        User user = userRepository.findById(id)
+        MyUser myUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        return mapper.convertDTO(user);
+        return mapper.convertDTO(myUser);
     }
     @Override
     public void delete(Integer id) {
@@ -73,9 +72,9 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public MessageResponse updateLastAccess(String username) {
-        User user = userRepository.findByUsername(username)
+        MyUser myUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        user.updateLastAcess();
+        myUser.updateLastAcess();
         return MessageResponse.builder()
                 .message("Update last access successfully")
                 .status(HttpStatus.OK)
@@ -89,15 +88,15 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public MessageResponse followUser(Integer userId, Integer followingId) {
-        User user = userRepository.findById(userId)
+        MyUser myUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        User following = userRepository.findById(followingId)
+        MyUser following = userRepository.findById(followingId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        user.followUser(following);
-        userRepository.save(user);
+        myUser.followUser(following);
+        userRepository.save(myUser);
         Map<String, Integer> date = Map.of(
-                "Total following",user.countFollowing()
-                ,"Total follower",user.countFollower());
+                "Total following", myUser.countFollowing()
+                ,"Total follower", myUser.countFollower());
         return MessageResponse.builder()
                 .data(date)
                 .message("Follower user succefully")
@@ -108,16 +107,16 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public MessageResponse unfollowUser(Integer userId, Integer followingId) {
-        User user = userRepository.findById(userId)
+        MyUser myUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        Follower unfollower = user.getFollowing().stream()
+        Follower unfollower = myUser.getFollowing().stream()
                 .filter(f -> f.getFollowing ().getId() == followingId && f.getUnfollowDate() == null)
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        user.unfollowUser(unfollower);
+        myUser.unfollowUser(unfollower);
         Map<String, Integer> date = Map.of(
-                "Total following",user.countFollowing()
-                ,"Total follower",user.countFollower());
+                "Total following", myUser.countFollowing()
+                ,"Total follower", myUser.countFollower());
         return MessageResponse.builder()
                 .data(date)
                 .message("Unfollower user succefully")
@@ -128,11 +127,11 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO addAddress(Integer userId, Address address) {
-        User user = userRepository.findById(userId)
+        MyUser myUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        user.addAddress(address);
-        userRepository.save(user);
-        return mapper.convertDTO(user);
+        myUser.addAddress(address);
+        userRepository.save(myUser);
+        return mapper.convertDTO(myUser);
     }
     @Override
     @Transactional
@@ -150,9 +149,9 @@ public class UserServiceImpl implements UserService {
     public MessageResponse deleteAddress(Integer userId, Integer addressId) {
         Address  addressDB = addressRepository.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found address"));
-        User user = userRepository.findById(userId)
+        MyUser myUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        user.getAddresses().remove(addressDB);
+        myUser.getAddresses().remove(addressDB);
         addressRepository.delete(addressDB);
 
         return MessageResponse.builder()
@@ -164,7 +163,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDTO registerUser(RegisterUserDTO registerUserDTO) {
-        User user = User.builder()
+        MyUser myUser = MyUser.builder()
                 .username(registerUserDTO.getUsername())
                 .password(passwordEncoder.encode(registerUserDTO.getPassword()))
                 .firstName(registerUserDTO.getFirstName())
@@ -177,10 +176,10 @@ public class UserServiceImpl implements UserService {
                 .build();
         Role role = roleRepository.findRoleByRoleName("CUSTOMER")
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found role"));
-        user.addUserRole(role);
-        userRepository.save(user);
+        myUser.addUserRole(role);
+        userRepository.save(myUser);
 
-        return user.convertDTO();
+        return myUser.convertDTO();
     }
 
     @Override
@@ -189,13 +188,13 @@ public class UserServiceImpl implements UserService {
       try {
           if(authentication.getName() != passwordChangeDTO.getUsername())
               throw new BadCredentialsException("Username/password invalid");
-          User user = userRepository.findByUsername(passwordChangeDTO.getUsername()).get();
+          MyUser myUser = userRepository.findByUsername(passwordChangeDTO.getUsername()).get();
 
-          if(!passwordEncoder.matches(passwordChangeDTO.getOldPassword(), user.getPassword()))
+          if(!passwordEncoder.matches(passwordChangeDTO.getOldPassword(), myUser.getPassword()))
               throw new BadCredentialsException("Username/password invalid");
 
-          user.setPassword(passwordEncoder.encode(passwordChangeDTO.getNewPassword()));
-          userRepository.save(user);
+          myUser.setPassword(passwordEncoder.encode(passwordChangeDTO.getNewPassword()));
+          userRepository.save(myUser);
           return MessageResponse.builder()
                   .message("Change password successfully")
                   .status(HttpStatus.OK)
@@ -208,15 +207,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDTO findByUsername(String username) {
-        User user = userRepository.findByUsername(username)
+        MyUser myUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        return user.convertDTO();
+        return myUser.convertDTO();
     }
 
     @Override
     public boolean userOwnEntity(Integer id, String username) {
-        User user = userRepository.findById(id)
+        MyUser myUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        return user.getUsername().equals(username);
+        return myUser.getUsername().equals(username);
     }
 }

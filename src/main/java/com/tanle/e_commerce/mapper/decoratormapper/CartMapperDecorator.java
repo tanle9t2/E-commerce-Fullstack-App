@@ -5,11 +5,8 @@ import com.tanle.e_commerce.dto.CartDTO;
 import com.tanle.e_commerce.dto.CartItemDTO;
 import com.tanle.e_commerce.entities.Cart;
 import com.tanle.e_commerce.entities.CartItem;
-import com.tanle.e_commerce.entities.User;
 import com.tanle.e_commerce.mapper.CartMapper;
 import lombok.NoArgsConstructor;
-import org.mapstruct.Mapper;
-import org.mapstruct.Qualifier;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;

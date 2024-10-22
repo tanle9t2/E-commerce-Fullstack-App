@@ -17,6 +17,7 @@ import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.SearchRequest;
 import com.tanle.e_commerce.service.OrderService;
 import com.tanle.e_commerce.utils.filter.FilterSpecification;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -24,8 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.expression.AccessException;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,6 +48,8 @@ public class OrderServiceImpl implements OrderService {
     @Autowired
     private OrderMapper orderMapper;
     @Autowired
+    private UserRepository userRepository;
+    @Autowired
     private OrderCancellationRepository orderCancellationRepository;
     @Autowired
     private ElasticsearchOperations elasticsearchOperations;
@@ -67,7 +70,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public PageResponse<OrderDTO> searchOrder(Map<String, String> params, int page, int size) {
+    public PageResponse<OrderDTO> searchOrder(Map<String, String> params, int page, int size) throws BadRequestException {
+        MyUser myUser = userRepository.findById(Integer.valueOf(params.get("tenantId")))
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
+        if (!myUser.getUsername().equals(SecurityContextHolder.getContext().getAuthentication().getName()))
+            throw new BadRequestException("NOT PERMISSION");
+
         Pageable pageable = size != 0 ? PageRequest.of(page, size) : Pageable.unpaged();
         var builderQuery = QueryBuilders.bool();
         String startDate = params.get("startDate") != null
@@ -78,6 +86,8 @@ public class OrderServiceImpl implements OrderService {
                 ? params.get("endDate")
                 : LocalDateTime.of(9999, 12, 31, 12, 59, 59)
                 .format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        builderQuery.must(builder ->
+                builder.term(t -> t.field("tenantId").value(myUser.getId())));
         if (params.get("orderId") != null) {
             builderQuery.must(builder ->
                     builder.term(t -> t.field("id").value(Integer.parseInt(params.get("orderId")))));
@@ -183,42 +193,48 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderJPARepository.findById((Integer) request.get("orderId"))
                 .orElseThrow(() -> new RuntimeException("Not found order"));
 
-        if (order.getStatus() != StatusOrder.CANCELLATION_REQUEST ||
-                order.getTenant().getId() != (Integer) request.get("tenantIdRequest"))
+
+        if (order.getStatus() != StatusOrder.CANCELLATION_REQUEST)
             throw new RuntimeException("Something wrong");
 
         for (var item : order.getOrderDetails()) {
             SKU sku = item.getSku();
             if (!sku.increaseStock(item.getQuantity())) throw new RuntimeException("Something wrong");
         }
-        order.setStatus(StatusOrder.CANCELED);
-
+        OrderCancellation orderCancellation;
+        String message = "";
+        if (request.get("operation").toString().equals("ACCEPT")) {
+            order.setStatus(StatusOrder.CANCELED);
 //        OrderCancellation orderCancellation = new OrderCancellation(order,LocalDateTime.now()
 //                ,(String) request.get("reason"),"ACCEPT") ;
-        OrderCancellation orderCancellation = OrderCancellation.builder()
-                .canceledAt(LocalDateTime.now())
-                .operation("ACCEPT")
-                .order(order)
-                .reason((String) request.get("reason"))
-                .build();
+            orderCancellation = OrderCancellation.builder()
+                    .canceledAt(LocalDateTime.now())
+                    .operation("ACCEPT")
+                    .order(order)
+                    .reason((String) request.get("reason"))
+                    .build();
+            message = "Successfully cancel order";
+        } else {
+            orderCancellation = OrderCancellation.builder()
+                    .canceledAt(LocalDateTime.now())
+                    .operation("REJECT")
+                    .order(order)
+                    .reason((String) request.get("reason"))
+                    .build();
+            message = "Tenant rejected request";
+        }
         orderCancellationRepository.save(orderCancellation);
         return MessageResponse.builder()
-                .message("Successfully cancel order")
+                .message(message)
                 .status(HttpStatus.OK)
                 .build();
     }
 
     @Override
     public boolean userOwnEntity(Integer integer, String username) {
-        var roles = SecurityContextHolder.getContext().getAuthentication().getAuthorities();
         Order order = orderJPARepository.findById(integer)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found order"));
-        if (roles.stream()
-                .filter(a -> a.getAuthority().equals("customer"))
-                .findFirst()
-                .isPresent())  {
-            return order.getUser().getUsername().equals(username);
-        }
-        return order.getTenant().getUser().getUsername().equals(username);
+
+        return order.getTenant().getMyUser().getUsername().equals(username);
     }
 }

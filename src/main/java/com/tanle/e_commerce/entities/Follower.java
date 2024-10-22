@@ -1,13 +1,11 @@
 package com.tanle.e_commerce.entities;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.tanle.e_commerce.dto.FollowerDTO;
 import com.tanle.e_commerce.entities.CompositeKey.FollowerKey;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -23,12 +21,12 @@ public class Follower {
     @ManyToOne
     @MapsId("userId")
     @JoinColumn(name = "following_id")
-    private User following;
+    private MyUser following;
 
     @ManyToOne
     @MapsId("followerId")
     @JoinColumn(name = "user_id")
-    private User follower;
+    private MyUser follower;
 
 
     @Column(name = "follow_date", insertable=false, updatable=false)

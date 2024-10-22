@@ -18,8 +18,8 @@ public interface OrderJpaRepository extends JpaRepository<Order,Integer>, JpaSpe
     Page<Order> findOrderByTenant(Tenant tenant, Pageable pageable);
 
     @Query("""
-            FROM Order o JOIN User u
-            ON o.user.id = u.id 
+            FROM Order o JOIN MyUser u
+            ON o.myUser.id = u.id 
             where u.id = ?1 
             and (?2 is null or o.status = ?2)
         """)

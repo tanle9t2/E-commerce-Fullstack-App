@@ -1,10 +1,7 @@
 package com.tanle.e_commerce.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.tanle.e_commerce.entities.Cart;
 import com.tanle.e_commerce.entities.CartItem;
-import com.tanle.e_commerce.entities.Tenant;
-import com.tanle.e_commerce.entities.User;
+import com.tanle.e_commerce.entities.MyUser;
 import lombok.*;
 
 import java.util.ArrayList;
@@ -34,7 +31,7 @@ public class CartDTO {
             this.tenant = tenant;
             this.items = items;
         }
-        public CartDTO builder(int id, User user, List<CartItem> cartItem) {
+        public CartDTO builder(int id, MyUser myUser, List<CartItem> cartItem) {
             List<GroupCartItemDTO> groupCartItemDTOS = new ArrayList<>();
             var object = cartItem.stream()
                     .collect(Collectors.groupingBy(item -> item.getSku().getProduct().getTenant()));
@@ -44,7 +41,7 @@ public class CartDTO {
                                 .collect(Collectors.toList());
                 groupCartItemDTOS.add(new GroupCartItemDTO(x.getKey().converDTO(),cartItemDTOS));
             }
-            return new CartDTO(id,groupCartItemDTOS,user.convertDTO());
+            return new CartDTO(id,groupCartItemDTOS, myUser.convertDTO());
         };
     }
 

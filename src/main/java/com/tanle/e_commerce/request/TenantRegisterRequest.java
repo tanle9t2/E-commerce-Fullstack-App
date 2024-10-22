@@ -8,6 +8,7 @@ import lombok.*;
 @Getter
 @Setter
 public class TenantRegisterRequest {
+    private int userId;
     private int tenantId;
     private String storeName;
     private String description;

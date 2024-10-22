@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Getter
 @Setter
-public class User implements UserDetails {
+public class MyUser implements UserDetails {
     @Id
     @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,7 +51,7 @@ public class User implements UserDetails {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "user", fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "myUser", fetch = FetchType.EAGER,cascade = CascadeType.ALL)
     private List<UserHasRole> roles;
     @OneToMany(mappedBy = "myUser")
     private List<Token> tokens;
@@ -116,12 +116,12 @@ public class User implements UserDetails {
         UserRoleKey key = new UserRoleKey(this.getId(),role.getId(),LocalDateTime.now());
         UserHasRole userHasRole = new UserHasRole();
         userHasRole.setRole(role);
-        userHasRole.setUser(this);
+        userHasRole.setMyUser(this);
         userHasRole.setId(key);
 
         return roles.add(userHasRole);
     }
-    public boolean followUser(User following) {
+    public boolean followUser(MyUser following) {
         if(this.following == null) this.following = new ArrayList<>();
         LocalDateTime followDate = LocalDateTime.now();
         FollowerKey followerKey = new FollowerKey(this.id, following.getId(), followDate);

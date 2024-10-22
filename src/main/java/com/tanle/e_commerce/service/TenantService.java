@@ -15,4 +15,6 @@ public interface TenantService extends OwnerService<Tenant,Integer> {
 
     TenantDTO authenticate(String username, Authentication authentication);
     TenantDTO authenticate(int tenantId, Authentication authentication);
+
+    MessageResponse inActiveTenant(Integer tenantId);
 }

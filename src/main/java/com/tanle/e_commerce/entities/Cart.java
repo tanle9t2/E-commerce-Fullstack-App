@@ -1,15 +1,12 @@
 package com.tanle.e_commerce.entities;
 
 import com.tanle.e_commerce.dto.CartDTO;
-import com.tanle.e_commerce.dto.CartItemDTO;
 import com.tanle.e_commerce.entities.CompositeKey.CartItemKey;
-import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "shopping_cart")
@@ -25,7 +22,7 @@ public class Cart {
     private int id;
     @OneToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private MyUser myUser;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
     private List<CartItem> cartItems;
@@ -33,7 +30,7 @@ public class Cart {
     public CartDTO converDTO() {
         CartDTO cartDTO = new CartDTO();
         CartDTO.GroupCartItemDTO groupCartItemDTO = cartDTO.new GroupCartItemDTO();
-        return groupCartItemDTO.builder(this.id,user,cartItems);
+        return groupCartItemDTO.builder(this.id, myUser,cartItems);
     }
     public boolean addCartItem(CartItem cartItem) {
         CartItemKey cartItemKey = new CartItemKey(this.getId(),cartItem.getSku().getId());
@@ -51,11 +48,11 @@ public class Cart {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Cart cart = (Cart) o;
-        return id == cart.id && Objects.equals(user, cart.user) && Objects.equals(cartItems, cart.cartItems);
+        return id == cart.id && Objects.equals(myUser, cart.myUser) && Objects.equals(cartItems, cart.cartItems);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, user, cartItems);
+        return Objects.hash(id, myUser, cartItems);
     }
 }

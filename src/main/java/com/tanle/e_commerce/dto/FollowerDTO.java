@@ -1,6 +1,5 @@
 package com.tanle.e_commerce.dto;
 
-import com.tanle.e_commerce.entities.User;
 import lombok.*;
 
 import java.time.LocalDateTime;

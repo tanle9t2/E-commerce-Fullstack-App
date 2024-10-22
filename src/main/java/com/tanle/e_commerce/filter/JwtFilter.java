@@ -51,16 +51,16 @@ public class JwtFilter extends OncePerRequestFilter {
                         .map(t -> !t.isRevoked() && !t.isExpired())
                         .orElse(false);
                 if (jwtService.isValidToken(userDetails, jwtToken) && isTokenValid) {
-                    List<String> roles = jwtService.extractRoles(jwtToken);
-                    var currentAuthorities = userDetails.getAuthorities()
-                            .stream()
-                            .filter(a -> roles.contains(a.getAuthority()))
-                            .collect(Collectors.toList());
+//                    List<String> roles = jwtService.extractRoles(jwtToken);
+//                    var currentAuthorities = userDetails.getAuthorities()
+//                            .stream()
+//                            .filter(a -> roles.contains(a.getAuthority()))
+//                            .collect(Collectors.toList());
 
                     UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                             userDetails,
                             null,
-                            currentAuthorities
+                            userDetails.getAuthorities()
                     );
                     authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken);

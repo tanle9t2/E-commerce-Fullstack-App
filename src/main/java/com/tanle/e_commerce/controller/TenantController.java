@@ -27,12 +27,16 @@ public class TenantController extends BaseUserController{
         TenantDTO tenantDTO = tenantService.findById(tenantId);
         return new ResponseEntity<>(tenantDTO, HttpStatus.OK);
     }
-    @PreAuthorize("hasAuthority('CUSTOMER') or hasAnyAuthority('ADMIN')")
     @PostMapping("/register")
-    private ResponseEntity<MessageResponse> registerTenant(@RequestParam TenantRegisterRequest request)  {
+    private ResponseEntity<MessageResponse> registerTenant(@RequestBody TenantRegisterRequest request)  {
         MessageResponse tenant = tenantService.registerInformation(request);
         TenantDTO tenantDTO = (TenantDTO) tenant.getData();
         userService.grantRole(tenantDTO.getUserId(),"SELLER");
+        return ResponseEntity.status(HttpStatus.OK).body(tenant);
+    }
+    @PutMapping("/{tenantId}")
+    private ResponseEntity<MessageResponse> inActiveTenant(@PathVariable Integer tenantId) {
+        MessageResponse tenant = tenantService.inActiveTenant(tenantId);
         return ResponseEntity.status(HttpStatus.OK).body(tenant);
     }
 

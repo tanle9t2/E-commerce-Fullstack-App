@@ -3,8 +3,8 @@ package com.tanle.e_commerce.service.serviceimpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tanle.e_commerce.Repository.Jpa.TokenRepository;
 import com.tanle.e_commerce.Repository.Jpa.UserRepository;
+import com.tanle.e_commerce.entities.MyUser;
 import com.tanle.e_commerce.entities.Token;
-import com.tanle.e_commerce.entities.User;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import com.tanle.e_commerce.respone.AuthenticationRespone;
 import com.tanle.e_commerce.respone.MessageResponse;
@@ -16,12 +16,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,18 +37,18 @@ public class TokenServiceImpl implements TokenSerice {
     @Override
     @Transactional
     public MessageResponse registerToken(String username) {
-        User user = userRepository.findByUsername(username)
+        MyUser myUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
         Map<String, Object> claims = new HashMap<>();
-        claims.put("username", user.getUsername());
-        claims.put("roles", user.getRoles().stream()
+        claims.put("username", myUser.getUsername());
+        claims.put("roles", myUser.getRoles().stream()
                 .map(r -> r.getRole().getRoleName())
                 .collect(Collectors.toList()));
 
-        String accessToken = jwtService.genarateToken(claims, user);
-        String refreshToken = jwtService.genarateRefreshToken(claims, user);
-        saveAccessToken(user, accessToken);
-        saveRefreshToken(user, refreshToken);
+        String accessToken = jwtService.genarateToken(claims, myUser);
+        String refreshToken = jwtService.genarateRefreshToken(claims, myUser);
+        saveAccessToken(myUser, accessToken);
+        saveRefreshToken(myUser, refreshToken);
 
         return MessageResponse.builder()
                 .data(
@@ -81,9 +75,9 @@ public class TokenServiceImpl implements TokenSerice {
     @Override
     @Transactional
     public MessageResponse revokeToken(String username) {
-        User user = userRepository.findByUsername(username)
+        MyUser myUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user: " + username));
-        List<Token> revokeToken = user.getTokens().stream()
+        List<Token> revokeToken = myUser.getTokens().stream()
                 .filter(t -> !t.isRevoked() && !t.isRevoked())
                 .collect(Collectors.toList());
         revokeToken.forEach(t -> {
@@ -110,14 +104,14 @@ public class TokenServiceImpl implements TokenSerice {
             refreshToken = authHeader.substring(7);
             userName = jwtService.extractUserName(refreshToken);
             if (userName != null) {
-                User userDetails = userRepository.findByUsername(userName)
+                MyUser myUserDetails = userRepository.findByUsername(userName)
                         .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
                 boolean isTokenValid = tokenRepository.findTokenByToken(refreshToken)
                         .map(t -> !t.isRevoked() && !t.isExpired() && t.isRefresh())
                         .orElse(false);
-                if (jwtService.isValidToken(userDetails, refreshToken) && isTokenValid) {
+                if (jwtService.isValidToken(myUserDetails, refreshToken) && isTokenValid) {
                     //genarate new access token
-                    String roles = userDetails.getRoles().stream()
+                    String roles = myUserDetails.getRoles().stream()
                             .map(r -> r.getRole().getRoleName())
                             .collect(Collectors.toList())
                             .toString()
@@ -126,11 +120,11 @@ public class TokenServiceImpl implements TokenSerice {
                     Map<String, Object> claims = new HashMap<>();
                     claims.put("username", userName);
                     claims.put("roles", roles);
-                    String accessToken = jwtService.genarateToken(claims, userDetails);
+                    String accessToken = jwtService.genarateToken(claims, myUserDetails);
 
                     revokeToken(userName);
 
-                    saveAccessToken(userDetails, accessToken);
+                    saveAccessToken(myUserDetails, accessToken);
                     new ObjectMapper().writeValue(response.getOutputStream(),
                             AuthenticationRespone.builder()
                                     .accessToken(accessToken)
@@ -147,7 +141,7 @@ public class TokenServiceImpl implements TokenSerice {
         }
     }
 
-    private void saveAccessToken(User myUser, String accessToken) {
+    private void saveAccessToken(MyUser myUser, String accessToken) {
         Token tokenSaved = Token.builder()
                 .myUser(myUser)
                 .token(accessToken)
@@ -158,7 +152,7 @@ public class TokenServiceImpl implements TokenSerice {
         tokenRepository.save(tokenSaved);
     }
 
-    private void saveRefreshToken(User myUser, String refreshToken) {
+    private void saveRefreshToken(MyUser myUser, String refreshToken) {
         Token tokenSaved = Token.builder()
                 .myUser(myUser)
                 .token(refreshToken)

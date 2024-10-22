@@ -1,15 +1,8 @@
 package com.tanle.e_commerce.dao;
 
 
-import com.tanle.e_commerce.entities.User;
+import com.tanle.e_commerce.entities.MyUser;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.criteria.CriteriaBuilder;
-import jakarta.persistence.criteria.CriteriaDelete;
-import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Root;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.query.Query;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -23,24 +16,24 @@ public class UserDAOImpl implements UserDAO{
         this.entityManager = entityManager;
     }
     @Override
-    public List<User> findAllUser() {
-        List<User> users = entityManager.createQuery("from User ", User.class).getResultList();
-        return users;
+    public List<MyUser> findAllUser() {
+        List<MyUser> myUsers = entityManager.createQuery("from MyUser ", MyUser.class).getResultList();
+        return myUsers;
     }
     @Override
-    public User findById(Integer id) {
-        User user=  entityManager.find(User.class,id);
-        return user;
+    public MyUser findById(Integer id) {
+        MyUser myUser =  entityManager.find(MyUser.class,id);
+        return myUser;
     }
     @Override
     public void delete(Integer id) {
-       User user = findById(id);
-       if(user != null)
-           entityManager.remove(user);
+       MyUser myUser = findById(id);
+       if(myUser != null)
+           entityManager.remove(myUser);
     }
     @Override
-    public User update(User user) {
-       User result = entityManager.merge(user);
+    public MyUser update(MyUser myUser) {
+       MyUser result = entityManager.merge(myUser);
        return result;
     }
 }

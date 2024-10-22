@@ -5,6 +5,7 @@ import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.SearchRequest;
 import com.tanle.e_commerce.service.OrderService;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,23 +21,12 @@ import java.util.Map;
 import static com.tanle.e_commerce.utils.AppConstant.*;
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1")
 public class OrderController {
     @Autowired
     private OrderService orderService;
-    @GetMapping("/orders")
-    public ResponseEntity<PageResponse<OrderDTO>> getOrders(
-            @RequestParam(name = "page", required = false, defaultValue = PAGE_DEFAULT) String page,
-            @RequestParam(name = "pageSize", required = false, defaultValue = PAGE_SIZE) String pageSize,
-            @RequestParam(name = "order", required = false, defaultValue = DIRECTION_SORT_DEFAULT)String direction,
-            @RequestParam(name ="tenantId") String tenantId
-    ) {
-        PageResponse<OrderDTO> response = orderService.getOrders(Integer.parseInt(tenantId)
-                ,Integer.parseInt(page),Integer.parseInt(pageSize));
 
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-    @GetMapping("/orderList2")
+    @GetMapping("/order")
     public ResponseEntity<PageResponse<OrderDTO>> getOrders(
             @RequestParam(name = "page", required = false, defaultValue = PAGE_DEFAULT) String page,
             @RequestParam(name = "pageSize", required = false, defaultValue = PAGE_SIZE) String pageSize,
@@ -47,8 +37,9 @@ public class OrderController {
             @RequestParam(name = "username", required = false) String username,
             @RequestParam(name = "status", required = false) String status,
             @RequestParam(name = "sortBy", required = false) String sortBy,
-            @RequestParam(name = "order", required = false) String order
-    ) {
+            @RequestParam(name = "order", required = false) String order,
+            @RequestParam(name = "tenantId") String tenantId
+    ) throws BadRequestException {
         Map<String,String > mp =  new HashMap<>();
         mp.put("orderId",orderId);
         mp.put("startDate",startDate);
@@ -58,7 +49,7 @@ public class OrderController {
         mp.put("sortBy",sortBy);
         mp.put("order",order);
         mp.put("status",status);
-
+        mp.put("tenantId",tenantId);
         PageResponse<OrderDTO> response = orderService.searchOrder(mp,Integer.parseInt(page),Integer.parseInt(pageSize));
         return new ResponseEntity<>(response,HttpStatus.OK);
     }
@@ -70,7 +61,6 @@ public class OrderController {
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
-
     @GetMapping("/order/{orderId}")
     public ResponseEntity<OrderDTO> getOrder(@PathVariable int orderId) {
         OrderDTO orderDTO = orderService.getOrders(orderId);

@@ -5,9 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "tenant")
@@ -33,7 +31,7 @@ public class Tenant {
     private List<Product> products;
     @OneToOne
     @JoinColumn(name = "user_id")
-    private User user;
+    private MyUser myUser;
     @OneToOne
     @JoinColumn(name = "pickup_address")
     private Address pickupAddress;
@@ -52,11 +50,11 @@ public class Tenant {
                 .id(this.id)
                 .name(this.name)
                 .creatAt(this.createAt)
-                .userId(this.user.getId())
-                .follower(this.user.getFollowers().stream()
+                .userId(this.myUser.getId())
+                .follower(this.myUser.getFollowers().stream()
                         .filter(f -> f.getUnfollowDate() == null)
                         .count())
-                .following(this.user.getFollowing().stream()
+                .following(this.myUser.getFollowing().stream()
                         .filter(f -> f.getUnfollowDate() == null)
                         .count())
                 .build();

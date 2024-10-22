@@ -1,14 +1,11 @@
 package com.tanle.e_commerce.service;
 
 import io.jsonwebtoken.Claims;
-import com.tanle.e_commerce.entities.User;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Function;
 
 public interface JwtService {

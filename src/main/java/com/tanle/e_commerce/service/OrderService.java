@@ -6,6 +6,7 @@ import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.SearchRequest;
 import com.tanle.e_commerce.service.authorization.OwnerService;
+import org.apache.coyote.BadRequestException;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ public interface OrderService extends OwnerService<Order,Integer> {
 
     PageResponse<OrderDTO> getOrders(SearchRequest orderRequest);
 
-    PageResponse<OrderDTO> searchOrder(Map<String,String> params, int page ,int size);
+    PageResponse<OrderDTO> searchOrder(Map<String,String> params, int page ,int size) throws BadRequestException;
 
     PageResponse<OrderDTO> getPurchaseUser(Map<String, Integer> request,String type);
 }

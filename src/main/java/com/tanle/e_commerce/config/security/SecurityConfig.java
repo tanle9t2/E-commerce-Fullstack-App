@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -66,13 +67,17 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(URL_PERMIT_ALL).permitAll()
                         .requestMatchers(URL_ADMIN).hasAuthority("ADMIN")
-                        .requestMatchers("/api/v1/order/status"
-                                ,"/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN","SELLER")
                         .requestMatchers("/api/v1/user/{userId}"
                                 , "/api/v1/tenant/**"
                                 , "/api/v1/cart/**"
+                                , "/api/v1/order/status"
+                                , "/api/v1/order/cancelOrder"
+                                , "/api/v1/tenant/register"
                                 ).access(authorizationManager)
                         .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
+                        .requestMatchers("/api/v1/order/status"
+                                ,"/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN","SELLER")
+                        .requestMatchers(HttpMethod.GET,"/api/v1/order").hasAnyAuthority("ADMIN","SELLER")
                         .requestMatchers("/api/v1/user/registerToken/**"
                                 , "/api/v1/user/registerToken").hasAuthority("ADMIN")
                         .anyRequest().authenticated()

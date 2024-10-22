@@ -25,7 +25,7 @@ public class Token {
     private boolean revoked;
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User myUser;
+    private MyUser myUser;
     @Column(name = "is_refresh")
     private boolean isRefresh;
 }
