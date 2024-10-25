@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 public class Payment {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "payment_id")
     private int id;
     @Column(name = "payment_amount")
@@ -23,8 +24,8 @@ public class Payment {
     private LocalDateTime createdAt;
     @Column(name = "payment_status")
     @Enumerated(EnumType.STRING)
-    private StatusPayment statusPayment;
+    private StatusPayment status;
     @OneToOne
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "payment_id")
     private Order order;
 }

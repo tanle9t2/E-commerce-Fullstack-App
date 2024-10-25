@@ -24,12 +24,7 @@ public class PaymentController {
     }
     @GetMapping("/vn-pay-callback")
     public ResponseEntity<PaymentDTO> payCallbackHandler(HttpServletRequest request) {
-        String status = request.getParameter("vnp_ResponseCode");
-        if (status.equals("00")) {
-            PaymentDTO paymentDTO = paymentService.handlePayment(request);
-            return null;
-        } else {
-            return null;
-        }
+        PaymentDTO paymentDTO = paymentService.handlePayment(request);
+        return ResponseEntity.status(HttpStatus.OK).body(paymentDTO);
     }
 }

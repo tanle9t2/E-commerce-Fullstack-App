@@ -51,7 +51,7 @@ payment:
     url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
     tmnCode:  MEBTRFP0
     secretKey: XGR3PAJ4STE368KZBJQ2GO2KJBS1R6HF
-    returnUrl: http://localhost:8080
+    returnUrl: http://localhost:8080/api/v1/vn-pay-callback
     version: 2.1.0
     command: pay
     orderType: Thanh toan don hang
