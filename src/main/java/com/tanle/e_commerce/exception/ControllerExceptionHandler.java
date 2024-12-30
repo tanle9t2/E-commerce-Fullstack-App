@@ -1,5 +1,6 @@
 package com.tanle.e_commerce.exception;
 
+import co.elastic.clients.elasticsearch._types.ElasticsearchException;
 import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,50 +16,79 @@ public class ControllerExceptionHandler {
     @ExceptionHandler
     public ResponseEntity<ExceptionResponse> handleResourceNotFound(ResourceNotFoundExeption exeption) {
         ExceptionResponse response = ExceptionResponse.builder()
-                .type("/exception/"+ exeption.getClass().getSimpleName())
+                .type("/exception/" + exeption.getClass().getSimpleName())
                 .title("Resource not found")
                 .detail(exeption.getMessage())
                 .timeStamp(System.currentTimeMillis())
                 .status(HttpStatus.NOT_FOUND.value())
                 .build();
 
-        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
+
+    @ExceptionHandler
+    ResponseEntity<ExceptionResponse> handleKafkaAsycnException(KafkaAsycnException exception) {
+        ExceptionResponse response = ExceptionResponse.builder()
+                .type("/exception/" + exception.getClass().getSimpleName())
+                .title("Resource not found")
+                .detail(exception.getMessage())
+                .timeStamp(System.currentTimeMillis())
+                .status(HttpStatus.NOT_FOUND.value())
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler
+    ResponseEntity<ExceptionResponse> handleElasticSearchException(ElasticsearchException exception) {
+        ExceptionResponse response = ExceptionResponse.builder()
+                .type("/exception/" + exception.getClass().getSimpleName())
+                .title(exception.getMessage())
+                .detail(exception.getMessage())
+                .timeStamp(System.currentTimeMillis())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .build();
+
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ExceptionResponse> handleUnauthorization(AccessDeniedException exeption) {
         ExceptionResponse response = ExceptionResponse.builder()
-                .type("/exception/"+ exeption.getClass().getSimpleName())
+                .type("/exception/" + exeption.getClass().getSimpleName())
                 .title("You do not have permission to access this resource")
                 .detail(exeption.getMessage())
                 .timeStamp(System.currentTimeMillis())
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .build();
 
-        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler(ExpiredJwtException.class)
     public ResponseEntity<ExceptionResponse> handleExpirationJwt(ExpiredJwtException exeption) {
         ExceptionResponse response = ExceptionResponse.builder()
-                .type("/exception/"+ exeption.getClass().getSimpleName())
+                .type("/exception/" + exeption.getClass().getSimpleName())
                 .title("Your token expired")
                 .detail(exeption.getMessage())
                 .timeStamp(System.currentTimeMillis())
                 .status(HttpStatus.UNAUTHORIZED.value())
                 .build();
 
-        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
+
     @ExceptionHandler
     public ResponseEntity<ExceptionResponse> handleDeleteException(ResourceDeleteException exeption) {
         ExceptionResponse response = ExceptionResponse.builder()
-                .type("/exception/"+ exeption.getClass().getSimpleName())
+                .type("/exception/" + exeption.getClass().getSimpleName())
                 .title("Delete resource fail")
                 .detail(exeption.getMessage())
                 .timeStamp(System.currentTimeMillis())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .build();
 
-        return new ResponseEntity<>(response,HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
@@ -71,6 +101,6 @@ public class ControllerExceptionHandler {
                 .timeStamp(System.currentTimeMillis())
                 .build();
 
-        return new ResponseEntity<>(message,HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity<>(message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

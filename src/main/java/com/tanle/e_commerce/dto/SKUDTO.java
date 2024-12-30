@@ -15,7 +15,7 @@ import java.util.List;
 @Getter
 @Setter
 public class SKUDTO {
-    private int id;
+    private Integer id;
     private String skuName;
     private String itemName;
     private String skuNo;

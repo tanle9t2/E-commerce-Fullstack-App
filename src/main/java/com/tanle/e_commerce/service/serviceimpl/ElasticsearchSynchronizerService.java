@@ -55,7 +55,7 @@ public class ElasticsearchSynchronizerService {
     private static final Logger LOG = LoggerFactory.getLogger(ElasticsearchSynchronizerService.class);
 
 
-    @Scheduled(cron = "*/30 * * * * *")
+//    @Scheduled(cron = "*/30 * * * * *")
     @Transactional
     public void sync() {
         LOG.info("Start Syncing - {}", LocalDateTime.now());

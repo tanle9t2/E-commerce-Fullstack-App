@@ -12,6 +12,7 @@ import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.ProductCreationRequest;
 import com.tanle.e_commerce.service.ProductService;
 import com.tanle.e_commerce.utils.Patcher;
+import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -63,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
     public PageResponse<ProductDTO> findAll(int page, int size, String direction, String... field) {
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(direction), field);
         Page<Product> products = productRepository.findAll(Pageable.unpaged());
-        List<ProductDTO> productDTOS= getResult(products).getData();
+        List<ProductDTO> productDTOS = getResult(products).getData();
 
         return getResult(products);
     }
@@ -76,9 +77,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductDTO findById(Integer id, String optionValue) {
+    @Transactional
+    public ProductDTO findById(Integer id) {
         Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundExeption("Product id: "
                 + id + " not found"));
+
         return productMapper.asInput(product);
     }
 
@@ -86,6 +89,11 @@ public class ProductServiceImpl implements ProductService {
     public PageResponse<ProductDTO> findByCategory(String categoryId, Pageable pageable) {
         Page<Product> page = productRepository.findProductByCategory(categoryId, pageable);
         return getResult(page);
+    }
+
+    @Override
+    public List<ProductDTO> findByOption(Integer optionId) {
+        return null;
     }
 
     @Override
@@ -155,6 +163,7 @@ public class ProductServiceImpl implements ProductService {
         }
         return productDTOPatch;
     }
+
     @Override
     public PageResponse<ProductDTO> findByTenant(int page, int size, Integer tenantId) {
         Pageable pageable = PageRequest.of(page, size);
@@ -237,6 +246,7 @@ public class ProductServiceImpl implements ProductService {
                 .message("Successfully delete option")
                 .build();
     }
+
     @Override
     @Transactional
     public ProductDTO updatePrice(Integer productId, Map<String, Integer> data) {

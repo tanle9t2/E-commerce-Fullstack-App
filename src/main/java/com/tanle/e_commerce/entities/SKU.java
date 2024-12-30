@@ -107,4 +107,8 @@ public class SKU {
                 .map(OptionValue::getName)
                 .collect(Collectors.joining(","));
     }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

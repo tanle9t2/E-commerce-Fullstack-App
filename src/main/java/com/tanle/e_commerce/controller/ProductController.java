@@ -49,7 +49,7 @@ public class ProductController {
     public ResponseEntity<ProductDTO> getProduct (
             @PathVariable int productId
             ,@RequestParam(value = "optionValue",required = false)String optionValue) {
-        ProductDTO product = productService.findById(productId,optionValue);
+        ProductDTO product = productService.findById(productId);
         return new ResponseEntity<>(product,HttpStatus.OK);
     }
 

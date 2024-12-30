@@ -8,8 +8,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer>, JpaSpecificationExecutor<Product> {
+
     @Query(value = "from Product p JOIN Category c ON p.category.id = c.id "
             + "where (p.name like %?1% or p.description like %?1% or c.name like %?1% or c.description like %?1%)" +
             "and (?2 is null or c.name = ?2)"

@@ -35,6 +35,7 @@ public class CategoryServiceImpl implements CategoryService {
     private ProductRepository productRepository;
 
     @Override
+    @Transactional
     public CategoryDTO findById(Integer id) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Category not found"));

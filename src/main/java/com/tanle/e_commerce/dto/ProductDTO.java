@@ -39,7 +39,7 @@ public class ProductDTO {
     private int stock;
     @Field(type = FieldType.Text)
     private String description;
-    @Field(type = FieldType.Date,format = DateFormat.year_month_day)
+    @Field(type = FieldType.Date, format = DateFormat.year_month_day)
     private LocalDate createdAt;
     @Field(type = FieldType.Object)
     private CategoryDTO category;
@@ -47,8 +47,8 @@ public class ProductDTO {
     private String skuNo;
     @Field(type = FieldType.Object)
     private List<SKUDTO> skus;
-    @Field(type = FieldType.Object)
-    private Map<String,Option> options;
+
+    private Map<String, Option> options;
 
     @Override
     public String toString() {

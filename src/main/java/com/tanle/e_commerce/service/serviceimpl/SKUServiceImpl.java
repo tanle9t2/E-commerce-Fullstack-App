@@ -31,13 +31,21 @@ public class SKUServiceImpl implements SKUService {
 
     @Override
     @Transactional
+    public SKUDTO findById(Integer skuId) {
+        SKU sku = skuRepository.findById(skuId)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found SKU"));
+        return skuMapper.convertDTO(sku);
+    }
+
+    @Override
+    @Transactional
     public List<SKUDTO> createSKU(List<SKUDTO> skus, Product product) {
         List<Option> options = product.getOptions();
         List<SKU> skuDB = new ArrayList<>();
         for (SKUDTO skuDTO : skus) {
             List<OptionValue> opDB = new ArrayList<>();
             List<Integer> tierIndex = skuDTO.getOptionValueIndex();
-            for (int i = 0 ; i< tierIndex.size(); i++) {
+            for (int i = 0; i < tierIndex.size(); i++) {
                 opDB.add(options.get(i).getOptionValues().get(tierIndex.get(i)));
             }
             SKU sku = SKU.builder()
@@ -63,7 +71,7 @@ public class SKUServiceImpl implements SKUService {
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found product"));
 
         List<SKU> skus = skudtos.stream()
-                .map(s-> skuMapper.convertEntity(s,product))
+                .map(s -> skuMapper.convertEntity(s, product))
                 .collect(Collectors.toList());
         product.getSkus().addAll(skus);
         skuRepository.saveAll(skus);

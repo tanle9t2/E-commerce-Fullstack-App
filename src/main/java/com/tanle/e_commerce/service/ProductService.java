@@ -20,9 +20,10 @@ public interface ProductService extends OwnerService<Product, Integer> {
 
     PageResponse<ProductDTO> findByName(int page, int size, String nameProduct);
 
-    ProductDTO findById(Integer id, String optionValue);
+    ProductDTO findById(Integer id);
 
     PageResponse<ProductDTO> findByCategory(String categoryId, Pageable pageable);
+    List<ProductDTO> findByOption(Integer optionId);
 
     ProductDTO update(Product product);
 

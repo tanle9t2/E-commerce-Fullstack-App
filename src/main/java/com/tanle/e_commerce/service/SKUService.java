@@ -6,6 +6,7 @@ import com.tanle.e_commerce.entities.Product;
 import java.util.List;
 
 public interface SKUService {
+    SKUDTO findById(Integer skuId);
     List<SKUDTO> createSKU(List<SKUDTO> skudtos, Product product);
 
     List<SKUDTO> updateSKU(Integer productId, List<SKUDTO> skudtos);
