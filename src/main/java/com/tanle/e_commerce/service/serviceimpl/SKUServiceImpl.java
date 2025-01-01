@@ -50,8 +50,8 @@ public class SKUServiceImpl implements SKUService {
             }
             SKU sku = SKU.builder()
                     .skuNo(skuDTO.getSkuNo())
-                    .stock(skuDTO.getStock())
-                    .price(skuDTO.getPrice())
+                    .stock(skuDTO.getSkuStock())
+                    .price(skuDTO.getSkuPrice())
                     .createAt(LocalDateTime.now())
                     .optionValues(opDB)
                     .product(product)

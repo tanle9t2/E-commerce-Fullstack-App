@@ -15,14 +15,14 @@ import java.util.List;
 @Getter
 @Setter
 public class SKUDTO {
-    private Integer id;
+    private Integer skuId;
     private String skuName;
     private String itemName;
     private String skuNo;
     @Enumerated(EnumType.STRING)
     private Status status;
-    private int stock;
-    private double price;
+    private Integer skuStock;
+    private Double skuPrice;
     private LocalDateTime createdAt;
     private List<Integer> optionValueIndex;
 

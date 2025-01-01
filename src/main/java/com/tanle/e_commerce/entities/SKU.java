@@ -91,12 +91,12 @@ public class SKU {
             i++;
         }
         return SKUDTO.builder()
-                .id(this.id)
+                .skuId(this.id)
                 .skuNo(this.skuNo)
                 .skuName(getModalName())
-                .price(this.price)
+                .skuPrice(this.price)
                 .status(this.status)
-                .stock(this.stock)
+                .skuStock(this.stock)
                 .optionValueIndex(optionValueIndex)
                 .createdAt(this.createAt)
                 .build();

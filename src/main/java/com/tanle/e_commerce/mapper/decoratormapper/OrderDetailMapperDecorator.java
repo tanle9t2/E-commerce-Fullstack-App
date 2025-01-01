@@ -19,7 +19,7 @@ public abstract class OrderDetailMapperDecorator implements OrderDetailMapper {
 
     @Override
     public OrderDetail convertEntity(OrderDetailDTO orderDetailDTO) {
-        SKU sku = skuRepository.findById(orderDetailDTO.getSku().getId())
+        SKU sku = skuRepository.findById(orderDetailDTO.getSku().getSkuId())
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found sku"));
         OrderDetail orderDetail = orderDetailMapper.convertEntity(orderDetailDTO);
         orderDetail.setSku(sku);

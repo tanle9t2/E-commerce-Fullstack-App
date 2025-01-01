@@ -15,6 +15,6 @@ public interface ProductAsycnService {
 
     void updateCategory(int entityId, JsonObject payload);
 
-    void updateSKU(int entityId, JsonObject payload);
+    void updateSKU(int entityId, int skuId, JsonObject payload);
 
 }

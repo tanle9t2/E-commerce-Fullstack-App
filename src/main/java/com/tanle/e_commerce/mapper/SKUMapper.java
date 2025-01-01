@@ -19,10 +19,13 @@ import java.util.List;
 public interface SKUMapper {
     @Mapping(target = "optionValueIndex", expression = "java(mapOptionValue(sku))")
     @Mapping(target = "itemName", source = "sku.product.name")
+    @Mapping(target = "skuId", source = "sku.id")
+    @Mapping(target = "skuStock", source = "sku.stock")
+    @Mapping(target = "skuPrice", source = "sku.price")
     SKUDTO convertDTO(SKU sku);
 
     @Mapping(target = "optionValues", expression = "java(mapOptionValuesBack(skudto,product))")
-    @Mapping(target = "id", source = "skudto.id")
+    @Mapping(target = "id", source = "skudto.skuId")
     @Mapping(target = "product", source = "product")
     SKU convertEntity(SKUDTO skudto, Product product);
 

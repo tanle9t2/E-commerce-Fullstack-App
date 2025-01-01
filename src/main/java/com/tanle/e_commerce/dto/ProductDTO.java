@@ -47,7 +47,6 @@ public class ProductDTO {
     private String skuNo;
     @Field(type = FieldType.Object)
     private List<SKUDTO> skus;
-
     private Map<String, Option> options;
 
     @Override
