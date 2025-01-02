@@ -1,6 +1,12 @@
 spring:
   application:
     name: e-commerce
+#  security:
+#    oauth2:
+#      resourceserver:
+#        jwt:
+#          issuer-uri: http://localhost:8082/realms/TanLe"
+#          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
   datasource:
     url: jdbc:mysql://localhost:3307/ecommerce
     username: root
@@ -75,3 +81,5 @@ payment:
     version: 2.1.0
     command: pay
     orderType: Thanh toan don hang
+server:
+  port: 8080

@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,11 +37,11 @@ public class SecurityConfig {
     @Autowired
     private CustomAccessDeniedExceptionHandler accessDeniedException;
 
-    private final String[] URL_ADMIN = new String[] {
+    private final String[] URL_ADMIN = new String[]{
             "/api/v1/cart/{cartId:[0-9]+}",
             "/api/v1/order/{orderId:[0-9]+}"
     };
-    private final String[] URL_PERMIT_ALL = new String[] {
+    private final String[] URL_PERMIT_ALL = new String[]{
             "/api/v1/user/register"
             , "/api/v1/user/login"
             , "/api/v1/tenant/login"
@@ -64,7 +65,7 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-        return httpSecurity.csrf(AbstractHttpConfigurer::disable)
+        httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(URL_PERMIT_ALL).permitAll()
                         .requestMatchers(URL_ADMIN).hasAuthority("ADMIN")
@@ -74,11 +75,11 @@ public class SecurityConfig {
                                 , "/api/v1/order/status"
                                 , "/api/v1/order/cancelOrder"
                                 , "/api/v1/tenant/register"
-                                ).access(authorizationManager)
+                        ).access(authorizationManager)
                         .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
                         .requestMatchers("/api/v1/order/status"
-                                ,"/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN","SELLER")
-                        .requestMatchers(HttpMethod.GET,"/api/v1/order").hasAnyAuthority("ADMIN","SELLER")
+                                , "/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN", "SELLER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/order").hasAnyAuthority("ADMIN", "SELLER")
                         .requestMatchers("/api/v1/user/registerToken/**"
                                 , "/api/v1/user/registerToken").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
@@ -89,7 +90,8 @@ public class SecurityConfig {
                     l.logoutUrl("/user/logout");
                     l.logoutSuccessUrl("/login?logout");
                 })
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return httpSecurity.build();
     }
 }
