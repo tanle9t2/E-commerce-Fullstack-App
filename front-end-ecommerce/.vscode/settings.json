@@ -1,0 +1,11 @@
+{
+  "styled-components.languageSupport.react": true,
+  "editor.tabCompletion": "on",
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "editor.suggestOnTriggerCharacters": true,
+    "terminal.integrated.autoReplies": {
+
+    }
+}

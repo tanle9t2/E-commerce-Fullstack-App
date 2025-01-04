@@ -42,13 +42,16 @@ public class Product {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "tenant_id")
     private Tenant tenant;
-    @OneToMany(fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @JoinColumn(name = "product_id")
     private List<Option> options;
 
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL,mappedBy = "product")
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, mappedBy = "product")
     @JsonIgnore
     private List<SKU> skus;
+    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JoinColumn(name = "product_id")
+    private List<Image> images;
 
     @Override
     public String toString() {
@@ -63,17 +66,20 @@ public class Product {
     }
 
     public boolean addSKU(SKU sku) {
-        if(this.skus == null) skus = new ArrayList<>();
+        if (this.skus == null) skus = new ArrayList<>();
         sku.setProduct(this);
         return skus.add(sku);
     }
+
     public void addSKU(List<SKU> listSKU) {
         listSKU.forEach(s -> this.addSKU(s));
     }
+
     public void removeSKU(SKU sku) {
         sku.setProduct(null);
         skus.remove(sku);
     }
+
     public void removeSKU() {
         var it = skus.iterator();
         while (it.hasNext()) {
@@ -82,13 +88,16 @@ public class Product {
             it.remove();
         }
     }
+
     public void removeSKU(List<SKU> skuList) {
         skuList.forEach(s -> s.setProduct(null));
         skus.removeAll(skuList);
     }
+
     public void removeOption(List<Option> optionList) {
         this.options.removeAll(optionList);
     }
+
     public ProductDTO converDTO() {
         List<SKU> skus = this.getSkus();
         int stock = skus.stream()
@@ -97,9 +106,9 @@ public class Product {
         double price = skus.stream()
                 .mapToDouble(SKU::getPrice)
                 .min()
-                .orElseGet(()-> 0);
+                .orElseGet(() -> 0);
         Map<String, Option> mpOption = new HashMap<>();
-        this.options.forEach(o -> mpOption.put(o.getName(),o));
+        this.options.forEach(o -> mpOption.put(o.getName(), o));
         ProductDTO dto = ProductDTO.builder()
                 .id(this.getId())
                 .name(this.getName())

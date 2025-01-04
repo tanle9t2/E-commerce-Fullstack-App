@@ -84,3 +84,5 @@ payment:
     orderType: Thanh toan don hang
 server:
   port: 8080
+  servlet:
+    context-path: /ecommerce-server/

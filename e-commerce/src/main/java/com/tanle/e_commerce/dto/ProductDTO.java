@@ -48,6 +48,7 @@ public class ProductDTO {
     @Field(type = FieldType.Object)
     private List<SKUDTO> skus;
     private Map<String, Option> options;
+    private List<Image> images;
 
     @Override
     public String toString() {

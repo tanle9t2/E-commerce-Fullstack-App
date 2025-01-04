@@ -55,7 +55,7 @@ public class ProductServiceImpl implements ProductService {
                     , products.getTotalElements(), HttpStatus.OK);
         }
         List<ProductDTO> productDTOS = products.getContent().stream()
-                .map(Product::converDTO)
+                .map(p -> productMapper.asInput(p))
                 .collect(Collectors.toList());
         return new PageResponse<>(productDTOS, products.getNumber(), products.getNumberOfElements()
                 , products.getTotalElements(), HttpStatus.OK);
@@ -64,8 +64,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public PageResponse<ProductDTO> findAll(int page, int size, String direction, String... field) {
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(direction), field);
-        Page<Product> products = productRepository.findAll(Pageable.unpaged());
-        List<ProductDTO> productDTOS = getResult(products).getData();
+        Page<Product> products = productRepository.findAll(pageable);
 
         return getResult(products);
     }

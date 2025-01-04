@@ -48,6 +48,7 @@ public class SecurityConfig {
             , "/api/v1/user/logout"
             , "/api/v1/user/refreshToken"
             , "/api/v1/payment"
+            , "/api/v1/product_list"
     };
 
     @Bean

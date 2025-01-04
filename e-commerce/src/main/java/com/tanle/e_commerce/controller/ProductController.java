@@ -28,6 +28,8 @@ import static com.tanle.e_commerce.utils.AppConstant.*;
 
 @RestController
 @RequestMapping("/api/v1/")
+@CrossOrigin(origins = "http://localhost:5173") // React app URL
+
 public class ProductController {
     @Autowired
     private ProductService productService;
