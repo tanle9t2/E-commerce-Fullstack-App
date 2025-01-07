@@ -17,7 +17,7 @@ public interface CategoryService {
 
     MessageResponse deleteCategory(Integer parentId);
 
-
+    String getSinglePath(int categoryId);
     PageResponse<CategoryDTO> getSubCategory(String name, Pageable pageable);
 
     Map<String,Object> addProductToCategory(Integer categoryId, List<Integer> productList);

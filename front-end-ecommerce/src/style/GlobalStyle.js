@@ -4,6 +4,7 @@ const GlobalStyle = createGlobalStyle`:root {
     /* Indigo */
   --primary-color:#ef4444;
   --color-white:#fff;
+  --black-color:#000;
   --padding-container: 10px 200px;
     /* Grey */
     &, &.light-mode {
@@ -147,10 +148,9 @@ const GlobalStyle = createGlobalStyle`:root {
   }
   
   input:focus,
-  button:focus,
   textarea:focus,
   select:focus {
-    outline: 2px solid var(--color-brand-600);
+    outline: 2px solid var(--primary-color);
     outline-offset: -1px;
   }
   

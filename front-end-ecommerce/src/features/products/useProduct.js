@@ -1,16 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
-
-import { getProducts } from "../../services/apiProduct";
+import { useParams } from "react-router-dom";
+import { getProduct } from "../../services/apiProduct";
 
 export function useProduct() {
+  const { productId } = useParams()
   const {
     isLoading,
-    data: products,
+    data: product,
     error,
   } = useQuery({
-    queryKey: ["products"],
-    queryFn: getProducts,
+    queryKey: ["product",productId],
+    queryFn: () => getProduct(productId),
   });
 
-  return { isLoading, error, products };
+  return { isLoading, error, product };
 }

@@ -109,7 +109,11 @@ public class ProductController {
         List<SKUDTO> respone = skuService.updateSKU(Integer.parseInt(productId), skudtos);
         return new ResponseEntity<>(respone, HttpStatus.OK);
     }
-
+    @GetMapping("/product/sku/{skuId}")
+    public ResponseEntity<SKUDTO> getVariation(@PathVariable int skuId) {
+        SKUDTO skudto =skuService.findById(skuId);
+        return ResponseEntity.ok(skudto);
+    }
     @DeleteMapping("/product/options")
     public ResponseEntity<MessageResponse> deleteOption(
             @RequestBody Map<String, Object> mp
@@ -124,7 +128,6 @@ public class ProductController {
                 optionValuesId, Integer.parseInt(productId));
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
-
     @PostMapping("/product")
     public ApiResponse<ProductDTO> createProduct(@RequestBody ProductCreationRequest product) {
         ProductDTO productDTO = productService.save(product);

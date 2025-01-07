@@ -8,5 +8,6 @@ import java.util.List;
 
 public interface CustomCategoryRepository {
     Category createCategory(Category parent, Category category);
+
     void updateIndexDeleteCategory(int left, int right);
 }

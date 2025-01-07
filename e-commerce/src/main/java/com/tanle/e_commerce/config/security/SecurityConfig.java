@@ -49,6 +49,8 @@ public class SecurityConfig {
             , "/api/v1/user/refreshToken"
             , "/api/v1/payment"
             , "/api/v1/product_list"
+            ,"api/v1/product/{productId}"
+            ,"api/v1/product/sku/{skuId}"
     };
 
     @Bean

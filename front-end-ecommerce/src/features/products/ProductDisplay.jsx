@@ -1,8 +1,8 @@
-import styled from "styled-components"
-import Row from "../../ui/Row"
+
 import ProductItem from "./ProductItem"
-import {useProduct} from"./useProduct"
+import {useProducts} from"./useProducts"
 import Spinner from "../../ui/Spinner"
+import Section from "../../ui/Section"
 const fakeData = [
     {
       "imageUrl":"https://down-vn.img.susercontent.com/file/vn-11134207-7r98o-lkv87kkc54gt68_tn.webp",
@@ -70,19 +70,14 @@ const fakeData = [
       
     
   ]
-const StyledProductDiplay = styled.div`
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 16px;
-`
 function ProductDisplay() {
-    const { products, isLoading} = useProduct();
+    const { products, isLoading} = useProducts();
     if(isLoading) return <Spinner/>
   
     return (
-        <StyledProductDiplay>
+        <Section>
            {products.map(product => <ProductItem key={product.id} product={product}/>)}
-        </StyledProductDiplay>
+        </Section>
     )
 }
 

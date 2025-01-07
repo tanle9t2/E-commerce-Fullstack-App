@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public interface CategoryMapper {
 
     @Mapping(target = "tenantId",source = "tenant.id")
-    @Mapping(target = "productsId", expression = "java(mapProduct(category))")
+//    @Mapping(target = "productsId", expression = "java(mapProduct(category))")
     CategoryDTO convertDTO(Category category);
 
     Category convertEntity(CategoryDTO categoryDTO);

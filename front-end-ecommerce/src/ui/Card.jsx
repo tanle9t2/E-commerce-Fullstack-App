@@ -50,9 +50,9 @@ const CardExtra = styled.div`
     align-items:center;
 
 `
-function Card({imageUrl,title,price,rating,totalSell}) {
+function Card({imageUrl,title,price,rating,totalSell,handleOnClick}) {
     return (
-        <StyledCard>
+        <StyledCard onClick = {handleOnClick}>
             <CardImage src={imageUrl} alt={`image of ${title}`}/>
             <CardContent>
             <CardTitle>{title}</CardTitle>

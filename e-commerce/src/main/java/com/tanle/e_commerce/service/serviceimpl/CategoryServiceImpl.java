@@ -12,6 +12,7 @@ import com.tanle.e_commerce.mapper.CategoryMapper;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.service.CategoryService;
+import com.tanle.e_commerce.specification.CategorySpecification;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,28 +43,30 @@ public class CategoryServiceImpl implements CategoryService {
 
         return categoryMapper.convertDTO(category);
     }
+
     @Override
     @Transactional
     public CategoryDTO createCategory(Integer parentId, CategoryDTO category) {
         Tenant tenant = tenantRepository.findById(category.getTenantId())
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found tenant"));
-        Category parent = categoryRepository.byIdAndTenant(parentId,tenant.getId())
+        Category parent = categoryRepository.byIdAndTenant(parentId, tenant.getId())
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found parent category"));
 
         Category categoryDB = categoryMapper.convertEntity(category);
         categoryDB.setCreateAt(LocalDateTime.now());
-        categoryDB  = categoryRepository.createCategory(parent, categoryDB);
+        categoryDB = categoryRepository.createCategory(parent, categoryDB);
 
         return categoryMapper.convertDTO(categoryDB);
     }
+
     @Override
     @Transactional
     public MessageResponse deleteCategory(Integer parentId) {
         Category category = categoryRepository.findById(parentId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found category"));
-        List<Category> categories =new ArrayList<>();
-        categories.addAll( categoryRepository.getSubCategory(category.getName()
-                ,Pageable.unpaged()).getContent());
+        List<Category> categories = new ArrayList<>();
+        categories.addAll(categoryRepository.getSubCategory(category.getName()
+                , Pageable.unpaged()).getContent());
         categories.add(category);
 
         //remove foreign key
@@ -80,14 +83,24 @@ public class CategoryServiceImpl implements CategoryService {
                         .collect(Collectors.toList()))
                 .build();
     }
+
+    @Override
+    public String getSinglePath(int categoryId) {
+        List<Category> categories = categoryRepository.findAll(CategorySpecification.getSinglePath(categoryId));
+        String path = categories.stream()
+                .map(c -> c.getName() + ">")
+                .toString();
+        return path.substring(0, path.length() - 1);
+    }
+
     @Override
     public PageResponse<CategoryDTO> getSubCategory(String name, Pageable pageable) {
-        Page<Category> categories = categoryRepository.getSubCategory(name,pageable);
+        Page<Category> categories = categoryRepository.getSubCategory(name, pageable);
         if (categories.getNumberOfElements() == 0) {
             return new PageResponse<>(Collections.emptyList(), categories.getNumber() + 1
                     , categories.getNumberOfElements(), categories.getTotalElements(), HttpStatus.OK);
         }
-        List<CategoryDTO >categoryDTOS = categories.getContent().stream()
+        List<CategoryDTO> categoryDTOS = categories.getContent().stream()
                 .map(Category::convertDTO)
                 .collect(Collectors.toList());
         return new PageResponse<>(categoryDTOS, categories.getNumber() + 1
@@ -99,15 +112,15 @@ public class CategoryServiceImpl implements CategoryService {
     public Map<String, Object> addProductToCategory(Integer categoryId, List<Integer> productList) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found category"));
-        for (Integer productId :productList) {
+        for (Integer productId : productList) {
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new ResourceNotFoundExeption("Not found product"));
             category.addProduct(product);
         }
         categoryRepository.save(category);
-        Map<String,Object> result = new HashMap<>();
-        result.put("categoryId",categoryId);
-        result.put("currentCount",category.getProducts().size());
+        Map<String, Object> result = new HashMap<>();
+        result.put("categoryId", categoryId);
+        result.put("currentCount", category.getProducts().size());
         return result;
     }
 
@@ -115,15 +128,15 @@ public class CategoryServiceImpl implements CategoryService {
     public Map<String, Object> removeProductFromCategory(Integer categoryId, List<Integer> productList) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found category"));
-        for (Integer productId :productList) {
+        for (Integer productId : productList) {
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new ResourceNotFoundExeption("Not found product"));
             category.removeProduct(product);
         }
         categoryRepository.save(category);
-        Map<String,Object> result = new HashMap<>();
-        result.put("categoryId",categoryId);
-        result.put("currentCount",category.getProducts().size());
+        Map<String, Object> result = new HashMap<>();
+        result.put("categoryId", categoryId);
+        result.put("currentCount", category.getProducts().size());
         return result;
     }
 
@@ -132,7 +145,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDTO update(int categoryId, CategoryDTO categoryDTO) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found category"));
-        category = categoryMapper.update(categoryDTO.getName(),categoryDTO.getDescription(),category);
+        category = categoryMapper.update(categoryDTO.getName(), categoryDTO.getDescription(), category);
 
         categoryRepository.save(category);
         return categoryMapper.convertDTO(category);
@@ -145,7 +158,7 @@ public class CategoryServiceImpl implements CategoryService {
             return new PageResponse<>(Collections.emptyList(), categories.getNumber() + 1
                     , categories.getNumberOfElements(), categories.getTotalElements(), HttpStatus.OK);
         }
-        List<CategoryDTO >categoryDTOS = categories.getContent().stream()
+        List<CategoryDTO> categoryDTOS = categories.getContent().stream()
                 .map(Category::convertDTO)
                 .collect(Collectors.toList());
         return new PageResponse<>(categoryDTOS, categories.getNumber() + 1

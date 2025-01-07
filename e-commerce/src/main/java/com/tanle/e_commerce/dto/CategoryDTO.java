@@ -21,6 +21,7 @@ public class CategoryDTO {
     private LocalDateTime createAt;
     private Integer tenantId;
     private List<Integer> productsId;
+    private List<String> pathCategory;
     private int left;
     private int right;
 }
