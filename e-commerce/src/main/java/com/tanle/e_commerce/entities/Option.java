@@ -12,6 +12,8 @@ import java.util.List;
 @Table(name = "options")
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 public class Option {
 
     @Id
@@ -26,22 +28,6 @@ public class Option {
 
     public Option(String name, List<OptionValue> optionValues) {
         this(0,name,optionValues);
-    }
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public List<OptionValue> getOptionValues() {

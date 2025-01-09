@@ -41,14 +41,16 @@ const Input = styled.input`
     border-color: #007bff;
   }
 `;
-function NumericInput({children,active}) {
+function NumericInput({children,active, maxValue}) {
     const [value, setValue] = useState(1); // Initial value is 1
 
   const handleIncrement = () => {
+    if(value + 1> maxValue) return;
     setValue((prevValue) => prevValue + 1);
   };
 
   const handleDecrement = () => {
+    if(value-1 <=0 ) return;
     setValue((prevValue) => Math.max(0, prevValue - 1)); // Prevents negative values
   };
 

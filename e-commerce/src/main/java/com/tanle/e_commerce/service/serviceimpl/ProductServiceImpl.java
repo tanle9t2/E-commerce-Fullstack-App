@@ -164,12 +164,12 @@ public class ProductServiceImpl implements ProductService {
         productDB.setCreatedAt(LocalDateTime.now());
         productRepository.save(productDB);
 
-        if ((productDTOPatch.getPrice() != 0 || productDTOPatch.getStock() != 0) && skuNo != null) {
-            SKU skuDB = skuRepository.findBySkuNo(skuNo)
-                    .orElseThrow(() -> new ResourceNotFoundExeption("Not found SKU"));
-            skuDB.setPrice(productDTOPatch.getPrice());
-            skuDB.setStock(productDTOPatch.getStock());
-        }
+//        if ((productDTOPatch.getPrice() != 0 || productDTOPatch.getStock() != 0) && skuNo != null) {
+//            SKU skuDB = skuRepository.findBySkuNo(skuNo)
+//                    .orElseThrow(() -> new ResourceNotFoundExeption("Not found SKU"));
+//            skuDB.setPrice(productDTOPatch.getPrice());
+//            skuDB.setStock(productDTOPatch.getStock());
+//        }
         return productDTOPatch;
     }
 

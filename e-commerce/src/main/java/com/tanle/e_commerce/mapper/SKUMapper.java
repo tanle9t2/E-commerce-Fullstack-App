@@ -12,7 +12,9 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 @DecoratedWith(SKUMapperDecorator.class)
@@ -26,10 +28,11 @@ public interface SKUMapper {
 
     @Mapping(target = "optionValues", expression = "java(mapOptionValuesBack(skudto,product))")
     @Mapping(target = "id", source = "skudto.skuId")
+    @Mapping(target = "price",source = "skudto.skuPrice")
     @Mapping(target = "product", source = "product")
     SKU convertEntity(SKUDTO skudto, Product product);
 
-    SKU update(Product product, @MappingTarget SKU sku);
+
 
     default List<OptionValue> mapOptionValuesBack(SKUDTO sku, Product product) {
         if (product == null || sku == null) return null;
@@ -45,11 +48,15 @@ public interface SKUMapper {
     default List<Integer> mapOptionValue(SKU sku) {
         if (sku == null) return null;
         List<Integer> optionValueIndex = new ArrayList<>();
-        Product product = sku.getProduct();
-        List<OptionValue> optionValues = sku.getOptionValues();
+        List<Option> options = sku.getProduct().getOptions().stream()
+                .sorted(Comparator.comparing(Option::getId))
+                .collect(Collectors.toList());
+        List<OptionValue> optionValues = sku.getOptionValues().stream()
+                .sorted(Comparator.comparing(OptionValue::getId))
+                .collect(Collectors.toList());
         if (optionValues.isEmpty()) return null;
         int i = 0;
-        for (Option option : product.getOptions()) {
+        for (Option option : options) {
             optionValueIndex.add(option.parseIndexOptionValue(optionValues.get(i)));
             i++;
         }

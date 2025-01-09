@@ -75,8 +75,9 @@ const Thumbnail = styled.img`
     }
 `;
     
-function SlideImage({images}) {
+function SlideImage({images,isButton = true}) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    
 
     const nextSlide = () => {
         setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -100,9 +101,9 @@ function SlideImage({images}) {
     
           {/* Thumbnails */}
           <ThumbnailsContainer>
-            <PrevButton onClick={prevSlide}><IoIosArrowBack /></PrevButton>
+            {isButton && <PrevButton onClick={prevSlide}><IoIosArrowBack /></PrevButton>}
             {images.map((image, index) => (
-              <Thumbnail
+              <Thumbnail onMouseEnter={() => selectImage(index)}
                 key={index}
                 src={image.imageUrl}
                 alt={`Thumbnail ${index}`}
@@ -110,7 +111,7 @@ function SlideImage({images}) {
                 onClick={() => selectImage(index)}
               />
             ))}
-            <NextButton onClick={nextSlide}><IoIosArrowForward /></NextButton>
+            {isButton && <NextButton onClick={nextSlide}><IoIosArrowForward /></NextButton>}
           </ThumbnailsContainer>
         </SliderContainer>
       );

@@ -19,12 +19,5 @@ public abstract class SKUMapperDecorator implements SKUMapper {
     @Qualifier("delegate")
     private SKUMapper delegate;
 
-    @Override
-    public SKU update(Product product, SKU sku) {
-        List<Option> options = product.getOptions();
-        for (var item : sku.getOptionValues()) {
 
-        }
-        return null;
-    }
 }

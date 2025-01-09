@@ -13,6 +13,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Array;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -32,7 +33,7 @@ public class ProductDTO {
     @Field(type = FieldType.Text)
     private String name;
     @Field(type = FieldType.Double)
-    private double price;
+    private double[] price;
     @Field(type = FieldType.Integer)
     private int reorderLevel;
     @Field(type = FieldType.Double)
@@ -47,6 +48,7 @@ public class ProductDTO {
     private String skuNo;
     @Field(type = FieldType.Object)
     private List<SKUDTO> skus;
+    private int totalSell;
     private Map<String, Option> options;
     private List<Image> images;
 
