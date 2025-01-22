@@ -6,6 +6,7 @@ const GlobalStyle = createGlobalStyle`:root {
   --color-white:#fff;
   --black-color:#000;
   --padding-container: 10px 200px;
+  --line-color:#eeeeee;
     /* Grey */
     &, &.light-mode {
       --color-grey-0: #fff;

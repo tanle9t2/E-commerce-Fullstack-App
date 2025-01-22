@@ -28,6 +28,7 @@ public interface ProductMapper {
     @Mapping(target = "price", expression = "java(mapPrice(product))")
     @Mapping(target = "stock", expression = "java(mapStock(product))")
     @Mapping(target = "options", expression = "java(mapOptions(product))")
+    @Mapping(target = "tenantId",source = "product.tenant.id")
     ProductDTO asInput(Product product);
 
     @Mapping(target = "options", expression = "java(mapOptionsBack(productDTO))")

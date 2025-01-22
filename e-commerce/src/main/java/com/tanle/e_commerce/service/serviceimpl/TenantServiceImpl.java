@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.HashMap;
 
 
@@ -62,9 +63,7 @@ public class TenantServiceImpl implements TenantService {
     public TenantDTO findById(Integer id) {
         Tenant tenant = tenantRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found tenant"));
-        Long totalProduct = productRepository.sumProductByTenant(id);
-        TenantDTO tenantDTO = tenant.converDTO();
-        tenantDTO.setTotalProduct(totalProduct);
+        TenantDTO tenantDTO = tenantMapper.convertDTO(tenant);
         return tenantDTO;
     }
 
@@ -92,7 +91,7 @@ public class TenantServiceImpl implements TenantService {
         }
         tenant.setName(tenantRegisterRequest.getStoreName());
         tenant.setEmail(tenantRegisterRequest.getEmail());
-        tenant.setCreateAt(LocalDateTime.now());
+        tenant.setCreatedAt(new Date());
         tenant.setPhoneNumber(tenantRegisterRequest.getPhoneNumber());
         tenant.setDomain(tenantRegisterRequest.getDescription());
         tenant.setActive(true);

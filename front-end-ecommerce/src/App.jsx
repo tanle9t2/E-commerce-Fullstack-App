@@ -23,7 +23,6 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<AppLayout />}>
-         
             <Route path="/" element={<HomePage />} />
             <Route path="product/:productId" element={<Product />} />
           </Route>

@@ -1,11 +1,15 @@
 package com.tanle.e_commerce.controller;
 
+import com.tanle.e_commerce.dto.CommentDTO;
 import com.tanle.e_commerce.entities.Comment;
 import com.tanle.e_commerce.respone.MessageResponse;
+import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import static com.tanle.e_commerce.utils.AppConstant.*;
 
 import java.util.List;
 
@@ -16,24 +20,36 @@ public class CommentController {
     private CommentService commentService;
 
     @GetMapping("/comment/{commentId}")
-    public ResponseEntity<Comment> getComment(@PathVariable Integer commentId) {
-        return commentService.findById(commentId);
-    }
-    @GetMapping("/comments")
-    public ResponseEntity<List<Comment>> getComment() {
-        return commentService.findAll();
+    public ResponseEntity<CommentDTO> getComment(@PathVariable Integer commentId) {
+        CommentDTO commentDTO = commentService.findById(commentId);
+        return ResponseEntity.ok(commentDTO);
     }
 
-    @GetMapping("/comment")
-    public ResponseEntity<List<Comment>> getSubComent(@RequestParam("root")String parentId) {
-        return commentService.findByParentComment(Integer.parseInt(parentId));
+    @GetMapping("/comment/product/{productId}")
+    public ResponseEntity<PageResponse<CommentDTO>> getCommentByProduct(
+            @PathVariable Integer productId
+            , @RequestParam(value = "page", defaultValue = PAGE_DEFAULT) String page
+            , @RequestParam(value = "size", defaultValue = PAGE_SIZE_COMMENT) String size) {
+        PageResponse commentDTO = commentService.findByProduct(productId, Integer.parseInt(page), Integer.parseInt(size));
+        return ResponseEntity.ok(commentDTO);
     }
+
+
+    @GetMapping("/comments")
+    public ResponseEntity<List<CommentDTO>> getComment() {
+        List<CommentDTO> commentDTOS = commentService.findAll();
+        return ResponseEntity.ok(commentDTOS);
+    }
+
+
     @PostMapping("/comment")
-    public ResponseEntity<Comment> createComment(
-            @RequestBody Comment comment,
-            @RequestParam("commentid") String parentId) {
-        return commentService.createComment(Integer.parseInt(parentId),comment);
+    public ResponseEntity<CommentDTO> createComment(
+            @RequestBody CommentDTO comment
+    ) {
+        CommentDTO result = commentService.createComment(comment);
+        return ResponseEntity.ok(result);
     }
+
     @DeleteMapping("/comment/{commentId}")
     public MessageResponse deleteComment(@PathVariable int commentId) {
         return commentService.deleteComment(commentId);

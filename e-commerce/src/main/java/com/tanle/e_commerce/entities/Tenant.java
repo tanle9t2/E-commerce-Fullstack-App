@@ -3,8 +3,10 @@ package com.tanle.e_commerce.entities;
 import com.tanle.e_commerce.dto.TenantDTO;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Entity
@@ -26,7 +28,7 @@ public class Tenant {
     @Column(name = "domain")
     private String domain;
     @Column(name = "create_at")
-    private LocalDateTime createAt;
+    private Date createdAt;
     @OneToMany(mappedBy = "tenant")
     private List<Product> products;
     @OneToOne
@@ -44,12 +46,14 @@ public class Tenant {
     private String phoneNumber;
     @Column(name = "is_active")
     private boolean isActive;
+    @Column(name = "tenant_image")
+    private String tenantImage;
 
     public TenantDTO converDTO() {
         return TenantDTO.builder()
                 .id(this.id)
                 .name(this.name)
-                .creatAt(this.createAt)
+                .createdAt(this.createdAt)
                 .userId(this.myUser.getId())
                 .follower(this.myUser.getFollowers().stream()
                         .filter(f -> f.getUnfollowDate() == null)

@@ -49,6 +49,7 @@ public class SecurityConfig {
             , "/api/v1/user/refreshToken"
             , "/api/v1/payment"
             , "/api/v1/product_list"
+            , "api/v1/tenant/{tenantId}"
             ,"api/v1/product/{productId}"
             ,"api/v1/product/sku/{skuId}"
     };
@@ -78,8 +79,8 @@ public class SecurityConfig {
                                 , "/api/v1/order/status"
                                 , "/api/v1/order/cancelOrder"
                                 , "/api/v1/tenant/register"
-                        ).access(authorizationManager)
-                        .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
+                        ).authenticated()
+//                        .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
                         .requestMatchers("/api/v1/order/status"
                                 , "/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN", "SELLER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/order").hasAnyAuthority("ADMIN", "SELLER")

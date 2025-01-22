@@ -15,6 +15,7 @@ import { useEffect, useReducer, useState } from "react";
 import { useSKU } from "./useSKU";
 import ProductDescription from "./ProductDescription";
 import TenantInfor from "../tenant/TenantInfor";
+import ProductRate from "./ProductRate";
 
 const HeaderProduct= styled.div`
     color: var(--color-blue-700);
@@ -65,16 +66,16 @@ function Product() {
     const [skuState,setSkuState] = useState({});
     useEffect(() => {
         if(!isLoading && product) {
-            const price = product.price[0] ===product.price[1] ?product.price[0] : product.price;
+            const price = product.productData.price[0] ===product.productData.price[1] ?product.productData.price[0] : product.productData.price;
             setSkuState(() => ({
                 "price": price,
-                "stock": product.stock
+                "stock": product.productData.stock
               }));
         }
     },[isLoading,product])
     useEffect(() => {
         if (!isLoading && product) {
-            const isSelected = Object.keys(state).length === Object.keys(product.options).length;
+            const isSelected = Object.keys(state).length === Object.keys(product.productData.options).length;
     
             if (isSelected) {
                 // Sort and prepare the state for comparison
@@ -103,9 +104,8 @@ function Product() {
         }
     }, [state, isLoading, product]);
     if(isLoading) return <Spinner/>
-    const {name, category, description,images,options,totalSell,stock} = product;
-    console.log(description);
-    const activeQuantity =Object.keys(state).length === Object.keys(product.options).length
+    const {name, category, description,images,options,totalSell,stock,tenantId} = product.productData;
+    const activeQuantity =Object.keys(state).length === Object.keys(product.productData.options).length
     function handleOnClickOption(key,id) {
         const isPresent = key in state && state[key] === id
         if(!isPresent) {
@@ -167,8 +167,9 @@ function Product() {
                    </ButtonGroup>
                 </Information>
             </Section>
-            <TenantInfor/>
+            <TenantInfor tenantId = {tenantId}/>
             <ProductDescription description={description} stock={stock} category={category.pathCategory}/>
+            <ProductRate comments={product.commentData}/>
         </>
     )
 }

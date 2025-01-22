@@ -8,6 +8,7 @@ import com.tanle.e_commerce.respone.ApiResponse;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.ProductCreationRequest;
+import com.tanle.e_commerce.service.CommentService;
 import com.tanle.e_commerce.service.OptionService;
 import com.tanle.e_commerce.service.ProductService;
 import com.tanle.e_commerce.service.SKUService;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.json.JsonPatch;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +31,6 @@ import static com.tanle.e_commerce.utils.AppConstant.*;
 @RestController
 @RequestMapping("/api/v1/")
 @CrossOrigin(origins = "http://localhost:5173") // React app URL
-
 public class ProductController {
     @Autowired
     private ProductService productService;
@@ -37,6 +38,8 @@ public class ProductController {
     private SKUService skuService;
     @Autowired
     private OptionService optionService;
+    @Autowired
+    private CommentService commentService;
 
     @RequestMapping(value = "/product_list", method = RequestMethod.GET)
     public ResponseEntity<?> getProducts(
@@ -49,11 +52,16 @@ public class ProductController {
     }
 
     @GetMapping("/product/{productId}")
-    public ResponseEntity<ProductDTO> getProduct(
+    public ResponseEntity<Map<String, Object>> getProduct(
             @PathVariable int productId
             , @RequestParam(value = "optionValue", required = false) String optionValue) {
         ProductDTO product = productService.findById(productId);
-        return new ResponseEntity<>(product, HttpStatus.OK);
+        PageResponse pageResponse = commentService.findByProduct(productId,
+                Integer.parseInt(PAGE_DEFAULT), Integer.parseInt(PAGE_SIZE_COMMENT));
+        Map<String, Object> response = new HashMap<>();
+        response.put("productData", product);
+        response.put("commentData", pageResponse);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/product/tenant/{tenantId}")
@@ -109,11 +117,13 @@ public class ProductController {
         List<SKUDTO> respone = skuService.updateSKU(Integer.parseInt(productId), skudtos);
         return new ResponseEntity<>(respone, HttpStatus.OK);
     }
+
     @GetMapping("/product/sku/{skuId}")
     public ResponseEntity<SKUDTO> getVariation(@PathVariable int skuId) {
-        SKUDTO skudto =skuService.findById(skuId);
+        SKUDTO skudto = skuService.findById(skuId);
         return ResponseEntity.ok(skudto);
     }
+
     @DeleteMapping("/product/options")
     public ResponseEntity<MessageResponse> deleteOption(
             @RequestBody Map<String, Object> mp
@@ -128,6 +138,7 @@ public class ProductController {
                 optionValuesId, Integer.parseInt(productId));
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
+
     @PostMapping("/product")
     public ApiResponse<ProductDTO> createProduct(@RequestBody ProductCreationRequest product) {
         ProductDTO productDTO = productService.save(product);

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/tenant/")
+@CrossOrigin(origins = "http://localhost:5173") // React app URL
 public class TenantController extends BaseUserController {
     @Autowired
     private TenantService tenantService;

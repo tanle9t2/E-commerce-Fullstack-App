@@ -90,7 +90,6 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO findById(Integer id) {
         Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundExeption("Product id: "
                 + id + " not found"));
-
         return productMapper.asInput(product);
     }
 

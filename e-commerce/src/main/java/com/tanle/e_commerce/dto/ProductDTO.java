@@ -49,6 +49,7 @@ public class ProductDTO {
     @Field(type = FieldType.Object)
     private List<SKUDTO> skus;
     private int totalSell;
+    private int tenantId;
     private Map<String, Option> options;
     private List<Image> images;
 

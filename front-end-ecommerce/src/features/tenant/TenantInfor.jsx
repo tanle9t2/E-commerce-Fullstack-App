@@ -1,74 +1,91 @@
 import styled from 'styled-components';
 import Section from '../../ui/Section';
 import Logo from '../../ui/Logo';
+import Avatar from '../../ui/Avatar';
+import Seperator from '../../ui/Seperator';
+import TextWithLabel from '../../ui/TextWithLabel';
+import Button from '../../ui/Button';
+import ButtonGroup from '../../ui/ButtonGroup';
+import useTenant from './useTenant';
+import { calculateDayDifference } from '../../utils/helper';
 
 const ShopInfoContainer = styled.div`
-  display: flex;
+  display: grid;
   align-items: center;
   padding: 1rem;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  background-color:var(--color-grey-0);
+  grid-template-columns:0.45fr 0.05fr 1fr;
 `;
 
 const ShopLogo = styled.div`
   margin-right: 1rem;
+  display:flex;
   /* Add styles for logo here */
 `;
 
 const ShopDetails = styled.div`
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns:0.25fr 0.25fr 0.25fr 0.25fr;
   margin-right: 1rem;
 `;
-
-const DetailItem = styled.div`
-  margin-right: 1rem;
-  margin-bottom: 0.5rem;
+const ShopName = styled.div`
+  display:flex;
+  flex:1;
+  flex-direction:column;
+  justify-content:space-between;
+`
+const ShopLabel = styled.label`
+    
+    flex:0.6;
+     font-weight: 500;
 `;
-
-const ShopActions = styled.div`
-  display: flex;
-`;
-
-const ShopActionButton = styled.button`
-  margin-left: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 3px;
-  background-color: #007bff;
-  color: #fff;
-  cursor: pointer;
-`;
-function TenantInfor() {
+const ShopContent = styled.div`
+    color:var(--primary-color);
+    display:flex;
+    flex: 0.4;
+`
+const ShopDetail =styled.div`
+  display:flex;
+  margin:10px;
+`
+function TenantInfor({tenantId}) {
+    const {tenant, isLoading} = useTenant(tenantId);
+    if(isLoading) return;
+    const {name, tenantImage,totalComment,totalProduct,createdAt,following} = tenant;
     return (
-        <Section columns={1} bgcolor={'#fff'}>
+        <ShopInfoContainer>
           <ShopLogo>
-            <Logo/>
-            <span>OK</span>
+            <Avatar type="tenant" src={tenantImage}/>
+            <ShopName>
+              <span>{name.toUpperCase()}</span>
+              <span>Online 28 phút trước</span>
+              <ButtonGroup>
+                <Button>Chat Ngay</Button>
+                <Button variation ="second">Xem Shop</Button>
+             </ButtonGroup>
+            </ShopName>
           </ShopLogo>
+          <Seperator/>
           <ShopDetails>
-            <DetailItem>
-              <span>Tham Gia</span>
-              <span>feedbackTime</span>
-            </DetailItem>
-            <DetailItem>
-              <span>Sản Phẩm</span>
-              <span>product</span>
-            </DetailItem>
-            <DetailItem>
-              <span>Thời Gian Phản Hồi</span>
-              <span>feedbackTime</span>
-            </DetailItem>
-            <DetailItem>
-              <span>Người Theo Dõi</span>
-              <span>followers</span>
-            </DetailItem>
+            <ShopDetail>
+              <ShopLabel>Đánh giá</ShopLabel>
+              <ShopContent>{totalComment}</ShopContent>
+            </ShopDetail>
+            <ShopDetail>
+              <ShopLabel>Tham gia</ShopLabel>
+              <ShopContent>{calculateDayDifference(createdAt)}</ShopContent>
+            </ShopDetail>
+            <ShopDetail>
+              <ShopLabel>Sản phẩm</ShopLabel>
+              <ShopContent>{totalProduct}</ShopContent>
+            </ShopDetail>
+            <ShopDetail>
+              <ShopLabel>Người theo dõi</ShopLabel>
+              <ShopContent>{following}</ShopContent>
+            </ShopDetail>
           </ShopDetails>
-          <ShopActions>
-            <ShopActionButton>Chat Ngay</ShopActionButton>
-            <ShopActionButton>Xem Shop</ShopActionButton>
-          </ShopActions>
-        </Section>
+        
+        </ShopInfoContainer>
       );
 }
 

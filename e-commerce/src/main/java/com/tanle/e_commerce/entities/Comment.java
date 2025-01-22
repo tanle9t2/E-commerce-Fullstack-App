@@ -5,6 +5,7 @@ import com.tanle.e_commerce.dto.CommentDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Data
 public class Comment {
     @Id
     @Column(name = "comment_id")
@@ -22,79 +24,14 @@ public class Comment {
     @Column(name = "content")
     private String content;
     @Column(name = "create_at")
-    private LocalDateTime createAt;
-    @Column(name = "lft")
-    private int left;
-    @Column(name = "rgt")
-    private int right;
+    private LocalDateTime createdAt;
     @Column(name = "rating")
     private int rating;
-
+    @JoinColumn(name = "user_id")
     @ManyToOne
-    @JoinColumn(name = "product_id")
-    private Product product;
+    private MyUser user;
+    @ManyToOne
+    @JoinColumn(name = "sku_id")
+    private SKU sku;
 
-    public CommentDTO converDTO() {
-        return CommentDTO.builder()
-                .id(this.id)
-                .cotent(this.content)
-                .createAt(this.createAt)
-                .productId(this.product.getId())
-                .build();
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public void setContent(String content) {
-        this.content = content;
-    }
-
-    public LocalDateTime getCreateAt() {
-        return createAt;
-    }
-
-    public void setCreateAt(LocalDateTime createAt) {
-        this.createAt = createAt;
-    }
-
-    public int getLeft() {
-        return left;
-    }
-    public void setLeft(int left) {
-        this.left = left;
-    }
-
-    public int getRight() {
-        return right;
-    }
-
-    public void setRight(int right) {
-        this.right = right;
-    }
-
-    public int getRating() {
-        return rating;
-    }
-
-    public void setRating(int rating) {
-        this.rating = rating;
-    }
-
-    public Product getProduct() {
-        return product;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
-    }
 }

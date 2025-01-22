@@ -8,9 +8,10 @@ public class AppConstant {
 
     public static final String PAGE_SIZE = "20";
     public static final String PAGE_DEFAULT = "0";
+    public static final String PAGE_SIZE_COMMENT = "5";
     public static final String DIRECTION_SORT_DEFAULT = "ASC";
     public static final String SORT_BY_FIELD = "id";
-    public static final String ROOT_ELEMENT ="1";
+    public static final String ROOT_ELEMENT = "1";
 
 
 }

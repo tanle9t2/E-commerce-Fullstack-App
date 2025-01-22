@@ -51,20 +51,21 @@ public class MyUser implements UserDetails {
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "myUser", fetch = FetchType.EAGER,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "myUser", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<UserHasRole> roles;
     @OneToMany(mappedBy = "myUser")
     private List<Token> tokens;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
-    private List<Address>addresses;
+    private List<Address> addresses;
 
     @OneToMany(mappedBy = "follower", cascade = CascadeType.ALL)
     private List<Follower> following;
 
-    @OneToMany(mappedBy = "following",cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "following", cascade = CascadeType.ALL)
     private List<Follower> followers;
+
     public UserDTO convertDTO() {
         return UserDTO.builder()
                 .userId(this.id)
@@ -85,6 +86,7 @@ public class MyUser implements UserDetails {
 //                .addresses(this.addresses)
                 .build();
     }
+
     @Override
     public String toString() {
         return "User{" +
@@ -108,12 +110,14 @@ public class MyUser implements UserDetails {
                 .map(UserHasRole::getRole)
                 .map(Role::getRoleName)
                 .map(r -> new SimpleGrantedAuthority(r))
-                .collect(Collectors.toList());;
+                .collect(Collectors.toList());
+        ;
         return simpleGrantedAuthorityList;
     }
+
     public boolean addUserRole(Role role) {
-        if(roles == null) roles =new ArrayList<>();
-        UserRoleKey key = new UserRoleKey(this.getId(),role.getId(),LocalDateTime.now());
+        if (roles == null) roles = new ArrayList<>();
+        UserRoleKey key = new UserRoleKey(this.getId(), role.getId(), LocalDateTime.now());
         UserHasRole userHasRole = new UserHasRole();
         userHasRole.setRole(role);
         userHasRole.setMyUser(this);
@@ -121,8 +125,9 @@ public class MyUser implements UserDetails {
 
         return roles.add(userHasRole);
     }
+
     public boolean followUser(MyUser following) {
-        if(this.following == null) this.following = new ArrayList<>();
+        if (this.following == null) this.following = new ArrayList<>();
         LocalDateTime followDate = LocalDateTime.now();
         FollowerKey followerKey = new FollowerKey(this.id, following.getId(), followDate);
         Follower follow = Follower.builder()
@@ -132,25 +137,33 @@ public class MyUser implements UserDetails {
                 .build();
         return this.following.add(follow);
     }
+
     public void unfollowUser(Follower follower) {
         LocalDateTime unfollowDate = LocalDateTime.now();
         follower.setUnfollowDate(unfollowDate);
     }
+
     public int countFollowing() {
         return (int) following.stream()
                 .filter(f -> f.getUnfollowDate() == null)
                 .count();
     }
+
     public int countFollower() {
         return (int) followers.stream()
                 .filter(f -> f.getUnfollowDate() == null)
                 .count();
     }
 
+    public String getFullName() {
+        return firstName + " " + lastName;
+    }
+
     public boolean addAddress(Address address) {
-        if(addresses == null) addresses = new ArrayList<>();
+        if (addresses == null) addresses = new ArrayList<>();
         return addresses.add(address);
     }
+
     public void updateLastAcess() {
         this.setLastAccess(LocalDateTime.now());
     }

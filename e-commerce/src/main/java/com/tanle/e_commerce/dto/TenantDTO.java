@@ -1,8 +1,10 @@
 package com.tanle.e_commerce.dto;
 
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @NoArgsConstructor
@@ -13,7 +15,7 @@ import java.util.List;
 public class TenantDTO {
     private int id;
     private String name;
-    private LocalDateTime creatAt;
+    private Date createdAt;
     private Integer pickupAddressId;
     private Integer returnAddressId;
     private String phoneNumber;
@@ -24,4 +26,6 @@ public class TenantDTO {
     private long follower;
     private long following;
     private double avgRating;
+    private String tenantImage;
+    private Long totalComment;
 }
