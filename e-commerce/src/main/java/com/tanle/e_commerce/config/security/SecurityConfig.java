@@ -52,6 +52,8 @@ public class SecurityConfig {
             , "api/v1/tenant/{tenantId}"
             ,"api/v1/product/{productId}"
             ,"api/v1/product/sku/{skuId}"
+            ,"api/v1/comment/product/{productId}"
+            ,"api/v1/cart"
     };
 
     @Bean

@@ -42,9 +42,6 @@ public class CartItem {
                 .createAt(this.createAt)
                 .stock(this.sku.getStock())
                 .sellPrice(this.sku.getPrice())
-                .skus(sku.getProduct().getSkus().stream()
-                        .map(SKU::converDTO)
-                        .collect(Collectors.toList()))
                 .product(sku.getProduct().converDTO())
                 .build();
     }

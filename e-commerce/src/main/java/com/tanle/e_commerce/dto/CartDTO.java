@@ -15,7 +15,6 @@ import java.util.stream.Collectors;
 public class CartDTO {
     private int id;
     private List<GroupCartItemDTO> shopOrders;
-    private UserDTO user;
 
     public GroupCartItemDTO createGroupCartItemDTO(TenantDTO tenant, List<CartItemDTO> itemDTOS) {
         return new GroupCartItemDTO(tenant,itemDTOS);
@@ -31,7 +30,7 @@ public class CartDTO {
             this.tenant = tenant;
             this.items = items;
         }
-        public CartDTO builder(int id, MyUser myUser, List<CartItem> cartItem) {
+        public CartDTO builder(int id, List<CartItem> cartItem) {
             List<GroupCartItemDTO> groupCartItemDTOS = new ArrayList<>();
             var object = cartItem.stream()
                     .collect(Collectors.groupingBy(item -> item.getSku().getProduct().getTenant()));
@@ -41,7 +40,7 @@ public class CartDTO {
                                 .collect(Collectors.toList());
                 groupCartItemDTOS.add(new GroupCartItemDTO(x.getKey().converDTO(),cartItemDTOS));
             }
-            return new CartDTO(id,groupCartItemDTOS, myUser.convertDTO());
+            return new CartDTO(id,groupCartItemDTOS);
         };
     }
 

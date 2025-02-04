@@ -3,7 +3,6 @@ import Header from "./Header";
 import { Outlet } from "react-router-dom";
 
 const StyledAppLayout = styled.div`
-
   height: 100vh;
 `;
 const Main = styled.main`

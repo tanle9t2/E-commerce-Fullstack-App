@@ -52,16 +52,11 @@ public class ProductController {
     }
 
     @GetMapping("/product/{productId}")
-    public ResponseEntity<Map<String, Object>> getProduct(
+    public ResponseEntity<ProductDTO> getProduct(
             @PathVariable int productId
             , @RequestParam(value = "optionValue", required = false) String optionValue) {
         ProductDTO product = productService.findById(productId);
-        PageResponse pageResponse = commentService.findByProduct(productId,
-                Integer.parseInt(PAGE_DEFAULT), Integer.parseInt(PAGE_SIZE_COMMENT));
-        Map<String, Object> response = new HashMap<>();
-        response.put("productData", product);
-        response.put("commentData", pageResponse);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(product);
     }
 
     @GetMapping("/product/tenant/{tenantId}")

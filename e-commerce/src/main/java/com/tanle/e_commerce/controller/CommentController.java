@@ -15,6 +15,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
+@CrossOrigin(origins = "http://localhost:5173") // React app URL
 public class CommentController {
     @Autowired
     private CommentService commentService;
@@ -30,7 +31,7 @@ public class CommentController {
             @PathVariable Integer productId
             , @RequestParam(value = "page", defaultValue = PAGE_DEFAULT) String page
             , @RequestParam(value = "size", defaultValue = PAGE_SIZE_COMMENT) String size) {
-        PageResponse commentDTO = commentService.findByProduct(productId, Integer.parseInt(page), Integer.parseInt(size));
+        PageResponse commentDTO = commentService.findByProduct(productId, Integer.parseInt(page)-1, Integer.parseInt(size));
         return ResponseEntity.ok(commentDTO);
     }
 

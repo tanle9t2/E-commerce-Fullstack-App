@@ -66,16 +66,16 @@ function Product() {
     const [skuState,setSkuState] = useState({});
     useEffect(() => {
         if(!isLoading && product) {
-            const price = product.productData.price[0] ===product.productData.price[1] ?product.productData.price[0] : product.productData.price;
+            const price = product.price[0] ===product.price[1] ?product.price[0] : product.price;
             setSkuState(() => ({
                 "price": price,
-                "stock": product.productData.stock
+                "stock": product.stock
               }));
         }
     },[isLoading,product])
     useEffect(() => {
         if (!isLoading && product) {
-            const isSelected = Object.keys(state).length === Object.keys(product.productData.options).length;
+            const isSelected = Object.keys(state).length === Object.keys(product.options).length;
     
             if (isSelected) {
                 // Sort and prepare the state for comparison
@@ -104,8 +104,8 @@ function Product() {
         }
     }, [state, isLoading, product]);
     if(isLoading) return <Spinner/>
-    const {name, category, description,images,options,totalSell,stock,tenantId} = product.productData;
-    const activeQuantity =Object.keys(state).length === Object.keys(product.productData.options).length
+    const {name, category, description,images,options,totalSell,stock,tenantId} = product;
+    const activeQuantity =Object.keys(state).length === Object.keys(product.options).length
     function handleOnClickOption(key,id) {
         const isPresent = key in state && state[key] === id
         if(!isPresent) {
@@ -169,7 +169,7 @@ function Product() {
             </Section>
             <TenantInfor tenantId = {tenantId}/>
             <ProductDescription description={description} stock={stock} category={category.pathCategory}/>
-            <ProductRate comments={product.commentData}/>
+            <ProductRate/>
         </>
     )
 }

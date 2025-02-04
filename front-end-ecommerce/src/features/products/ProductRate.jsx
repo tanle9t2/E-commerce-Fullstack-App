@@ -4,7 +4,9 @@ import StartRaing from "../../ui/StartRaing"
 import ButtonGroup from "../../ui/ButtonGroup"
 import Button from "../../ui/Button"
 import Comment from "../../ui/Comment"
-import Pagination from '@mui/material/Pagination';
+import Pagination from "../../ui/Pagination"
+import { useSearchParams } from "react-router-dom"
+import { useComments } from "./useComment"
 
 const OverviewRate = styled.div`
     display:flex;
@@ -28,13 +30,10 @@ const GroupSelection = styled.div`
 const AreaComment = styled.ul`
     
 `
-const PaginationWrapper = styled.div`
-    display: flex;
-    justify-content: center;
-    font-size:2rem;
-`
-function ProductRate({comments}) {
-    const {data,page,count} = comments;
+
+function ProductRate() {
+    const {isLoading,comments: c,count} = useComments();
+    if(isLoading) return;
     return (
         <Section padding columns ={1} bgcolor={'#fff'}>
             <OverviewRate>
@@ -52,17 +51,9 @@ function ProductRate({comments}) {
                 </GroupSelection>
             </OverviewRate>
             <AreaComment>
-               {data.map(cm => <Comment key={cm.id} comment={cm}/>)}
+               {c.map(cm => <Comment key={cm.id} comment={cm}/>)}
             </AreaComment>
-           <PaginationWrapper>
-                <Pagination  sx={{
-                        "& .Mui-selected": {
-                        backgroundColor:"red", // Dynamic colors
-                        color: "white",
-                        },
-                    }}
-                    size="large" count={10} shape="rounded"/>
-                 </PaginationWrapper>
+          <Pagination totalResult={count}/>
 
         </Section>
     )

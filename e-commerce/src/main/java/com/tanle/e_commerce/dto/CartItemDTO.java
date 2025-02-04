@@ -24,6 +24,5 @@ public class CartItemDTO {
     private int stock;
     private double sellPrice;
     private LocalDateTime createAt;
-    private List<SKUDTO> skus;
     private ProductDTO product;
 }

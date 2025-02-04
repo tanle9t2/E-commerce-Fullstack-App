@@ -30,7 +30,7 @@ public class Cart {
     public CartDTO converDTO() {
         CartDTO cartDTO = new CartDTO();
         CartDTO.GroupCartItemDTO groupCartItemDTO = cartDTO.new GroupCartItemDTO();
-        return groupCartItemDTO.builder(this.id, myUser,cartItems);
+        return groupCartItemDTO.builder(this.id,cartItems);
     }
     public boolean addCartItem(CartItem cartItem) {
         CartItemKey cartItemKey = new CartItemKey(this.getId(),cartItem.getSku().getId());
