@@ -10,6 +10,7 @@ import Button from '../../ui/Button'
 import { useCartContext } from '../../context/CartContext';
 import { formatCurrencyVND } from '../../utils/helper';
 import Highlight from '../../ui/Highlight';
+import EmptyCart from './EmptyCart';
 const Container = styled.div`
     padding: var(--padding-container);
   font-family: Arial, sans-serif;
@@ -67,10 +68,11 @@ const ShopeeCart = () => {
   function handleOnChange(e) {
     if(e.target.checked) {
       const newItems = cart.shopOrders.flatMap(shop =>
-        shop.items.map(({ skuId, quantity, sellPrice }) => ({
+        shop.items.map(({ skuId, quantity, sellPrice,image }) => ({
           skuId,
           quantity,
-          sellPrice
+          sellPrice,
+          image
         }))
       );
     handleAddCartItemTick(newItems);
@@ -98,7 +100,11 @@ const ShopeeCart = () => {
         </div>
       </Header>
     <Container>
-    <Table columns="3.5fr 1fr 1fr 0.5fr 1fr">
+      {
+        cart.shopOrders.length 
+        ? 
+        <>
+          <Table columns="3.5fr 1fr 1fr 0.5fr 1fr">
           <Table.Header>
               <Title> <input checked= {isCheckedAll} onChange={(e) => handleOnChange(e)} type="checkbox" className="mr-4" /> Sản Phẩm</Title>
               <Title>Đơn Giá</Title>
@@ -112,17 +118,19 @@ const ShopeeCart = () => {
           render={(cartItem) => (
             <CartRow key={cartItem.id} cartItem={cartItem} />
           )}
-        />
-        <Table.Footer>
-          <StickyPayment>
-          <Title2> <input checked= {isCheckedAll} onChange={(e) => handleOnChange(e)} type="checkbox" className="mr-4" /> Chọn tất cả ({totalItems})</Title2>
-          <Title2> Xóa</Title2>
-          <Title2>Tổng thanh toán ({cartItemTick.length} Sản phẩm): <Highlight> {formatCurrencyVND(totalPrice)}</Highlight></Title2>
-            <Button size ="large">Thanh toán</Button>
-          </StickyPayment>
-        </Table.Footer>
-        </Table>
-        
+          />
+          <Table.Footer>
+            <StickyPayment>
+            <Title2> <input checked= {isCheckedAll} onChange={(e) => handleOnChange(e)} type="checkbox" className="mr-4" /> Chọn tất cả ({totalItems})</Title2>
+            <Title2> Xóa</Title2>
+            <Title2>Tổng thanh toán ({cartItemTick.length} Sản phẩm): <Highlight> {formatCurrencyVND(totalPrice)}</Highlight></Title2>
+              <Button size ="large">Thanh toán</Button>
+            </StickyPayment>
+          </Table.Footer>
+          </Table>
+        </>
+        : <EmptyCart/>
+      }
      </Container>
     </>
   );

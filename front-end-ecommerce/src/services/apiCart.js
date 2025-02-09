@@ -8,14 +8,15 @@ export async function getCart(cartId) {
     const data  = await res.json();
     return data;
 }
-export async function addCartItem(cartItem) {
-    const res = await fetch(`${CART_API}`, {
+export async function addCartItem({cartId,skuId,quantity}) {
+    const res = await fetch(`${CART_API}?cartId=${cartId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(cartItem),
+        body: JSON.stringify({skuId,quantity}),
       });
+      if (!res.ok) throw Error("Failed adding cart item");
       const result = await res.json();
       return result;
 }

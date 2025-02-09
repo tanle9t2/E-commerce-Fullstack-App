@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const Img = styled.img`
@@ -6,14 +7,16 @@ const Img = styled.img`
 `;
 const StyledLogo = styled.div`
   text-align: center;
+  cursor: pointer;
 `;
 function Logo({opacity=true}) {
-
     const imageUrl =  opacity
     ? "https://storage.googleapis.com/ops-shopee-files-live/live/affiliate-blog/2019/05/logo-full-white.png" 
     : "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/2560px-Shopee.svg.png"
+
+    const navigate = useNavigate();
     return (
-        <StyledLogo>
+        <StyledLogo onClick={() => navigate("/")}>
             <Img src={imageUrl}/>
         </StyledLogo>
     )

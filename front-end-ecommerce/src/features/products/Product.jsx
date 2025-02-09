@@ -3,7 +3,6 @@ import { useProduct } from "./useProduct"
 import Spinner from "../../ui/Spinner"
 import Section from "../../ui/Section";
 import SlideImage from "../../ui/SlideImage";
-import { CiStar } from "react-icons/ci";
 import Separator from "../../ui/Seperator";
 import StartRaing from "../../ui/StartRaing";
 import { formatCurrencyVND } from "../../utils/helper";
@@ -11,12 +10,12 @@ import TextWithLabel from "../../ui/TextWithLabel";
 import Button from "../../ui/Button";
 import ButtonGroup from "../../ui/ButtonGroup";
 import NumericInput from "../../ui/NumericInput";
-import { useEffect, useReducer, useState } from "react";
-import { useSKU } from "./useSKU";
+import { useEffect, useReducer, useRef, useState } from "react";
 import ProductDescription from "./ProductDescription";
 import TenantInfor from "../tenant/TenantInfor";
 import ProductRate from "./ProductRate";
-
+import {useAddCartItem} from "../cart/useAddCartItem"
+import ErrorText from "../../ui/ErrorText";
 const HeaderProduct= styled.div`
     color: var(--color-blue-700);
 `
@@ -41,6 +40,11 @@ const Price = styled.div`
     background-color:var(--color-grey-50);
     padding:20px;
 `
+const Background = styled.div`
+    margin:20px 0;
+    padding:20px;
+    background-color: ${(props) => props.error !==0 ? `#fff5f5!important` :`none`};
+`
 const initOptionsState ={
 
 }
@@ -64,6 +68,9 @@ function Product() {
     const {isLoading, product} = useProduct()
     const [state, dispatch] = useReducer(reducer, initOptionsState);
     const [skuState,setSkuState] = useState({});
+    const {isLoading: isLoadingAddCartItem, addCartItem} = useAddCartItem();
+    const [quantity, setQuantity] = useState(1); // Initial value is 1
+    const [error,setError] = useState(false);
     useEffect(() => {
         if(!isLoading && product) {
             const price = product.price[0] ===product.price[1] ?product.price[0] : product.price;
@@ -73,6 +80,16 @@ function Product() {
               }));
         }
     },[isLoading,product])
+    // const isFirstRender = useRef(true);
+    // useEffect(() => {
+    //     if(!isLoading && product){
+    //         if (isFirstRender.current) {
+    //             isFirstRender.current = false; // Mark first render as done
+    //             return;
+    //         }
+    //         setError(Object.keys(state).length !== Object.keys(product.options).length);
+    //     }
+    // }, [state, product,isLoading]);
     useEffect(() => {
         if (!isLoading && product) {
             const isSelected = Object.keys(state).length === Object.keys(product.options).length;
@@ -96,6 +113,7 @@ function Product() {
     
                 if (matchingSku) {
                     setSkuState({
+                        skuId: matchingSku.skuId,
                         price: matchingSku.skuPrice,
                         stock: matchingSku.skuStock
                     });
@@ -118,6 +136,14 @@ function Product() {
                 key
             }})
         }
+    }
+    function handleOnClickAddCartItem() {
+        if(activeQuantity) {
+            addCartItem({cartId:1,skuId:skuState.skuId, quantity:quantity})
+            setError(false)
+            return;
+        }
+        setError(true)
     }
     return (
         <>
@@ -147,22 +173,37 @@ function Product() {
                     <Price>
                         {!Array.isArray(skuState.price) ? formatCurrencyVND(skuState.price) : skuState.price?.map(p => formatCurrencyVND(p)).join(" ~ ")}
                     </Price>
-                   {
-                     Object.entries(options).map(([key, value]) => (
-                        <TextWithLabel key={key} label={key}>
-                           {value.optionValues.map((op,index) => 
-                             <Button active ={state[value.id] === index ? index+1 : 0} onClick={() =>handleOnClickOption(value.id,index)}  variation ="select" size ="medium" key={op.id}>
-                            {op.name}
-                        </Button>
-                           )} 
+                    <Background error = {error ? 1 : 0}>
+                        {options && Object.entries(options).map(([key, value]) => (
+                                <TextWithLabel key={key} label={key}>
+                                    {value.optionValues?.map((op, index) => (
+                                        <Button 
+                                            key={op.id} 
+                                            active={state?.[value.id] === index ? index + 1 : 0} 
+                                            onClick={() => handleOnClickOption(value.id, index)}  
+                                            variation="select" 
+                                            size="medium"
+                                        >
+                                            {op.name}
+                                        </Button>
+                                    ))} 
+                                </TextWithLabel>
+                            ))}
+
+                        <TextWithLabel label="Số lượng">
+                            <NumericInput 
+                                value={quantity} 
+                                setValue={setQuantity} 
+                                maxValue={skuState?.stock ?? 0} 
+                                active={!activeQuantity}
+                            >
+                                {`${skuState?.stock ?? 0} sản phẩm có sẵn`}
+                            </NumericInput>
                         </TextWithLabel>
-                      ))
-                   }
-                   <TextWithLabel label="Số lượng">
-                        <NumericInput maxValue={skuState.stock} active ={!activeQuantity}>{`${skuState.stock} sản phẩm có sẵn`}</NumericInput>
-                   </TextWithLabel>
+                       {error &&  <ErrorText>Vui lòng chọn phân loại hàng</ErrorText>}
+                     </Background>   
                    <ButtonGroup>
-                        <Button variation ="select">Thêm vào giỏ hàng</Button>
+                        <Button onClick={() => handleOnClickAddCartItem()} variation ="select">Thêm vào giỏ hàng</Button>
                         <Button>Mua ngay</Button>
                    </ButtonGroup>
                 </Information>

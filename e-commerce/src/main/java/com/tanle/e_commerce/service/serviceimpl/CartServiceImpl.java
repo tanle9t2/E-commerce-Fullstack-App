@@ -96,8 +96,8 @@ public class CartServiceImpl implements CartService {
             Optional<CartItem> cartItemOptional = cart.getCartItems().stream()
                     .filter(c -> c.getSku().getId() == sku.getId())
                     .findFirst();
-            if (!cartItemOptional.isEmpty())
-                throw new ResourceNotFoundExeption("Product have already exist");
+//            if (!cartItemOptional.isEmpty())
+//                throw new ResourceNotFoundExeption("Product have already exist");
             CartItem cartItemDB = cartItemOptional.orElse(new CartItem());
             cartItemDB.setSku(sku);
             cartItemDB.setQuantity(cartItem.get("quantity") + cartItemDB.getQuantity());

@@ -4,12 +4,15 @@ import toast from "react-hot-toast";
 export function useAddCartItem() {
     const queryClient = useQueryClient();
     const {isLoading,mutate:addCartItem} = useMutation({
-        mutationFn:addCartItemAPI,
+        mutationFn:({cartId, skuId, quantity}) => addCartItemAPI({cartId,skuId,quantity}),
         onSuccess:() => {
             queryClient.invalidateQueries({
                 queryKey:["cart",1]
             })
             toast.success("Item successfull add")
+        },
+        onError: (error) => {
+            toast.error(error.message);
         }
     })
     return {isLoading,addCartItem}

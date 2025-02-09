@@ -1,7 +1,9 @@
 import styled from "styled-components";
 import Input from "./Input"
 import Logo from "./Logo"
+import CartNav from '../features/cart/CartNav'
 import { HiOutlineSearch, HiOutlineShoppingCart } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
 
 const SearchBar =styled.div`
     width:100%;
@@ -28,9 +30,7 @@ function NavSearch() {
                 <HiOutlineSearch />
             </StyledFindIcon>
         </SearchBar>
-        <div className="text-2xl ml-11">
-            <HiOutlineShoppingCart fontSize={24} />
-        </div>
+        <CartNav/>
        </div>
     )
 }
