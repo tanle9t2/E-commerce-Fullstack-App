@@ -14,13 +14,16 @@ function CartContextProvider({ children }) {
       );
     setCartItemTick(cartItemTick => [...cartItemTick,...nonExist]);
   }
+  function handleUpdateQuantity(skuId,quantity) {
+    setCartItemTick(cartItemTick => cartItemTick.map(item => item.skuId ===skuId ? {...item,quantity} : item))
+  }
   function handleRemoveCartItemTick(removeItem) {
     console.log(removeItem)
     setCartItemTick(cartItemTick => cartItemTick.filter(item => !removeItem.includes(item.skuId)))
   }
 
   return (
-    <CartContext.Provider value={{ cartItemTick, handleAddCartItemTick, handleRemoveCartItemTick}}>
+    <CartContext.Provider value={{ cartItemTick, handleUpdateQuantity,handleAddCartItemTick, handleRemoveCartItemTick}}>
       {children}
     </CartContext.Provider>
   );

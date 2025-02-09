@@ -43,7 +43,8 @@ const StyledBody = styled.section`
 `;
 
 const Footer = styled.footer`
-   background-color:var(--color-white);
+  font-size:1.6rem;
+  background-color:var(--color-white);
   display: flex;
   justify-content: center;
   padding: 1.2rem 2.4rem;

@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class CartServiceImpl implements CartService {
@@ -123,28 +124,12 @@ public class CartServiceImpl implements CartService {
         Cart cart = cartRepository.findById(cartItem.get("cartId"))
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
         CartItem cartItemDB = cart.getCartItems().stream()
-                .filter(c -> c.getSku().getId() == cartItem.get("oldSkuId"))
+                .filter(c -> c.getSku().getId() == cartItem.get("skuId"))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart item"));
 
         if (cartItem.get("quantity") != null) {
             cartItemDB.setQuantity(cartItem.get("quantity"));
-        }
-        if (cartItem.get("skuId") != null) {
-            SKU sku = skuRepository.findById(cartItem.get("skuId"))
-                    .orElseThrow(() -> new ResourceNotFoundExeption("Not found sku"));
-
-            //new cart item
-            CartItem newCartItem = new CartItem();
-            newCartItem.setSku(sku);
-            newCartItem.setCreateAt(LocalDateTime.now());
-            newCartItem.setQuantity(cartItemDB.getQuantity());
-
-            cart.addCartItem(newCartItem);
-
-            //remove old cart item
-            cartItemRepository.delete(cartItemDB);
-            cart.deleteCartItem(cartItemDB);
         }
         cartRepository.save(cart);
         Map<String, Object> mp = new HashMap<>();
@@ -159,24 +144,23 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public MessageResponse deleteCartItem(Integer cartId, Integer skuId) {
+    public MessageResponse deleteCartItem(Integer cartId, List<Integer> skuId) {
         Cart cart = cartRepository.findById(cartId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
-        CartItem cartItem = cart.getCartItems().stream()
-                .filter(c -> c.getSku().getId() == skuId)
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart item"));
-        if (!cart.deleteCartItem(cartItem)) {
-            throw new ResourceDeleteException("Something wrong!!!!");
-        }
-        cartItemRepository.delete(cartItem);
+        List<CartItem> cartItems = cart.getCartItems().stream()
+                .filter(c ->skuId.contains(c.getSku().getId()))
+                .collect(Collectors.toList());
+        cartItems.forEach(cartItem -> {
+            if (!cart.deleteCartItem(cartItem)) {
+                throw new ResourceDeleteException("Something wrong!!!!");
+            }
+        });
+        cartItemRepository.deleteAll(cartItems);
         return MessageResponse.builder()
                 .status(HttpStatus.OK)
                 .message("Successfully delete cart item")
-                .data(cartItem.converDTO())
                 .build();
     }
-
     @Override
     public boolean userOwnEntity(Integer integer, String username) {
         Cart cart = cartRepository.findById(integer)

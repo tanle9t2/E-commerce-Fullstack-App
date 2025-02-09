@@ -72,23 +72,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
+                .cors(c -> c.disable())
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(URL_PERMIT_ALL).permitAll()
-                        .requestMatchers(URL_ADMIN).hasAuthority("ADMIN")
-                        .requestMatchers("/api/v1/user/{userId}"
-                                , "/api/v1/tenant/**"
-                                , "/api/v1/cart/**"
-                                , "/api/v1/order/status"
-                                , "/api/v1/order/cancelOrder"
-                                , "/api/v1/tenant/register"
-                        ).authenticated()
-//                        .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
-                        .requestMatchers("/api/v1/order/status"
-                                , "/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN", "SELLER")
-                        .requestMatchers(HttpMethod.GET, "/api/v1/order").hasAnyAuthority("ADMIN", "SELLER")
-                        .requestMatchers("/api/v1/user/registerToken/**"
-                                , "/api/v1/user/registerToken").hasAuthority("ADMIN")
-                        .anyRequest().authenticated()
+//                        .requestMatchers(URL_ADMIN).hasAuthority("ADMIN")
+//                        .requestMatchers("/api/v1/user/{userId}"
+//                                , "/api/v1/tenant/**"
+//                                , "/api/v1/cart/**"
+//                                , "/api/v1/order/status"
+//                                , "/api/v1/order/cancelOrder"
+//                                , "/api/v1/tenant/register"
+//                        ).authenticated()
+////                        .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
+//                        .requestMatchers("/api/v1/order/status"
+//                                , "/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN", "SELLER")
+//                        .requestMatchers(HttpMethod.GET, "/api/v1/order").hasAnyAuthority("ADMIN", "SELLER")
+//                        .requestMatchers("/api/v1/user/registerToken/**"
+//                                , "/api/v1/user/registerToken").hasAuthority("ADMIN")
+                        .anyRequest().permitAll()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .exceptionHandling(e -> e.accessDeniedHandler(accessDeniedException))

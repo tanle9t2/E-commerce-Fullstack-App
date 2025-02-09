@@ -6,6 +6,7 @@ import com.tanle.e_commerce.entities.CompositeKey.CartItemKey;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.authorization.OwnerService;
 
+import java.util.List;
 import java.util.Map;
 
 public interface CartService extends OwnerService<Cart,Integer> {
@@ -21,5 +22,5 @@ public interface CartService extends OwnerService<Cart,Integer> {
     MessageResponse addCartItem(Integer cartId, Map<String, Integer> cartItem);
     MessageResponse updateCartItem(Map<String,Integer> cartItem);
 
-    MessageResponse deleteCartItem(Integer cartId, Integer skuId);
+    MessageResponse deleteCartItem(Integer cartId, List<Integer> skuId);
 }

@@ -65,7 +65,6 @@ function CartRow({cartItem}) {
             setCountCheck(0)
         }
     }
-    // console.log(cnt,countCheck)
     return (
        <StyledCart>
          <Table.Row>

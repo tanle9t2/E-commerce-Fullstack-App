@@ -41,6 +41,7 @@ public abstract class CartMapperDecorator implements CartMapper {
                     , cartItemDTOS);
             groupCartItemDTOS.add(groupCartItemDTO);
         }
+        groupCartItemDTOS.sort(Comparator.comparing((c) -> c.getTenant().getName()));
         cartDTO.setShopOrders(groupCartItemDTOS);
         return cartDTO;
     }

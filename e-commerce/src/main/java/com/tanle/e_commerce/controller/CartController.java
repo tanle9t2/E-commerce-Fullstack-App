@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -52,11 +53,13 @@ public class CartController {
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 
+    @CrossOrigin(origins = "http://localhost:5173") // React app URL
     @DeleteMapping("/cart/cartItem")
     public ResponseEntity<MessageResponse> deleteCartItem(
-            @RequestBody Map<String, Integer> cartItem
+            @RequestParam(value = "cartId") String cartId,
+            @RequestBody Map<String, List<Integer>> cartItems
     ) {
-        MessageResponse messageResponse = cartService.deleteCartItem(cartItem.get("cartId"), cartItem.get("skuId"));
+        MessageResponse messageResponse = cartService.deleteCartItem(Integer.parseInt(cartId), cartItems.get("cartItems"));
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 }

@@ -4,6 +4,9 @@ import Table from "../../ui/Table";
 import { formatCurrencyVND } from "../../utils/helper";
 import { useState } from "react";
 import { useCartContext } from "../../context/CartContext";
+import { useUpdateCart } from "./useUpdateCart";
+import useDeleteCartItem from "./useDeleteCartItem";
+import Highlight from "../../ui/Highlight";
 
 const ProductRow = styled.div`
   display: flex;
@@ -56,10 +59,15 @@ const QuantityButton = styled.button`
   padding: 0.5rem;
   cursor: pointer;
 `;
-
+const DeleteButton = styled(Highlight)`
+    cursor: pointer;
+    text-decoration:underline;
+`;
 
 function CartItem({isChecked,skuId,image,nameProduct,quantity,modelName, sellPrice,setCountCheck}) {
-    const {handleAddCartItemTick, handleRemoveCartItemTick} = useCartContext();
+    const {handleAddCartItemTick, handleUpdateQuantity,handleRemoveCartItemTick} = useCartContext();
+    const {updateCartItem} = useUpdateCart()
+    const {deleteCartItem} = useDeleteCartItem();
     function handleOnChange(e) {
         if(e.target.checked) {
             setCountCheck(cnt => cnt++);
@@ -75,6 +83,22 @@ function CartItem({isChecked,skuId,image,nameProduct,quantity,modelName, sellPri
             setCountCheck(cnt => cnt--);
         }
     }
+    function handleOnClicIncrease() {
+      quantity++;
+      handleUpdateQuantity(skuId,quantity)
+      updateCartItem({skuId,quantity,cartId:1});
+    }
+    function handleOnClickDecrease() {
+      quantity--;
+      handleUpdateQuantity(skuId,quantity)
+      updateCartItem({skuId,quantity,cartId:1});
+    }
+    function handleOnClickRemove() {
+      handleRemoveCartItemTick([skuId])
+      setCountCheck(cnt => cnt--);
+      deleteCartItem({cartId:1,cartItems:[skuId]})
+    }
+    
     return (
         <Table.Row>
            <ProductRow>
@@ -89,13 +113,13 @@ function CartItem({isChecked,skuId,image,nameProduct,quantity,modelName, sellPri
             <Price>{formatCurrencyVND(sellPrice*quantity)}</Price>
 
             <QuantityControl>
-                <QuantityButton><CiSquareMinus size={16} /></QuantityButton>
+                <QuantityButton onClick={() => handleOnClickDecrease()}><CiSquareMinus size={16} /></QuantityButton>
                 <span className="px-4">{quantity}</span>
-                <QuantityButton><CiSquarePlus  size={16} /></QuantityButton>
+                <QuantityButton onClick={() => handleOnClicIncrease()}><CiSquarePlus  size={16} /></QuantityButton>
             </QuantityControl>
 
-            <div className="text-red-500 ml-4">
-                Xóa
+            <div onClick={() => handleOnClickRemove()} className="text-red-500 ml-4">
+                <DeleteButton>Xóa</DeleteButton>
             </div>
         </Table.Row>
     )
