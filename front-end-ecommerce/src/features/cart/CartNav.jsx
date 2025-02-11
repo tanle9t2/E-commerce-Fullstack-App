@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 // Styled Components
 const CartContainer = styled.div`
   position: relative;
+  color:var(--black-color);
   margin-left:20px;
   &::after {
     content: "";
@@ -115,7 +116,23 @@ const Footer = styled.div`
   display:flex;
   align-items:center;
 `;
-
+const EmptyImage = styled.div`
+    height: 12.125rem;
+    width: 12.75rem;
+    background-image: url(https://deo.shopeemobile.com/shopee/shopee-pcmall-live-sg/cart/9bdd8040b334d31946f4.png);
+    background-position: 50%;
+    background-repeat: no-repeat;
+    background-size: cover;
+    margin:10px 0; 
+`
+const Outline = styled.div`
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  padding:50px;
+`
 export default function ShoppingCart() {
     const {isLoading,cart} = useCart();
     const navigate = useNavigate();
@@ -129,26 +146,34 @@ export default function ShoppingCart() {
     return (
         <CartContainer>
         <CartButton onClick={() => navigate('/cart')}>
-            <HiOutlineShoppingCart fontSize={28} />
+            <HiOutlineShoppingCart color="#ffff" fontSize={28} />
             <CartCount>{cartItems.length}</CartCount>
         </CartButton>
             <Dropdown>
-            <Header>Sản Phẩm Mới Thêm</Header>
-            <ItemList>
-                {cartItems.map((item, index) => (
-                <Item onClick={() => navigate(`/product/${item.product.id}`)} key={index}>
-                    <ItemImage src={item.product.images[0].imageUrl} alt={item.product.name} />
-                    <ItemName>{item.product.name}</ItemName>
-                    <ItemPrice>{formatCurrencyVND(item.sellPrice)}</ItemPrice>
-                   
-                </Item>
-                ))}
-            </ItemList>
+           {cartItems.length 
+           ? 
+           <>
+              <Header>Sản Phẩm Mới Thêm</Header>
+              <ItemList>
+                  {cartItems.map((item, index) => (
+                  <Item onClick={() => navigate(`/product/${item.product.id}`)} key={index}>
+                      <ItemImage src={item.product.images[0].imageUrl} alt={item.product.name} />
+                      <ItemName>{item.product.name}</ItemName>
+                      <ItemPrice>{formatCurrencyVND(item.sellPrice)}</ItemPrice>
+                    
+                  </Item>
+                  ))}
+              </ItemList>  
                 <Footer>
                     <p>{cartItems.length} Thêm Hàng Vào Giỏ</p>
                     <Button onClick={() => navigate("/cart")}>Xem Giỏ Hàng</Button> 
                 </Footer>
-                
+                </>
+                : <Outline>
+                <EmptyImage/>
+                <p>Chưa có sản phẩm</p>
+             </Outline>
+             }
             </Dropdown>
        
         </CartContainer>

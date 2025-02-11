@@ -21,6 +21,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -72,17 +77,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
-                .cors(c -> c.disable())
+                .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(URL_PERMIT_ALL).permitAll()
 //                        .requestMatchers(URL_ADMIN).hasAuthority("ADMIN")
-//                        .requestMatchers("/api/v1/user/{userId}"
-//                                , "/api/v1/tenant/**"
-//                                , "/api/v1/cart/**"
-//                                , "/api/v1/order/status"
-//                                , "/api/v1/order/cancelOrder"
-//                                , "/api/v1/tenant/register"
-//                        ).authenticated()
+                        .requestMatchers("/api/v1/user/"
+                        ).authenticated()
 ////                        .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
 //                        .requestMatchers("/api/v1/order/status"
 //                                , "/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN", "SELLER")
@@ -100,5 +100,18 @@ public class SecurityConfig {
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return httpSecurity.build();
+    }
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Frontend
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setExposedHeaders(List.of("Authorization"));
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }

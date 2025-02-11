@@ -11,18 +11,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1/auth")
+@CrossOrigin(origins = "http://localhost:5173")
 public abstract class BaseUserController {
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -33,26 +32,23 @@ public abstract class BaseUserController {
 
     @PostMapping("/login")
     public ResponseEntity<MessageResponse> login(@RequestBody LoginRequest request) {
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(),request.getPassword())
-            );
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            MessageResponse tokenMessage= tokenSerice.registerToken(request.getUsername());
-            return new ResponseEntity<>(tokenMessage,HttpStatus.OK);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+        );
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        MessageResponse tokenMessage = tokenSerice.registerToken(request.getUsername());
+        return new ResponseEntity<>(tokenMessage, HttpStatus.OK);
     }
+
     @PostMapping("/logout")
     public MessageResponse logout() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null)
+        if (authentication == null)
             return MessageResponse.builder()
                     .message("Unauthorized")
                     .status(HttpStatus.UNAUTHORIZED)
                     .build();
-        String username= authentication.getName();
+        String username = authentication.getName();
         userService.updateLastAccess(username);
         tokenSerice.revokeToken(username);
         SecurityContextHolder.clearContext();
@@ -62,9 +58,10 @@ public abstract class BaseUserController {
                 .message("Logout successfully")
                 .build();
     }
+
     @PostMapping("/refreshToken")
     public void refreshToken(HttpServletRequest request
             , HttpServletResponse response) throws IOException {
-        tokenSerice.refreshToken(request,response);
+        tokenSerice.refreshToken(request, response);
     }
 }

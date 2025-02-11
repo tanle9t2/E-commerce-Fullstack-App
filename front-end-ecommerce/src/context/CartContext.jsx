@@ -21,9 +21,12 @@ function CartContextProvider({ children }) {
     console.log(removeItem)
     setCartItemTick(cartItemTick => cartItemTick.filter(item => !removeItem.includes(item.skuId)))
   }
+  function handleRemoveAll() {
+    setCartItemTick([])
+  }
 
   return (
-    <CartContext.Provider value={{ cartItemTick, handleUpdateQuantity,handleAddCartItemTick, handleRemoveCartItemTick}}>
+    <CartContext.Provider value={{ cartItemTick, handleRemoveAll,handleUpdateQuantity,handleAddCartItemTick, handleRemoveCartItemTick}}>
       {children}
     </CartContext.Provider>
   );

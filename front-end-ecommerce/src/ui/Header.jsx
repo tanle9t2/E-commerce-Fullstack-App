@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import List from "./List";
 import ListItem from "./ListItem";
-import User from "./User";
+import User from "../features/authentication/User";
 import NavSearch from "./NavSearch";
 import HeaderMenu from "./HeaderMenu";
 

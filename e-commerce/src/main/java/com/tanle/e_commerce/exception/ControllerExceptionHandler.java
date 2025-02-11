@@ -5,6 +5,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -24,6 +25,17 @@ public class ControllerExceptionHandler {
                 .build();
 
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+    @ExceptionHandler
+    public ResponseEntity<ExceptionResponse> handleBadCredentials(BadCredentialsException exception) {
+        ExceptionResponse response = ExceptionResponse.builder()
+                .type("/exception/"+exception.getClass().getSimpleName())
+                .title("Bad credentials")
+                .detail(exception.getMessage())
+                .timeStamp(System.currentTimeMillis())
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .build();
+        return new ResponseEntity<>(response,HttpStatus.UNAUTHORIZED);
     }
 
     @ExceptionHandler

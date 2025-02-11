@@ -9,6 +9,9 @@ import Product from "./features/products/Product";
 import Cart from "./features/cart/Cart";
 import { CartContextProvider } from "./context/CartContext";
 import { Toaster } from "react-hot-toast";
+import Profile from "./features/authentication/Profile";
+import ProfileLayout from "./ui/ProfileLayout";
+import { AuthContextProvider } from "./context/AuthContext";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -20,42 +23,49 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <CartContextProvider>
-        <QueryClientProvider client={queryClient}>
-        <ReactQueryDevtools initialIsOpen={false} />
-        <GlobalStyle />
-        <BrowserRouter>
-          <Routes>
-            <Route element={<AppLayout />}>
-              <Route path="/" element={<HomePage />} />
-              <Route path="product/:productId" element={<Product />} />
-            </Route>
-            <Route path="cart" element={<Cart/>}/>
-            <Route path="login" element={<Login />} />
-          </Routes>
-        </BrowserRouter>
-        <Toaster
-          position="top-center"
-          gutter={12}
-          containerStyle={{ margin: "8px" }}
-          toastOptions={{
-            success: {
-              duration: 3000,
-            },
-            error: {
-              duration: 5000,
-            },
-            style: {
-              fontSize: "16px",
-              maxWidth: "500px",
-              padding: "16px 24px",
-              backgroundColor: "var(--color-grey-0)",
-              color: "var(--color-grey-700)",
-            },
-          }}
-        />
-      </QueryClientProvider>
-    </CartContextProvider>
+    <AuthContextProvider>
+      <CartContextProvider>
+          <QueryClientProvider client={queryClient}>
+          <ReactQueryDevtools initialIsOpen={false} />
+          <GlobalStyle />
+          <BrowserRouter>
+            <Routes>
+              <Route element={<AppLayout />}>
+                <Route path="/" element={<HomePage />} />
+                <Route path="product/:productId" element={<Product />} />
+                <Route path="/user/account/" element={<ProfileLayout/>}>
+                  <Route path="profile" element ={<Profile/>}/>
+                    <Route path="resetPassword" element ={<div>sknoi</div>}/>
+                    <Route path="ok" element ={<div>diofjoi</div>}/>
+                </Route>
+              </Route>
+              <Route path="cart" element={<Cart/>}/>
+              <Route path="login" element={<Login />} />
+            </Routes>
+          </BrowserRouter>
+          <Toaster
+            position="top-center"
+            gutter={12}
+            containerStyle={{ margin: "8px" }}
+            toastOptions={{
+              success: {
+                duration: 3000,
+              },
+              error: {
+                duration: 5000,
+              },
+              style: {
+                fontSize: "16px",
+                maxWidth: "500px",
+                padding: "16px 24px",
+                backgroundColor: "var(--color-grey-0)",
+                color: "var(--color-grey-700)",
+              },
+            }}
+          />
+        </QueryClientProvider>
+      </CartContextProvider>
+    </AuthContextProvider>
   );
 }
 

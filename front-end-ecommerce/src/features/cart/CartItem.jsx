@@ -7,6 +7,9 @@ import { useCartContext } from "../../context/CartContext";
 import { useUpdateCart } from "./useUpdateCart";
 import useDeleteCartItem from "./useDeleteCartItem";
 import Highlight from "../../ui/Highlight";
+import Modal from "../../ui/Modal";
+import ConfirmDelete from "../../ui/ConfirmDelete";
+import Button from "../../ui/Button";
 
 const ProductRow = styled.div`
   display: flex;
@@ -119,7 +122,7 @@ function CartItem({isChecked,skuId,image,nameProduct,quantity,modelName, sellPri
             </QuantityControl>
 
             <div onClick={() => handleOnClickRemove()} className="text-red-500 ml-4">
-                <DeleteButton>Xóa</DeleteButton>
+              <DeleteButton>Xóa</DeleteButton>
             </div>
         </Table.Row>
     )

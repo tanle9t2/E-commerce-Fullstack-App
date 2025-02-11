@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from 'styled-components';
 import Logo from '../../ui/Logo';
 import { CiSquareMinus, CiSquarePlus } from 'react-icons/ci';
@@ -11,6 +11,9 @@ import { useCartContext } from '../../context/CartContext';
 import { formatCurrencyVND } from '../../utils/helper';
 import Highlight from '../../ui/Highlight';
 import EmptyCart from './EmptyCart';
+import Modal from '../../ui/Modal';
+import ConfirmDelete from '../../ui/ConfirmDelete';
+import useDeleteCartItem from './useDeleteCartItem';
 const Container = styled.div`
     padding: var(--padding-container);
   font-family: Arial, sans-serif;
@@ -48,11 +51,12 @@ const Title = styled.h2`
   display:flex;
   align-items:center;
 `;
-const Title2 = styled.h2`
+const Title2 = styled.button`
   font-size: 1.6rem;
   font-weight: 600;
   display:flex;
   align-items:center;
+  cursor: pointer;
 `;
 const StickyPayment = styled.div`
   display:flex;
@@ -63,7 +67,9 @@ const StickyPayment = styled.div`
 `;
 const ShopeeCart = () => {
   const {isLoading ,cart} = useCart();
-  const {cartItemTick,handleAddCartItemTick, handleRemoveCartItemTick} = useCartContext();
+  const {cartItemTick,handleAddCartItemTick, handleRemoveAll} = useCartContext();
+  const {isLoading:isDeleting, deleteCartItem} = useDeleteCartItem()
+  const checkAllUseRef = useRef(null);
   if(isLoading) return <Spinner/>
   function handleOnChange(e) {
     if(e.target.checked) {
@@ -77,14 +83,22 @@ const ShopeeCart = () => {
       );
     handleAddCartItemTick(newItems);
     } else {
-      const removeItems = cart.shopOrders.flatMap(shop =>
-        shop.items.reduce((acc, { skuId }) => {
-          acc.push(skuId);
-          return acc;
-        }, [])
-      );      
-    handleRemoveCartItemTick(removeItems);
+      handleRemoveAll();
     } 
+  }
+  function handleOnClickAll() {
+    if (checkAllUseRef.current) {
+      checkAllUseRef.current.click();
+    }
+  }
+  function handleOnRemove() {
+    const cartItems = cart.shopOrders.flatMap(shop =>
+      shop.items.reduce((acc,{skuId}) => {
+        acc.push(skuId)
+        return acc;
+      },[]));
+    deleteCartItem({cartId:1,cartItems})
+    handleRemoveAll();
   }
   const totalItems = cart.shopOrders.reduce((acc, data) => acc + data.items.length, 0);
   const isCheckedAll = totalItems === cartItemTick.length;
@@ -112,7 +126,6 @@ const ShopeeCart = () => {
               <Title>Số Lượng</Title>
               <Title>Thao Tác</Title>
           </Table.Header> 
-
           <Table.Body
           data={cart.shopOrders}
           render={(cartItem) => (
@@ -121,8 +134,27 @@ const ShopeeCart = () => {
           />
           <Table.Footer>
             <StickyPayment>
-            <Title2> <input checked= {isCheckedAll} onChange={(e) => handleOnChange(e)} type="checkbox" className="mr-4" /> Chọn tất cả ({totalItems})</Title2>
-            <Title2> Xóa</Title2>
+            <Title2 >
+               <input 
+                ref={checkAllUseRef}
+                checked= {isCheckedAll} 
+                onChange={(e) => handleOnChange(e)} type="checkbox" className="mr-4" />
+                <span onClick={() => handleOnClickAll()}>  Chọn tất cả ({totalItems})</span>
+            </Title2>
+            <Modal>
+              <Modal.OpenButton opens="delete">
+                <Title2 disabled ={!cartItemTick.length}> Xóa</Title2>
+              </Modal.OpenButton>
+              <Modal.Window name="delete">
+                <ConfirmDelete
+                  resourceName="sản phẩm"
+                  quantity={cartItemTick.length}
+                  onConfirm={() => handleOnRemove()}
+                  disabled={isDeleting}
+                />
+                </Modal.Window>
+            </Modal>
+            
             <Title2>Tổng thanh toán ({cartItemTick.length} Sản phẩm): <Highlight> {formatCurrencyVND(totalPrice)}</Highlight></Title2>
               <Button size ="large">Thanh toán</Button>
             </StickyPayment>

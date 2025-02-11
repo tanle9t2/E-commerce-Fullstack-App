@@ -49,15 +49,22 @@ public class TokenServiceImpl implements TokenSerice {
         String refreshToken = jwtService.genarateRefreshToken(claims, myUser);
         saveAccessToken(myUser, accessToken);
         saveRefreshToken(myUser, refreshToken);
-
+        AuthenticationRespone.UserInfor userInfor = AuthenticationRespone.UserInfor.builder()
+                .id(myUser.getId())
+                .username(username)
+                .email(myUser.getUsername())
+                .avatar(myUser.getAvtUrl())
+                .fullName(myUser.getFullName())
+                .build();
         return MessageResponse.builder()
                 .data(
                         AuthenticationRespone.builder()
                                 .accessToken(accessToken)
                                 .refreshToken(refreshToken)
+                                .userInfor(userInfor)
                                 .build()
                 )
-                .message("Regist token successfully")
+                .message("Register token successfully")
                 .status(HttpStatus.OK)
                 .build();
     }

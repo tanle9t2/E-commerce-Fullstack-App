@@ -19,6 +19,7 @@ public interface UserMapper {
     MyUser convertEntity(UserDTO userDTO);
 
     @Mapping(target = "userId", source = "id")
+    @Mapping(target = "username",source = "username")
     @Mapping(target = "following" ,expression = "java(mapFollowing(myUser))")
     @Mapping(target = "follower" ,expression = "java(mapFollower(myUser))")
     UserDTO convertDTO(MyUser myUser);

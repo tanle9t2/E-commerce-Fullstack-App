@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../ui/Button";
 import ButtonIcon from "../../ui/ButtonIcon";
 import ButtonText from "../../ui/ButtonText";
@@ -12,6 +12,9 @@ import SpinnerMini from "../../ui/SpinnerMini";
 import { MdFacebook } from "react-icons/md";
 import styled from "styled-components";
 import { FcGoogle } from "react-icons/fc";
+import { useForm } from "react-hook-form";
+import { useAuthContext } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 const StyledLineBreak = styled.div`
     background-color: #dbdbdb;
     flex: 1;
@@ -28,61 +31,61 @@ const StyledWord = styled.div`
     margin:0 10px;
 `;
 function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-//   const { login , isLoading } = useLogin();
-
-  function handleSubmit(e) {
-    // e.preventDefault();
-    // if (!email || !password) return;
-    // login(
-    //   { email, password },
-    //   {
-    //     onSettled: () => {
-    //       setEmail("");
-    //       setPassword("");
-    //     },
-    //   }
-    // );
+  const { login , isLoading } = useLogin();
+  const { register,handleSubmit,formState, getValues, reset } = useForm();
+  const { errors } = formState;
+  const navigate = useNavigate()
+  const {isAuthenticated} = useAuthContext();
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate('/');  // Redirect to the home page if the user is authenticated
+    }
+  }, [isAuthenticated, navigate]);  
+  function onSubmit() {
+    const username = getValues().username;
+    const password = getValues().password;
+    if (!username || !password) return;
+    login(
+      { username,password}
+    );
   }
 
   return (
-    <Form onSubmit={handleSubmit}>
+    <Form onSubmit={handleSubmit(onSubmit)}>
         <FormRowVertical>
             <h1 className="text-4xl">Đăng nhập</h1>
         </FormRowVertical>
-      <FormRowVertical label="Email">
+      <FormRowVertical  error={errors?.username?.message} label="Username">
         <Input
             width="340px"
-          type="email"
           id="email"
           // This makes this form better for password managers
           autoComplete="username"
-          value={email}
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        //   disabled={isLoading}
+          placeholder="Email/Số điện thoại/Tên đăng nhập"
+          disabled={isLoading}
+          {...register("username", {
+            required: "This field is required",
+          })}
         />
+        
       </FormRowVertical>
 
-      <FormRowVertical label="Mật khẩu">
+      <FormRowVertical error={errors?.password?.message} label="Mật khẩu">
         <Input
-            width="340px"
+          width="340px"
           type="password"
           id="password"
           autoComplete="current-password"
           placeholder="Mật khẩu"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        //   disabled={isLoading}
+          disabled={isLoading}
+          {...register("password", {
+            required: "This field is required",
+          })}
         />
       </FormRowVertical>
       <FormRowVertical>
-        {/* <Button size="large" disabled={isLoading}> 
-          {!isLoading ? "Log in" : <SpinnerMini />}
-        </Button> */}
-          <Button size="large"> 
-           Đăng nhập
+        <Button size="large" disabled={isLoading}> 
+          {!isLoading ? "Đăng nhập" : <SpinnerMini />}
         </Button>
       </FormRowVertical>
       <FormRowVertical>

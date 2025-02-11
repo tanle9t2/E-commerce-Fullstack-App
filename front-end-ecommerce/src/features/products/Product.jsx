@@ -16,6 +16,8 @@ import TenantInfor from "../tenant/TenantInfor";
 import ProductRate from "./ProductRate";
 import {useAddCartItem} from "../cart/useAddCartItem"
 import ErrorText from "../../ui/ErrorText";
+import { useNavigate } from "react-router-dom";
+import { useCartContext } from "../../context/CartContext";
 const HeaderProduct= styled.div`
     color: var(--color-blue-700);
 `
@@ -71,6 +73,8 @@ function Product() {
     const {isLoading: isLoadingAddCartItem, addCartItem} = useAddCartItem();
     const [quantity, setQuantity] = useState(1); // Initial value is 1
     const [error,setError] = useState(false);
+    const navigate = useNavigate();
+    const {handleAddCartItemTick} = useCartContext();
     useEffect(() => {
         if(!isLoading && product) {
             const price = product.price[0] ===product.price[1] ?product.price[0] : product.price;
@@ -145,6 +149,24 @@ function Product() {
         }
         setError(true)
     }
+    function handleOnClickBuyNow() {
+        if(activeQuantity) {
+            addCartItem({cartId:1,skuId:skuState.skuId, quantity:quantity}, {
+                onSettled: () => {
+                    handleAddCartItemTick([
+                        {
+                            "skuId":skuState.skuId,
+                            "quantity":quantity,
+                            "sellPrice":skuState.price,
+                        }
+                    ])
+                    navigate('/cart')
+                }
+            })
+            
+        }
+        setError(true)
+    }
     return (
         <>
             <HeaderProduct>
@@ -204,7 +226,7 @@ function Product() {
                      </Background>   
                    <ButtonGroup>
                         <Button onClick={() => handleOnClickAddCartItem()} variation ="select">Thêm vào giỏ hàng</Button>
-                        <Button>Mua ngay</Button>
+                        <Button onClick={() =>handleOnClickBuyNow()}>Mua ngay</Button>
                    </ButtonGroup>
                 </Information>
             </Section>

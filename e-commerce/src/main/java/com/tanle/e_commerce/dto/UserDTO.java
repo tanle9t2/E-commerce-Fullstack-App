@@ -18,6 +18,7 @@ public class UserDTO {
     private String lastName;
     private String email;
     private String avtUrl;
+    private String phoneNumber;
     private boolean isActive;
     private LocalDateTime dateOfBirth;
     private LocalDateTime lastAccess;

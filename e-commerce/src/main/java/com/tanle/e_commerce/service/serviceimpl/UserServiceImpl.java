@@ -209,7 +209,7 @@ public class UserServiceImpl implements UserService {
     public UserDTO findByUsername(String username) {
         MyUser myUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        return myUser.convertDTO();
+        return mapper.convertDTO(myUser);
     }
 
     @Override

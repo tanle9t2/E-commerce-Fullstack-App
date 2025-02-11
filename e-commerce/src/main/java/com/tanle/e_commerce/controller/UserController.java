@@ -14,14 +14,17 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/user/")
+@RequestMapping("/api/v1/user")
+@CrossOrigin(origins = "http://localhost:5173") // Allow frontend access
 public class UserController extends BaseUserController {
     @Autowired
     private UserService userService;
@@ -35,10 +38,9 @@ public class UserController extends BaseUserController {
         UserDTO userDTO = userService.findById(userId);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
-
     @GetMapping("/")
-    public ResponseEntity<UserDTO> findUserByUsername(@RequestParam(value = "username") String username) {
-        UserDTO userDTO = userService.findByUsername(username);
+    public ResponseEntity<UserDTO> findUserByUsername(@AuthenticationPrincipal User user) {
+        UserDTO userDTO = userService.findByUsername(user.getUsername());
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
