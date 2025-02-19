@@ -43,7 +43,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
-            jwtToken = authHeader.substring(8,authHeader.length()-1);
+            jwtToken = authHeader.substring(7,authHeader.length());
             userName = jwtService.extractUserName(jwtToken);
             if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
@@ -52,6 +52,7 @@ public class JwtFilter extends OncePerRequestFilter {
                         .orElse(false);
                 if (jwtService.isValidToken(userDetails, jwtToken) && isTokenValid) {
 //                    List<String> roles = jwtService.extractRoles(jwtToken);
+
 //                    var currentAuthorities = userDetails.getAuthorities()
 //                            .stream()
 //                            .filter(a -> roles.contains(a.getAuthority()))

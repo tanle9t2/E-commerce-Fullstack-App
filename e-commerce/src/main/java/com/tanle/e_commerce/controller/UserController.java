@@ -1,16 +1,16 @@
 package com.tanle.e_commerce.controller;
 
-import com.tanle.e_commerce.dto.OrderDTO;
-import com.tanle.e_commerce.dto.PasswordChangeDTO;
-import com.tanle.e_commerce.dto.RegisterUserDTO;
-import com.tanle.e_commerce.dto.UserDTO;
+import com.tanle.e_commerce.dto.*;
 import com.tanle.e_commerce.entities.Address;
+import com.tanle.e_commerce.entities.MyUser;
+import com.tanle.e_commerce.request.UpdateUserInforRequeset;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.CartService;
 import com.tanle.e_commerce.service.OrderService;
 import com.tanle.e_commerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -18,6 +18,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -38,10 +39,37 @@ public class UserController extends BaseUserController {
         UserDTO userDTO = userService.findById(userId);
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
+
     @GetMapping("/")
-    public ResponseEntity<UserDTO> findUserByUsername(@AuthenticationPrincipal User user) {
+    public ResponseEntity<UserDTO> findUserByUsername(@AuthenticationPrincipal MyUser user) {
         UserDTO userDTO = userService.findByUsername(user.getUsername());
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/update",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    private ResponseEntity<MessageResponse> updateUserInfor(
+            @AuthenticationPrincipal MyUser user,
+            @RequestParam(value = "firstName",required = false) String firstName,
+            @RequestParam(value = "lastName",required = false) String lastName,
+            @RequestParam(value = "email",required = false) String email,
+            @RequestParam(value = "phoneNumber",required = false) String phoneNumber,
+            @RequestParam(value = "sex",required = false) Boolean sex,
+            @RequestParam(value = "dob",required = false) String dobDay,
+            @RequestParam(value = "avt",required = false) MultipartFile avtFile) {
+        UpdateUserInforRequeset requeset = UpdateUserInforRequeset.builder()
+                .dob(dobDay)
+                .avt(avtFile)
+                .firstName(firstName)
+                .lastName(lastName)
+                .email(email)
+                .phoneNumber(phoneNumber)
+                .sex(sex)
+                .build();
+        userService.update(user,  requeset);
+        return ResponseEntity.ok(MessageResponse.builder()
+                .message("Update successfull user")
+                .status(HttpStatus.OK)
+                .build());
     }
 
     @PostMapping("/password")
@@ -62,12 +90,13 @@ public class UserController extends BaseUserController {
 
     @PostMapping("/follow")
     public ResponseEntity<MessageResponse> followUser(@RequestBody Map<String, Integer> request) {
-        MessageResponse userDTO = userService.followUser(request.get("userIdRequest"),request.get("followerId"));
+        MessageResponse userDTO = userService.followUser(request.get("userIdRequest"), request.get("followerId"));
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
+
     @PostMapping("/unfollow")
     public ResponseEntity<MessageResponse> unfollowUser(@RequestBody Map<String, Integer> request) {
-        MessageResponse userDTO = userService.unfollowUser(request.get("userIdRequest"),request.get("followingId"));
+        MessageResponse userDTO = userService.unfollowUser(request.get("userIdRequest"), request.get("followingId"));
         return ResponseEntity.status(HttpStatus.OK).body(userDTO);
     }
 
@@ -92,6 +121,11 @@ public class UserController extends BaseUserController {
                 request.get("userIdRequest")
                 , request.get("addressId"));
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
+    }
+    @GetMapping("/address")
+    public ResponseEntity<List<AddressDTO>> getAddress(@AuthenticationPrincipal MyUser user) {
+        List<AddressDTO> addressDTOS = userService.findAddressByUser(user.getUsername());
+        return ResponseEntity.ok(addressDTOS);
     }
 
     private Address buildAddress(Map<String, Object> data) {

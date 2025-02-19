@@ -6,7 +6,6 @@ import { useAuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 function HeaderMenu() {
     const {isAuthenticated} = useAuthContext();
-    console.log(isAuthenticated())
     const navigate = useNavigate();
     return (
         <div className="flex justify-between flex-1 mb-5">

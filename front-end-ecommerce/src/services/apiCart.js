@@ -1,56 +1,66 @@
-const CART_API = 'http://localhost:8080/ecommerce-server/api/v1/cart'
-export async function getCart(cartId) {
-    const res = await fetch(`${CART_API}?cartId=${cartId}`);
 
-    // fetch won't throw error on 400 errors (e.g. when URL is wrong), so we need to do it manually. This will then go into the catch block, where the message is set
-    if (!res.ok) throw Error("Failed getting cart");
-  
-    const data  = await res.json();
-    return data;
-}
-export async function addCartItem({cartId,skuId,quantity}) {
-    const res = await fetch(`${CART_API}?cartId=${cartId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({skuId,quantity}),
-      });
-      if (!res.ok) throw Error("Failed adding cart item");
-      const result = await res.json();
-      return result;
-}
-export async function deleteCartItem({ cartId, cartItems }) {
-  const data = { cartItems: cartItems };
-  try {
-      const res = await fetch(`${CART_API}/cartItem?cartId=${cartId}`, {
-          method: "DELETE",
-          headers: {
-              "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-      });
+import { createAPI } from "./api";
+import { getAuthHeaders } from "../utils/helper"
+const CART_API = "http://localhost:8080/ecommerce-server/api/v1/cart";
 
-      if (!res.ok) {
-          const errorText = await res.text(); // Try reading the response text
-          throw new Error(`Failed deleting cart item: ${res.status} - ${res.statusText} - ${errorText}`);
-      }
+const cartAPI = createAPI(CART_API)
 
-      return await res.json();
-  } catch (error) {
-      console.error("Error deleting cart item:", error);
-      throw error; // Re-throw to handle it elsewhere
-  }
+// Get cart by ID
+export async function getCart(token) {
+    try {
+        const res = await cartAPI.get("", {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        return res.data;
+    } catch (error) {
+        console.error("Failed getting cart:", error);
+        throw new Error("Failed getting cart");
+    }
 }
-export async function updateCartItem(cartItem) {
-    const res = await fetch(`${CART_API}/cartItem`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(cartItem),
-      });
-      if (!res.ok) throw Error("Failed updating cart item");
-      const result = await res.json();
-      return result;
+
+// Add cart item
+export async function addCartItem({ skuId, quantity }) {
+    try {
+        const res = await cartAPI.post("", { skuId, quantity }, {
+            headers: getAuthHeaders()
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Failed adding cart item:", error);
+        throw new Error("Failed adding cart item");
+    }
+}
+
+// Delete cart item
+export async function deleteCartItem({ cartItems, token }) {
+    try {
+        const res = await cartAPI.delete("/cartItem", {
+            data: { cartItems }, // Attach body properly
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Failed deleting cart item:", error);
+        throw new Error("Failed deleting cart item");
+    }
+}
+
+// Update cart item
+export async function updateCartItem(cartItem, token) {
+    try {
+        const res = await cartAPI.put("/cartItem", cartItem, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+        return res.data;
+    } catch (error) {
+        console.error("Failed updating cart item:", error);
+        throw new Error("Failed updating cart item");
+    }
 }

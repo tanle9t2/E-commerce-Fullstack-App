@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 const ProfileContainer = styled.div`
@@ -27,17 +27,37 @@ const SidebarItem = styled.div`
 `;
 
 function ProfileLayOut() {
-    return (
-     <ProfileContainer>
-        <Sidebar>
-            <SidebarItem active>Hồ Sơ</SidebarItem>
-            <SidebarItem>Ngân Hàng</SidebarItem>
-            <SidebarItem>Địa Chỉ</SidebarItem>
-            <SidebarItem>Đổi Mật Khẩu</SidebarItem>
-        </Sidebar>
-        <Outlet/>
-    </ProfileContainer>
-    )
+    const navigate =useNavigate();
+    const location = useLocation();
+    return (<ProfileContainer>
+    <Sidebar>
+        <SidebarItem 
+            onClick={() => navigate('/user/account/profile')} 
+            active={location.pathname === "/user/account/profile"}
+        >
+            Hồ Sơ
+        </SidebarItem>
+        <SidebarItem 
+            onClick={() => navigate('/user/account/bank')} 
+            active={location.pathname === "/user/account/bank"}
+        >
+            Ngân Hàng
+        </SidebarItem>
+        <SidebarItem 
+            onClick={() => navigate('/user/account/address')} 
+            active={location.pathname === "/user/account/address"}
+        >
+            Địa Chỉ
+        </SidebarItem>
+        <SidebarItem 
+            onClick={() => navigate('/user/account/password')} 
+            active={location.pathname === "/user/account/password"}
+        >
+            Đổi Mật Khẩu
+        </SidebarItem>
+    </Sidebar>
+    <Outlet/>
+</ProfileContainer>)
 }
 
 export default ProfileLayOut

@@ -1,40 +1,34 @@
-import axios from "axios";
-import { useContext } from "react";
-import { useAuthContext } from "../context/AuthContext";
+import { data } from "autoprefixer";
+import { getAuthHeaders } from "../utils/helper";
+import { createAPI } from "./api";
 
-const AUTHENTICATION_API = "http://localhost:8080/ecommerce-server/api/v1"
-const api = axios.create({
-    baseURL: AUTHENTICATION_API,
-    headers: { "Content-Type": "application/json" },
-    withCredentials:true
-});
+const AUTHENTICATION_API = "http://localhost:8080/ecommerce-server/api/v1";
+const authAPI = createAPI(AUTHENTICATION_API);
+
+// Setup Axios Interceptors for Token Refresh
 export const setupInterceptors = ({ setToken, handleLogout }) => {
-    api.interceptors.response.use(
-        (response) => response, // Return successful response
+    authAPI.interceptors.response.use(
+        (response) => response,
         async (error) => {
             const originalRequest = error.config;
 
-            // If 401 Unauthorized and token has not been retried yet
             if (error.response?.status === 401 && !originalRequest._retry) {
                 originalRequest._retry = true;
 
                 try {
                     const refreshToken = localStorage.getItem("refreshToken");
-                    const response = await axios.post(
-                        "/user/refresh-token",
-                        { refreshToken }
-                    );
+                    const response = await authAPI.post("/user/refresh-token", { refreshToken });
 
                     // Update token
                     const newAccessToken = response.data.accessToken;
-                    setToken(newAccessToken);  // Update React state
-                    setAuthToken(newAccessToken); // Update axios header
+                    setToken(newAccessToken);
+                    authAPI.setAuthToken(newAccessToken);
 
-                    // Retry the original request with new token
+                    // Retry the original request with the new token
                     originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-                    return axios(originalRequest);
+                    return authAPI(originalRequest);
                 } catch (refreshError) {
-                    handleLogout(); // Log user out if refresh fails
+                    handleLogout();
                     return Promise.reject(refreshError);
                 }
             }
@@ -42,43 +36,119 @@ export const setupInterceptors = ({ setToken, handleLogout }) => {
         }
     );
 };
-// Set Authorization header dynamically
-export const setAuthToken = (token) => {
-    if (token) {
-        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    } else {
-        delete api.defaults.headers.common["Authorization"];
-    }
-};
 
-export async function loginUser({username,password}) {
-    const res = await fetch(`${AUTHENTICATION_API}/user/login`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({username,password}),
-    });
-    if(res.status === 401) 
-        throw new Error("Username/Password invalid")
-    const result = await res.json();
-    return result;
-    
-}
-export async function getUser() {
-    const token = localStorage.getItem("accessToken");
-
-    if (!token) {
-        console.error("No token found!");
-        throw new Error("Authentication token is missing");
-    }
+// User Login
+export async function loginUser({ username, password }) {
     try {
-        const response = await api.get("/user/", {
-            headers: { Authorization: `Bearer ${token}` },
+        const response = await authAPI.post("/user/login", { username, password });
+        return response.data;
+    } catch (error) {
+        if (error.response?.status === 401) {
+            throw new Error("Username/Password invalid");
+        }
+        throw error;
+    }
+}
+
+// User Logout
+export async function logoutUser() {
+    const token = localStorage.getItem("accessToken");
+    try {
+        const response = await authAPI.post("/user/logout", {
+            headers: {
+                "Authorization": `Bearer ${JSON.parse(token)}`
+            }
         });
         return response.data;
     } catch (error) {
-        console.error("Error fetching user data", error.response || error);
-        throw error; 
+        console.error("Error logging out:", error);
+        throw error;
     }
 }
+
+// Get Current User
+export async function getUser() {
+    try {
+        const response = await authAPI.get("/user/",
+            {
+                headers: getAuthHeaders()
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching user data:", error.response || error);
+        throw error;
+    }
+}
+export async function updateUser(userData, file) {
+    const formData = new FormData();
+    // Loop through the object keys and append them dynamically
+    Object.keys(userData).forEach((key) => {
+        if (typeof userData[key] === "object" && userData[key] !== null) {
+            // If the value is an object (e.g., dob), append nested fields
+            Object.keys(userData[key]).forEach((subKey) => {
+                formData.append(`${key}.${subKey}`, userData[key][subKey]);
+            });
+        } else {
+            // Append normal key-value pairs
+            formData.append(key, userData[key]);
+        }
+    });
+    console.log(file)
+    // Append file separately
+    if (file) {
+        formData.append("avt", file);
+    }
+    const token = localStorage.getItem("accessToken");
+    try {
+        const response = await authAPI.post("/user/update", formData,
+            {
+                headers: {
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "multipart/form-data",
+                    "Authorization": `Bearer ${JSON.parse(token)}`
+                }
+            },
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error updating user data:", error.response || error);
+        throw error;
+    }
+}
+export async function changePassword({ oldPassword, newPassword, confirmPassword, token }) {
+    try {
+        const response = await authAPI.post(
+            "/user/password",
+            { oldPassword, newPassword, confirmPassword }, // This is the body of the request
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+        return response.data;
+    } catch (error) {
+        console.error("Error changing user data:", error.response || error);
+        throw error;
+    }
+}
+export async function getAddress(token) {
+    try {
+        const response = await authAPI.get(
+            "/user/address",
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+        return response.data;
+
+    } catch (error) {
+        console.error("Error changing user data:", error.response || error);
+        throw error;
+    }
+}
+
+export { authAPI };

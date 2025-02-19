@@ -10,6 +10,7 @@ import Highlight from "../../ui/Highlight";
 import Modal from "../../ui/Modal";
 import ConfirmDelete from "../../ui/ConfirmDelete";
 import Button from "../../ui/Button";
+import toast from "react-hot-toast";
 
 const ProductRow = styled.div`
   display: flex;
@@ -89,17 +90,17 @@ function CartItem({isChecked,skuId,image,nameProduct,quantity,modelName, sellPri
     function handleOnClicIncrease() {
       quantity++;
       handleUpdateQuantity(skuId,quantity)
-      updateCartItem({skuId,quantity,cartId:1});
+      updateCartItem({skuId,quantity});
     }
     function handleOnClickDecrease() {
       quantity--;
       handleUpdateQuantity(skuId,quantity)
-      updateCartItem({skuId,quantity,cartId:1});
+      updateCartItem({skuId,quantity});
     }
     function handleOnClickRemove() {
       handleRemoveCartItemTick([skuId])
       setCountCheck(cnt => cnt--);
-      deleteCartItem({cartId:1,cartItems:[skuId]})
+      deleteCartItem({cartItems:[skuId]})
     }
     
     return (
@@ -116,11 +117,10 @@ function CartItem({isChecked,skuId,image,nameProduct,quantity,modelName, sellPri
             <Price>{formatCurrencyVND(sellPrice*quantity)}</Price>
 
             <QuantityControl>
-                <QuantityButton onClick={() => handleOnClickDecrease()}><CiSquareMinus size={16} /></QuantityButton>
+                <QuantityButton disabled ={quantity ===1}   onClick={() => handleOnClickDecrease()}><CiSquareMinus size={16} /></QuantityButton>
                 <span className="px-4">{quantity}</span>
                 <QuantityButton onClick={() => handleOnClicIncrease()}><CiSquarePlus  size={16} /></QuantityButton>
             </QuantityControl>
-
             <div onClick={() => handleOnClickRemove()} className="text-red-500 ml-4">
               <DeleteButton>Xóa</DeleteButton>
             </div>

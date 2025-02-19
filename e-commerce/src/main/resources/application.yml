@@ -1,4 +1,9 @@
 spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 50MB
   application:
     name: e-commerce
   #  security:
@@ -43,7 +48,10 @@ spring:
 
 logging:
   level:
+    org.springframework.web: DEBUG
+    org.springframework.web.multipart: TRACE
     org.springframework.data.elasticsearch: DEBUG
+    org.springframework.security: DEBUG
     org.apache.http: DEBUG
     root: warn
     org:
@@ -84,5 +92,12 @@ payment:
     orderType: Thanh toan don hang
 server:
   port: 8080
+  tomcat:
+    max-http-form-post-size: 100MB
   servlet:
     context-path: /ecommerce-server/
+
+cloudinary:
+  cloud-name: dlwjpzshh
+  api-key: 497612656226171
+  api-secret: qOeW7pf9nv4en3YgAEKLuQjh1RY

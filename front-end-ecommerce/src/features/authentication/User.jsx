@@ -1,6 +1,9 @@
 import styled from "styled-components";
 import Avatar from "../../ui/Avatar";
 import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "../../context/AuthContext";
+import Spinner from "../../ui/Spinner";
+import { useLogout } from "./useLogout";
 
 const StyledUser =styled.div`
     display:flex;
@@ -53,8 +56,21 @@ const MenuItem = styled.div`
   }
 `;
 function User() {
-    const {fullName,avatar}= JSON.parse(localStorage.getItem("user"));
+    const {user} = useAuthContext();
+    const {fullName,avatar}= user;
+    const {handleLogout} = useAuthContext()
     const naviate= useNavigate();
+     const {isLoading: logoutLoading,logout} = useLogout()
+    if(logoutLoading) return <Spinner/>
+   function handleOnClickLogout() {
+      logout(
+        {},
+        {
+          onSuccess: () =>  {
+            handleLogout();
+          }
+        });
+   }
     return (
       
         <DropdownContainer>
@@ -67,7 +83,7 @@ function User() {
           <DropdownMenu>
             <MenuItem onClick={() =>naviate('/user/account/profile')}>Tài Khoản Của Tôi</MenuItem>
             <MenuItem>Đơn Mua</MenuItem>
-            <MenuItem>Đăng Xuất</MenuItem>
+            <MenuItem onClick={() => handleOnClickLogout()}>Đăng Xuất</MenuItem>
           </DropdownMenu>
     
       </DropdownContainer>

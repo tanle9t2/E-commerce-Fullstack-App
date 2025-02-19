@@ -11,7 +11,7 @@ import java.util.Map;
 
 public interface CartService extends OwnerService<Cart,Integer> {
     CartDTO findById(Integer id);
-    CartDTO findByUserid(Integer cartId);
+    CartDTO findByUsername(String username);
 
     CartDTO createCart(Integer userId);
 
@@ -19,8 +19,8 @@ public interface CartService extends OwnerService<Cart,Integer> {
 
     void deleteCart(Integer id);
 
-    MessageResponse addCartItem(Integer cartId, Map<String, Integer> cartItem);
-    MessageResponse updateCartItem(Map<String,Integer> cartItem);
+    MessageResponse addCartItem(String username, Map<String, Integer> cartItem);
+    MessageResponse updateCartItem(String username,Map<String,Integer> cartItem);
 
-    MessageResponse deleteCartItem(Integer cartId, List<Integer> skuId);
+    MessageResponse deleteCartItem(String username, List<Integer> skuId);
 }

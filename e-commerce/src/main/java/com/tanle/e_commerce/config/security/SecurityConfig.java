@@ -1,7 +1,7 @@
 package com.tanle.e_commerce.config.security;
 
 import com.tanle.e_commerce.exception.CustomAccessDeniedExceptionHandler;
-import com.tanle.e_commerce.filter.ContentCachingFilter;
+//import com.tanle.e_commerce.filter.ContentCachingFilter;
 import com.tanle.e_commerce.filter.JwtFilter;
 import com.tanle.e_commerce.service.authorization.MyAuthorizationManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,8 +35,8 @@ public class SecurityConfig {
     private UserDetailsService userDetailsService;
     @Autowired
     private JwtFilter jwtFilter;
-    @Autowired
-    private ContentCachingFilter contentCachingFilter;
+//    @Autowired
+//    private ContentCachingFilter contentCachingFilter;
     @Autowired
     private MyAuthorizationManager authorizationManager;
     @Autowired
@@ -58,7 +58,6 @@ public class SecurityConfig {
             ,"api/v1/product/{productId}"
             ,"api/v1/product/sku/{skuId}"
             ,"api/v1/comment/product/{productId}"
-            ,"api/v1/cart"
     };
 
     @Bean
@@ -78,18 +77,18 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity.csrf(AbstractHttpConfigurer::disable)
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(URL_PERMIT_ALL).permitAll()
 //                        .requestMatchers(URL_ADMIN).hasAuthority("ADMIN")
-                        .requestMatchers("/api/v1/user/"
-                        ).authenticated()
+                        .requestMatchers("/api/v1/user/").authenticated()
 ////                        .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
 //                        .requestMatchers("/api/v1/order/status"
 //                                , "/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN", "SELLER")
 //                        .requestMatchers(HttpMethod.GET, "/api/v1/order").hasAnyAuthority("ADMIN", "SELLER")
 //                        .requestMatchers("/api/v1/user/registerToken/**"
 //                                , "/api/v1/user/registerToken").hasAuthority("ADMIN")
-                        .anyRequest().permitAll()
+                        .anyRequest().authenticated()
                 )
                 .httpBasic(Customizer.withDefaults())
                 .exceptionHandling(e -> e.accessDeniedHandler(accessDeniedException))
@@ -97,7 +96,9 @@ public class SecurityConfig {
                     l.logoutUrl("/user/logout");
                     l.logoutSuccessUrl("/login?logout");
                 })
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+//                .exceptionHandling(e -> e.authenticationEntryPoint())
+        ;
 
         return httpSecurity.build();
     }
@@ -106,7 +107,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Frontend
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type","X-Requested-With"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
 

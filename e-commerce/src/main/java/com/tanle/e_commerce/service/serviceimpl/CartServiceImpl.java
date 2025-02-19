@@ -42,8 +42,8 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartDTO findByUserid(Integer cartId) {
-        Cart cart = cartRepository.findByUserId(cartId)
+    public CartDTO findByUsername(String username) {
+        Cart cart = cartRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart of user"));
         return cartMapper.convertDTO(cart);
     }
@@ -85,8 +85,8 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public MessageResponse addCartItem(Integer cartId, Map<String, Integer> cartItem) {
-        Cart cart = cartRepository.findById(cartId)
+    public MessageResponse addCartItem(String username, Map<String, Integer> cartItem) {
+        Cart cart = cartRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
 
         if (cartItem != null) {
@@ -120,17 +120,19 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public MessageResponse updateCartItem(Map<String, Integer> cartItem) {
-        Cart cart = cartRepository.findById(cartItem.get("cartId"))
+    public MessageResponse updateCartItem(String username,Map<String, Integer> cartItem) {
+        Cart cart = cartRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
         CartItem cartItemDB = cart.getCartItems().stream()
                 .filter(c -> c.getSku().getId() == cartItem.get("skuId"))
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart item"));
-
-        if (cartItem.get("quantity") != null) {
-            cartItemDB.setQuantity(cartItem.get("quantity"));
-        }
+        Integer quantity = cartItem.get("quantity");
+        if (quantity == null)
+            throw new RuntimeException("Insufficient params");
+        if(quantity <0)
+            throw new RuntimeException("Invalid params");
+        cartItemDB.setQuantity(cartItem.get("quantity"));
         cartRepository.save(cart);
         Map<String, Object> mp = new HashMap<>();
         mp.put("cartId", cart.getId());
@@ -144,8 +146,8 @@ public class CartServiceImpl implements CartService {
 
     @Override
     @Transactional
-    public MessageResponse deleteCartItem(Integer cartId, List<Integer> skuId) {
-        Cart cart = cartRepository.findById(cartId)
+    public MessageResponse deleteCartItem(String username, List<Integer> skuId) {
+        Cart cart = cartRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found cart"));
         List<CartItem> cartItems = cart.getCartItems().stream()
                 .filter(c ->skuId.contains(c.getSku().getId()))

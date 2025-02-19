@@ -4,12 +4,15 @@ package com.tanle.e_commerce.service.serviceimpl;
 import com.tanle.e_commerce.Repository.Jpa.AddressRepository;
 import com.tanle.e_commerce.Repository.Jpa.RoleRepository;
 import com.tanle.e_commerce.Repository.Jpa.UserRepository;
+import com.tanle.e_commerce.dto.AddressDTO;
 import com.tanle.e_commerce.dto.PasswordChangeDTO;
 import com.tanle.e_commerce.dto.RegisterUserDTO;
 import com.tanle.e_commerce.dto.UserDTO;
 import com.tanle.e_commerce.entities.*;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
+import com.tanle.e_commerce.mapper.AddressMapper;
 import com.tanle.e_commerce.mapper.UserMapper;
+import com.tanle.e_commerce.request.UpdateUserInforRequeset;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +20,21 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.lang.reflect.Array;
+import java.text.Format;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -38,6 +49,10 @@ public class UserServiceImpl implements UserService {
     private RoleRepository roleRepository;
     @Autowired
     private UserMapper mapper;
+    @Autowired
+    private AddressMapper addressMapper;
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     @Override
     public List<UserDTO> findAllUser() {
@@ -46,8 +61,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public MessageResponse grantRole(Integer userId,String nameRole) {
-        Role role  = roleRepository.findRoleByRoleName(nameRole.toUpperCase())
+    public MessageResponse grantRole(Integer userId, String nameRole) {
+        Role role = roleRepository.findRoleByRoleName(nameRole.toUpperCase())
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found role"));
         MyUser myUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
@@ -55,7 +70,7 @@ public class UserServiceImpl implements UserService {
 
         return MessageResponse.builder()
                 .status(HttpStatus.OK)
-                .message("Successfully grant role " + role.getRoleName()+ " for " + myUser.getUsername())
+                .message("Successfully grant role " + role.getRoleName() + " for " + myUser.getUsername())
                 .build();
     }
 
@@ -65,10 +80,12 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
         return mapper.convertDTO(myUser);
     }
+
     @Override
     public void delete(Integer id) {
 
     }
+
     @Override
     @Transactional
     public MessageResponse updateLastAccess(String username) {
@@ -80,9 +97,28 @@ public class UserServiceImpl implements UserService {
                 .status(HttpStatus.OK)
                 .build();
     }
+
     @Override
-    public UserDTO update(UserDTO userDTO) {
-        return null;
+    public void update(MyUser user, UpdateUserInforRequeset request) {
+        Optional.ofNullable(request.getFirstName()).ifPresent(user::setFirstName);
+        Optional.ofNullable(request.getLastName()).ifPresent(user::setLastName);
+        Optional.ofNullable(request.getDob()).ifPresent(dob -> {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            user.setDateOfBirth(LocalDate.parse(dob, formatter));
+        });
+        Optional.ofNullable(request.getPhoneNumber()).ifPresent(user::setPhoneNumber);
+        Optional.ofNullable(request.getEmail()).ifPresent(user::setEmail);
+        Optional.ofNullable(request.getSex()).ifPresent(user::setSex);
+        Optional.ofNullable(request.getAvt()).ifPresent(avt -> {
+            try {
+                String url = cloudinaryService.uploadFile(avt);
+                user.setAvtUrl(url);
+            } catch (IOException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        });
+
+        userRepository.save(user);
     }
 
     @Override
@@ -96,7 +132,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(myUser);
         Map<String, Integer> date = Map.of(
                 "Total following", myUser.countFollowing()
-                ,"Total follower", myUser.countFollower());
+                , "Total follower", myUser.countFollower());
         return MessageResponse.builder()
                 .data(date)
                 .message("Follower user succefully")
@@ -110,18 +146,28 @@ public class UserServiceImpl implements UserService {
         MyUser myUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
         Follower unfollower = myUser.getFollowing().stream()
-                .filter(f -> f.getFollowing ().getId() == followingId && f.getUnfollowDate() == null)
+                .filter(f -> f.getFollowing().getId() == followingId && f.getUnfollowDate() == null)
                 .findFirst()
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
         myUser.unfollowUser(unfollower);
         Map<String, Integer> date = Map.of(
                 "Total following", myUser.countFollowing()
-                ,"Total follower", myUser.countFollower());
+                , "Total follower", myUser.countFollower());
         return MessageResponse.builder()
                 .data(date)
                 .message("Unfollower user succefully")
                 .status(HttpStatus.OK)
                 .build();
+    }
+
+    @Override
+    public List<AddressDTO> findAddressByUser(String username) {
+        MyUser myUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Not found username"));
+
+        return myUser.getAddresses().stream()
+                .map(address -> addressMapper.convertDTO(address))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -133,6 +179,7 @@ public class UserServiceImpl implements UserService {
         userRepository.save(myUser);
         return mapper.convertDTO(myUser);
     }
+
     @Override
     @Transactional
     public MessageResponse updateAddress(Address address) {
@@ -147,7 +194,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public MessageResponse deleteAddress(Integer userId, Integer addressId) {
-        Address  addressDB = addressRepository.findById(addressId)
+        Address addressDB = addressRepository.findById(addressId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found address"));
         MyUser myUser = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
@@ -160,6 +207,7 @@ public class UserServiceImpl implements UserService {
                 .data(addressDB)
                 .build();
     }
+
     @Override
     @Transactional
     public UserDTO registerUser(RegisterUserDTO registerUserDTO) {
@@ -185,24 +233,22 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public MessageResponse changePassword(Authentication authentication, PasswordChangeDTO passwordChangeDTO) {
-      try {
-          if(authentication.getName() != passwordChangeDTO.getUsername())
-              throw new BadCredentialsException("Username/password invalid");
-          MyUser myUser = userRepository.findByUsername(passwordChangeDTO.getUsername()).get();
 
-          if(!passwordEncoder.matches(passwordChangeDTO.getOldPassword(), myUser.getPassword()))
-              throw new BadCredentialsException("Username/password invalid");
+        MyUser myUser = userRepository.findByUsername(authentication.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
+        if (!passwordEncoder.matches(passwordChangeDTO.getOldPassword(), myUser.getPassword()))
+            throw new BadCredentialsException("Password invalid");
+        if (!passwordChangeDTO.getNewPassword().equals(passwordChangeDTO.getConfirmPassword()))
+            throw new BadCredentialsException("Password doesn't match with confirm password");
 
-          myUser.setPassword(passwordEncoder.encode(passwordChangeDTO.getNewPassword()));
-          userRepository.save(myUser);
-          return MessageResponse.builder()
-                  .message("Change password successfully")
-                  .status(HttpStatus.OK)
-                  .build();
+        myUser.setPassword(passwordEncoder.encode(passwordChangeDTO.getNewPassword()));
+        userRepository.save(myUser);
+        return MessageResponse.builder()
+                .message("Change password successfully")
+                .status(HttpStatus.OK)
+                .build();
 
-      }catch (BadCredentialsException e) {
-          throw new BadCredentialsException(e.getMessage());
-      }
+
     }
 
     @Override

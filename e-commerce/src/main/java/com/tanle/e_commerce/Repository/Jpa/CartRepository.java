@@ -12,7 +12,8 @@ import java.util.Optional;
 public interface CartRepository  extends JpaRepository<Cart,Integer> {
 
     @Query("""
-      from Cart where myUser.id =?1
+      from Cart where myUser.username =?1
       """)
-    Optional<Cart> findByUserId(Integer userIdRequest);
+    Optional<Cart> findByUsername(String username);
+
 }

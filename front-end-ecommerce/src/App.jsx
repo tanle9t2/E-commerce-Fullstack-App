@@ -12,6 +12,8 @@ import { Toaster } from "react-hot-toast";
 import Profile from "./features/authentication/Profile";
 import ProfileLayout from "./ui/ProfileLayout";
 import { AuthContextProvider } from "./context/AuthContext";
+import PasswordChange from "./features/authentication/PasswordChange";
+import Address from "./features/authentication/Address";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -35,8 +37,8 @@ function App() {
                 <Route path="product/:productId" element={<Product />} />
                 <Route path="/user/account/" element={<ProfileLayout/>}>
                   <Route path="profile" element ={<Profile/>}/>
-                    <Route path="resetPassword" element ={<div>sknoi</div>}/>
-                    <Route path="ok" element ={<div>diofjoi</div>}/>
+                    <Route path="password" element ={<PasswordChange/>}/>
+                    <Route path="address" element ={<Address/>}/>
                 </Route>
               </Route>
               <Route path="cart" element={<Cart/>}/>

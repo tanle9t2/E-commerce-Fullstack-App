@@ -12,14 +12,17 @@ export function useLogin() {
   const { mutate: login, isLoading } = useMutation({
     mutationFn: ({ username, password }) => loginApi({ username, password }),
     onSuccess: (res) => {
+      console.log(res)
       const {accessToken,refreshToken,userInfor} = res.data;
       handleLogin(accessToken,refreshToken,userInfor)
-      navigate('/')
     },
     onError: (err) => {
       console.log('ERROR', err);
       toast.error(err.message);
     },
+    onSettled: () => {
+      navigate('/')
+    }
   });
 
   return { login, isLoading };

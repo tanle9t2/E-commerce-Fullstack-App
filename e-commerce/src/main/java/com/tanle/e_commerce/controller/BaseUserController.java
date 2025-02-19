@@ -1,5 +1,6 @@
 package com.tanle.e_commerce.controller;
 
+import com.tanle.e_commerce.entities.MyUser;
 import com.tanle.e_commerce.respone.AuthenticationRespone;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.request.LoginRequest;
@@ -14,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,14 +43,13 @@ public abstract class BaseUserController {
     }
 
     @PostMapping("/logout")
-    public MessageResponse logout() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null)
+    public MessageResponse logout(@AuthenticationPrincipal MyUser myUser) {
+        if (myUser == null)
             return MessageResponse.builder()
                     .message("Unauthorized")
                     .status(HttpStatus.UNAUTHORIZED)
                     .build();
-        String username = authentication.getName();
+        String username = myUser.getUsername();
         userService.updateLastAccess(username);
         tokenSerice.revokeToken(username);
         SecurityContextHolder.clearContext();

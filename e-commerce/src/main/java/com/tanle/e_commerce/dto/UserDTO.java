@@ -2,7 +2,9 @@ package com.tanle.e_commerce.dto;
 
 import com.tanle.e_commerce.entities.Address;
 import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,8 +21,10 @@ public class UserDTO {
     private String email;
     private String avtUrl;
     private String phoneNumber;
+    private boolean sex;
     private boolean isActive;
-    private LocalDateTime dateOfBirth;
+    @DateTimeFormat(pattern = "dd/MM/yyyy")
+    private LocalDate dateOfBirth;
     private LocalDateTime lastAccess;
     private LocalDateTime createdAt;
     private List<Address> addresses;

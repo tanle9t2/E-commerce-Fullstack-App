@@ -4,6 +4,8 @@ import Logo from "./Logo"
 import CartNav from '../features/cart/CartNav'
 import { HiOutlineSearch, HiOutlineShoppingCart } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "../context/AuthContext";
+import CartNavNoAuth from "../features/cart/CartNavNoAuth";
 
 const SearchBar =styled.div`
     width:100%;
@@ -21,6 +23,7 @@ const StyledFindIcon = styled.span`
 `
 
 function NavSearch() {
+    const {isAuthenticated} = useAuthContext();
     return (
        <div className="flex items-center">
        <Logo/>
@@ -30,7 +33,7 @@ function NavSearch() {
                 <HiOutlineSearch />
             </StyledFindIcon>
         </SearchBar>
-        <CartNav/>
+        {isAuthenticated() ? <CartNav/>:<CartNavNoAuth/>}
        </div>
     )
 }
