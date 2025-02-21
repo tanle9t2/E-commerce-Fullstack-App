@@ -46,16 +46,16 @@ public class UserController extends BaseUserController {
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/update",consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    @PostMapping(value = "/update", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
     private ResponseEntity<MessageResponse> updateUserInfor(
             @AuthenticationPrincipal MyUser user,
-            @RequestParam(value = "firstName",required = false) String firstName,
-            @RequestParam(value = "lastName",required = false) String lastName,
-            @RequestParam(value = "email",required = false) String email,
-            @RequestParam(value = "phoneNumber",required = false) String phoneNumber,
-            @RequestParam(value = "sex",required = false) Boolean sex,
-            @RequestParam(value = "dob",required = false) String dobDay,
-            @RequestParam(value = "avt",required = false) MultipartFile avtFile) {
+            @RequestParam(value = "firstName", required = false) String firstName,
+            @RequestParam(value = "lastName", required = false) String lastName,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "phoneNumber", required = false) String phoneNumber,
+            @RequestParam(value = "sex", required = false) Boolean sex,
+            @RequestParam(value = "dob", required = false) String dobDay,
+            @RequestParam(value = "avt", required = false) MultipartFile avtFile) {
         UpdateUserInforRequeset requeset = UpdateUserInforRequeset.builder()
                 .dob(dobDay)
                 .avt(avtFile)
@@ -65,7 +65,7 @@ public class UserController extends BaseUserController {
                 .phoneNumber(phoneNumber)
                 .sex(sex)
                 .build();
-        userService.update(user,  requeset);
+        userService.update(user, requeset);
         return ResponseEntity.ok(MessageResponse.builder()
                 .message("Update successfull user")
                 .status(HttpStatus.OK)
@@ -101,44 +101,32 @@ public class UserController extends BaseUserController {
     }
 
     @PostMapping("/address")
-    public ResponseEntity<UserDTO> addAddress(@RequestParam(value = "userId") String userId,
-                                              @RequestBody Map<String, Object> data) {
-        Address address = buildAddress(data);
-        UserDTO userDTO = userService.addAddress(Integer.parseInt(userId), address);
-        return new ResponseEntity<>(userDTO, HttpStatus.OK);
+    public ResponseEntity<AddressDTO> addAddress(@AuthenticationPrincipal MyUser user,
+                                                 @RequestBody AddressDTO addressDTO) {
+        AddressDTO address = userService.addAddress(user.getUsername(), addressDTO);
+        return new ResponseEntity<>(addressDTO, HttpStatus.OK);
     }
 
     @PutMapping("/address")
-    public ResponseEntity<MessageResponse> updateAddress(@RequestBody Map<String, Object> data) {
-        Address address = buildAddress(data);
-        MessageResponse messageResponse = userService.updateAddress(address);
+    public ResponseEntity<MessageResponse> updateAddress(@RequestBody AddressDTO addressDTO) {
+        MessageResponse messageResponse = userService.updateAddress(addressDTO);
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 
     @DeleteMapping("/address")
-    public ResponseEntity<MessageResponse> deleteAddress(@RequestBody Map<String, Integer> request) {
+    public ResponseEntity<MessageResponse> deleteAddress(@AuthenticationPrincipal MyUser user,
+                                                         @RequestParam("addressId") String addressId) {
         MessageResponse messageResponse = userService.deleteAddress(
-                request.get("userIdRequest")
-                , request.get("addressId"));
+                user.getUsername()
+                , Integer.parseInt(addressId));
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
+
     @GetMapping("/address")
     public ResponseEntity<List<AddressDTO>> getAddress(@AuthenticationPrincipal MyUser user) {
         List<AddressDTO> addressDTOS = userService.findAddressByUser(user.getUsername());
         return ResponseEntity.ok(addressDTOS);
     }
 
-    private Address buildAddress(Map<String, Object> data) {
-        return Address.builder()
-                .id(Integer.parseInt(data.get("id") != null ? data.get("id").toString() : "0"))
-                .city(String.valueOf(data.get("city")))
-                .district(String.valueOf(data.get("district")))
-                .street(String.valueOf(data.get("street")))
-                .country(String.valueOf(data.get("country")))
-                .firstName(String.valueOf(data.get("firstName")))
-                .lastName(String.valueOf(data.get("lastName")))
-                .phoneNumber(String.valueOf(data.get("phoneNumber")))
-                .streetNumber(String.valueOf(data.get("streetNumber")))
-                .build();
-    }
+
 }

@@ -16,6 +16,16 @@ public abstract class OrderDetailMapperDecorator implements OrderDetailMapper {
     @Autowired
     private SKURepository skuRepository;
 
+    @Override
+    public OrderDetailDTO converDTO(OrderDetail orderDetail) {
+        OrderDetailDTO orderDetailDTO = orderDetailMapper.converDTO(orderDetail);
+
+        orderDetailDTO.setImage(orderDetail.getSku().getProduct().getImages().get(0).getImageUrl());
+        orderDetailDTO.setProductName(orderDetail.getSku().getProduct().getName());
+        orderDetailDTO.setVariation(orderDetail.getSku().getModalName());
+        orderDetailDTO.setPrice(orderDetail.getSku().getPrice());
+        return orderDetailDTO;
+    }
 
     @Override
     public OrderDetail convertEntity(OrderDetailDTO orderDetailDTO) {

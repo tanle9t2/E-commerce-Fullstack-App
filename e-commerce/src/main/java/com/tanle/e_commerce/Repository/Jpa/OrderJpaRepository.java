@@ -20,8 +20,8 @@ public interface OrderJpaRepository extends JpaRepository<Order,Integer>, JpaSpe
     @Query("""
             FROM Order o JOIN MyUser u
             ON o.myUser.id = u.id 
-            where u.id = ?1 
+            where u.username = ?1 
             and (?2 is null or o.status = ?2)
         """)
-    List<Order> findOrderId(Integer userId, StatusOrder type);
+    List<Order> findOrderId(String username, StatusOrder type);
 }

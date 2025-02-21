@@ -18,14 +18,10 @@ public class Address {
     @Column(name = "address_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    @Column(name = "country")
-    private String country;
     @Column(name = "city")
     private String city;
     @Column(name = "district")
     private String district;
-    @Column(name = "street")
-    private String street;
     @Column(name = "street_number")
     private String streetNumber;
     @Column(name = "first_name")
@@ -34,4 +30,8 @@ public class Address {
     private String lastName;
     @Column(name = "phone_number")
     private String phoneNumber;
+    @Column(name = "ward")
+    private String ward;
+    @Column(name = "is_active")
+    private boolean isActive;
 }

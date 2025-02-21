@@ -1,6 +1,7 @@
 package com.tanle.e_commerce.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.tanle.e_commerce.entities.Tenant;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.elasticsearch.annotations.DateFormat;
@@ -32,7 +33,7 @@ public class OrderDTO {
     @Field(type = FieldType.Object)
     private UserOrder userOrder;
     @Field(type = FieldType.Integer)
-    private int tenantId;
+    private TenantOrder tenantOrder;
     @Field(type = FieldType.Object)
     private List<OrderDetailDTO> itemList;
     @Field(type = FieldType.Object)
@@ -41,13 +42,26 @@ public class OrderDTO {
     private int paymentId;
     @Field(type = FieldType.Date)
     private LocalDateTime payTime;
-    @Getter
-    @Setter
+    @Data
     @NoArgsConstructor
     public class UserOrder {
         private int userId;
         private String fullName;
 
+    }
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public class TenantOrder {
+        private int tenantId;
+        private String tenantName;
+
+    }
+    public TenantOrder buildTenantOrder(int userId, String tenantName) {
+        TenantOrder tenantOrder = new TenantOrder();
+        tenantOrder.setTenantId(userId);
+        tenantOrder.setTenantName(tenantName);
+        return tenantOrder;
     }
     public UserOrder buildUserOrder(int userId, String fullName) {
         UserOrder userOrder = new UserOrder();

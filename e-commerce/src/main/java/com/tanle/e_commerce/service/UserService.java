@@ -25,9 +25,9 @@ public interface UserService extends OwnerService<MyUser,Integer> {
     MessageResponse followUser(Integer userId, Integer followingId);
     MessageResponse unfollowUser(Integer userId, Integer followingId);
     List<AddressDTO> findAddressByUser(String username);
-    UserDTO addAddress(Integer userId, Address address);
-    MessageResponse updateAddress(Address address);
-    MessageResponse deleteAddress(Integer userId, Integer addressId);
+    AddressDTO addAddress(String username, AddressDTO address);
+    MessageResponse updateAddress(AddressDTO address);
+    MessageResponse deleteAddress(String username, Integer addressId);
     UserDTO registerUser(RegisterUserDTO registerUserDTO);
 
     MessageResponse changePassword(Authentication authentication, PasswordChangeDTO passwordChangeDTO);

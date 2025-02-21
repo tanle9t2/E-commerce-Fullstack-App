@@ -30,12 +30,16 @@ const StyledWord = styled.div`
     color:var(--color-grey-800);
     margin:0 10px;
 `;
+const CustomForm = styled(Form)`
+  position:absolute;
+`
 function LoginForm() {
   const { login , isLoading } = useLogin();
   const { register,handleSubmit,formState, getValues, reset } = useForm();
   const { errors } = formState;
   const navigate = useNavigate()
   const {isAuthenticated} = useAuthContext();
+  const [loginError, setLoginError] = useState("");
   useEffect(() => {
     if (isAuthenticated()) {
       navigate('/');  // Redirect to the home page if the user is authenticated
@@ -46,12 +50,16 @@ function LoginForm() {
     const password = getValues().password;
     if (!username || !password) return;
     login(
-      { username,password}
+      { username,password},
+      {
+      onError: (err) => {
+        setLoginError(err.message);
+      },}
     );
   }
 
   return (
-    <Form onSubmit={handleSubmit(onSubmit)}>
+    <CustomForm onSubmit={handleSubmit(onSubmit)}>
         <FormRowVertical>
             <h1 className="text-4xl">Đăng nhập</h1>
         </FormRowVertical>
@@ -83,7 +91,7 @@ function LoginForm() {
           })}
         />
       </FormRowVertical>
-      <FormRowVertical>
+      <FormRowVertical error={loginError}>
         <Button size="large" disabled={isLoading}> 
           {!isLoading ? "Đăng nhập" : <SpinnerMini />}
         </Button>
@@ -119,7 +127,7 @@ function LoginForm() {
       <FormRowVertical  >
         <a className="text-center" href="#">Đăng ký</a>
       </FormRowVertical>
-    </Form>
+    </CustomForm>
   );
 }
 

@@ -29,7 +29,8 @@ public abstract class OrderMapperDecorator implements OrderMapper {
         OrderDTO orderDTO = delegate.convertDTO(order);
 
         orderDTO.setUserOrder(orderDTO.buildUserOrder(order.getMyUser().getId(),
-                order.getMyUser().getFirstName()+ " " + order.getMyUser().getLastName()));
+                order.getMyUser().getFirstName() + " " + order.getMyUser().getLastName()));
+        orderDTO.setTenantOrder(orderDTO.buildTenantOrder(order.getTenant().getId(), order.getTenant().getName()));
         if (order.getOrderDetails() != null) {
             double totalPrice = order.getOrderDetails().stream()
                     .mapToDouble(o -> o.getSku().getPrice() * o.getQuantity())
@@ -43,7 +44,7 @@ public abstract class OrderMapperDecorator implements OrderMapper {
 
     @Override
     public Order convertEntity(OrderDTO orderDTO) {
-        Tenant tenant = tenantRepository.findById(orderDTO.getTenantId())
+        Tenant tenant = tenantRepository.findById(orderDTO.getTenantOrder().getTenantId())
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found tenant"));
         MyUser myUser = userRepository.findById(orderDTO.getUserOrder().getUserId())
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
@@ -54,7 +55,8 @@ public abstract class OrderMapperDecorator implements OrderMapper {
         Order order = delegate.convertEntity(orderDTO);
         List<OrderDetail> orderDetails = orderDTO.getItemList().stream()
                 .map(o -> orderDetailMapper.convertEntity(o))
-                .collect(Collectors.toList());;
+                .collect(Collectors.toList());
+        ;
         order.addOrderDetail(orderDetails);
         order.setAddress(address);
         order.setTenant(tenant);

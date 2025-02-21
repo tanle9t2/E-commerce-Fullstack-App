@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { useUser } from "./useUser";
 import Spinner from "../../ui/Spinner";
 import { useUpdateUser } from "./useUpdateUser";
-import { validateEmail } from "../../utils/helper";
+import { splitName, validateEmail } from "../../utils/helper";
 import toast from "react-hot-toast";
 
 const ProfileContent = styled.div`
@@ -134,9 +134,7 @@ const Profile = () => {
         return;
     }
     const userData = {
-      firstName: name.split(" ")[0],
-      lastName: name.split(" ").slice(1).join(" "),
-      email,
+      ...splitName(name),
       phoneNumber: phone,
       dob: `${dob.day.toString().padStart(2, "0")}/${dob.month.toString().padStart(2, "0")}/${dob.year}`,
       sex: gender,

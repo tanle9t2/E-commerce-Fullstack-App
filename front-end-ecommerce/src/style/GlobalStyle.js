@@ -3,9 +3,11 @@ import { createGlobalStyle } from "styled-components";
 const GlobalStyle = createGlobalStyle`:root {
     /* Indigo */
   --primary-color:#ef4444;
+  --secondary-color:rgba(0, 0, 0, 0.54);
   --color-white:#fff;
   --black-color:#000;
   --padding-container: 10px 200px;
+  --blue-color:#08f;
   --line-color:#eeeeee;
     /* Grey */
     &, &.light-mode {

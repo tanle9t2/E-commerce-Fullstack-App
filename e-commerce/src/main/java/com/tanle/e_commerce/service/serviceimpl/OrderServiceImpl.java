@@ -127,8 +127,8 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public PageResponse<OrderDTO> getPurchaseUser(Map<String, Integer> request, String type) {
-        List<Order> orders = orderJPARepository.findOrderId(request.get("userId")
+    public PageResponse<OrderDTO> getPurchaseUser(String username, String type) {
+        List<Order> orders = orderJPARepository.findOrderId(username
                 , type != null ? StatusOrder.valueOf(type.toUpperCase()) : null);
         List<OrderDTO> orderDTOS = orders.stream()
                 .map(o -> orderMapper.convertDTO(o))

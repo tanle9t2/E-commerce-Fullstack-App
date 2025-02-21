@@ -55,6 +55,12 @@ function ProfileLayOut() {
         >
             Đổi Mật Khẩu
         </SidebarItem>
+        <SidebarItem 
+            onClick={() => navigate('/user/account/purchase')} 
+            active={location.pathname === "/user/account/purchase"}
+        >
+            Đơn mua
+        </SidebarItem>
     </Sidebar>
     <Outlet/>
 </ProfileContainer>)

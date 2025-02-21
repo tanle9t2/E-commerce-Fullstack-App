@@ -20,7 +20,7 @@ const Form = styled.form`
     
   overflow: hidden;
   font-size: 1.4rem;
-  position:absolute;
+  /* position:absolute; */
   right:0;
 `;
 

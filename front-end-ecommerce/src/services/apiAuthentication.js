@@ -1,6 +1,7 @@
 import { data } from "autoprefixer";
 import { getAuthHeaders } from "../utils/helper";
 import { createAPI } from "./api";
+import axios from "axios";
 
 const AUTHENTICATION_API = "http://localhost:8080/ecommerce-server/api/v1";
 const authAPI = createAPI(AUTHENTICATION_API);
@@ -40,7 +41,7 @@ export const setupInterceptors = ({ setToken, handleLogout }) => {
 // User Login
 export async function loginUser({ username, password }) {
     try {
-        const response = await authAPI.post("/user/login", { username, password });
+        const response = await axios.post(`${AUTHENTICATION_API}/user/login`, { username, password });
         return response.data;
     } catch (error) {
         if (error.response?.status === 401) {
@@ -150,5 +151,58 @@ export async function getAddress(token) {
         throw error;
     }
 }
+export async function updateAddress({ id, city, district, ward, streetNumber, firstName, lastName, phoneNumber }, token) {
+    try {
+        const response = await authAPI.put(
+            "/user/address",
+            { id, city, district, ward, streetNumber, firstName, lastName, phoneNumber },
+            {
 
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+        return response.data;
+
+    } catch (error) {
+        console.error("Error changing user data:", error.response || error);
+        throw error;
+    }
+}
+export async function createAddress({ city, district, ward, streetNumber, firstName, lastName, phoneNumber }, token) {
+    try {
+        const response = await authAPI.post(
+            "/user/address",
+            { city, district, ward, streetNumber, firstName, lastName, phoneNumber },
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+        return response.data;
+
+    } catch (error) {
+        console.error("Error changing user data:", error.response || error);
+        throw error;
+    }
+}
+export async function deleteAddress(addressId, token) {
+    try {
+        const response = await authAPI.delete(
+            `/user/address?addressId=${addressId}`,
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+        return response.data;
+
+    } catch (error) {
+        console.error("Error changing user data:", error.response || error);
+        throw error;
+    }
+}
 export { authAPI };

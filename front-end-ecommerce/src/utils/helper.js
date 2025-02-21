@@ -37,6 +37,16 @@ export const validateEmail = (value) => {
     const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return regex.test(value);
 };
+export const validatePhone = (value) => {
+    const phoneRegex = /^(?:\(\+\d{1,3}\) )?\d{1,3}(?:\s?\d{3}){0,3}$/;
+    return phoneRegex.test(value)
+}
+export const splitName = (fullName) => {
+    return {
+        firstName: fullName.split(" ")[0],
+        lastName: fullName.split(" ").slice(1).join(" "),
+    }
+}
 export const isValidDate = (day, month, year) => {
     // Month in JavaScript Date is 0-based (0 = January, 11 = December)
     if (!Number.isInteger(day) || !Number.isInteger(month) || !Number.isInteger(year)) {

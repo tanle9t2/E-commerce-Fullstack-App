@@ -5,7 +5,7 @@ import { getAddress } from "../../services/apiAuthentication";
 export function useAddress() {
     const { token } = useAuthContext()
     const { isLoading, data: addresses, error } = useQuery({
-        queryKey: ["address1kn"],
+        queryKey: ["address"],
         queryFn: () => getAddress(token)
     })
     return { isLoading, addresses, error }

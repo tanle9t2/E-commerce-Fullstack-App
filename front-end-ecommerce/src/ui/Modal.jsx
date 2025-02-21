@@ -80,7 +80,7 @@ function Window({ name, children }) {
 
   return createPortal(
     <Overlay>
-      <StyledModal onClick={(e) => console.log(e.target)} ref={ref}>
+      <StyledModal ref={ref}>
         <Button onClick={onClose}>
           <HiXMark />
         </Button>

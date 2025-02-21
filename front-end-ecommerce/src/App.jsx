@@ -14,6 +14,7 @@ import ProfileLayout from "./ui/ProfileLayout";
 import { AuthContextProvider } from "./context/AuthContext";
 import PasswordChange from "./features/authentication/PasswordChange";
 import Address from "./features/authentication/Address";
+import OrderHistory from "./features/orders/OrderHistory";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -27,7 +28,7 @@ function App() {
   return (
     <AuthContextProvider>
       <CartContextProvider>
-          <QueryClientProvider client={queryClient}>
+        <QueryClientProvider client={queryClient}>
           <ReactQueryDevtools initialIsOpen={false} />
           <GlobalStyle />
           <BrowserRouter>
@@ -35,13 +36,14 @@ function App() {
               <Route element={<AppLayout />}>
                 <Route path="/" element={<HomePage />} />
                 <Route path="product/:productId" element={<Product />} />
-                <Route path="/user/account/" element={<ProfileLayout/>}>
-                  <Route path="profile" element ={<Profile/>}/>
-                    <Route path="password" element ={<PasswordChange/>}/>
-                    <Route path="address" element ={<Address/>}/>
+                <Route path="/user/account/" element={<ProfileLayout />}>
+                  <Route path="purchase" element ={<OrderHistory/>}/>
+                  <Route path="profile" element={<Profile />} />
+                  <Route path="password" element={<PasswordChange />} />
+                  <Route path="address" element={<Address />} />
                 </Route>
               </Route>
-              <Route path="cart" element={<Cart/>}/>
+              <Route path="cart" element={<Cart />} />
               <Route path="login" element={<Login />} />
             </Routes>
           </BrowserRouter>

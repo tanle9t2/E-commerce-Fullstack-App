@@ -6,7 +6,7 @@ export function useCloseForm(action, listCapturing = true) {
     function () {
       function handleClick(e) {
         if (ref.current && !ref.current.contains(e.target)) {
-          console.log("lm");
+          console.log(ref.current, e.target)
           action();
         }
       }

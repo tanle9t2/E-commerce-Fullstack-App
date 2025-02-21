@@ -4,6 +4,8 @@ import Heading from "../../ui/Heading";
 import { useAddress } from "./useAddress";
 import Spinner from "../../ui/Spinner";
 import AddressCard from "./AddressCard";
+import Modal from "../../ui/Modal";
+import SelectionAddressForm from "./SelectionAddressForm";
 
 const Container = styled.div`
   padding: 20px;
@@ -28,16 +30,21 @@ const AddressHeader = styled.div`
     justify-content:space-between;
 `
 
-
 function Address() {
     const {isLoading, addresses} = useAddress();
     if(isLoading) return <Spinner/>
-    console.log(addresses)
     return (
         <Container>
             <AddressHeader>
-                <Heading>Địa chỉ của tôi</Heading>
-                <Button>+ Thêm địa chỉ mới</Button>
+                <Heading as="h1">Địa chỉ của tôi</Heading>
+                <Modal>
+                    <Modal.OpenButton opens={"create"}>
+                    <Button>+ Thêm địa chỉ mới</Button>
+                    </Modal.OpenButton>
+                    <Modal.Window name={"create"}>
+                      <SelectionAddressForm heading={"Thêm địa chỉ mới"}/>
+                    </Modal.Window>
+                </Modal>
             </AddressHeader>
           {addresses.map((addr) => 
             <AddressCard key={addr.id} address={addr}/>

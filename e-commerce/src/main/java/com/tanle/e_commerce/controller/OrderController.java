@@ -1,6 +1,7 @@
 package com.tanle.e_commerce.controller;
 
 import com.tanle.e_commerce.dto.OrderDTO;
+import com.tanle.e_commerce.entities.MyUser;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.SearchRequest;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
@@ -66,10 +68,10 @@ public class OrderController {
         OrderDTO orderDTO = orderService.getOrders(orderId);
         return new ResponseEntity<>(orderDTO,HttpStatus.OK);
     }
-    @GetMapping("/user/purchase")
-    public ResponseEntity<PageResponse<OrderDTO>> getOrderByUser(@RequestBody Map<String,Integer> request
+    @GetMapping("/order/purchase")
+    public ResponseEntity<PageResponse<OrderDTO>> getOrderByUser(@AuthenticationPrincipal MyUser user
             , @RequestParam(name = "type", required = false) String type) {
-        PageResponse<OrderDTO>  orderDTOS= orderService.getPurchaseUser(request, type);
+        PageResponse<OrderDTO>  orderDTOS= orderService.getPurchaseUser(user.getUsername(), type);
         return ResponseEntity.status(HttpStatus.OK).body(orderDTOS);
     }
     @PostMapping("/order")

@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 @DecoratedWith(OrderMapperDecorator.class)
 public interface OrderMapper {
 
-    @Mapping(target = "tenantId", source = "tenant.id")
     @Mapping(target = "receiptAddress", source = "address")
     @Mapping(target = "itemList",source = "orderDetails")
     OrderDTO convertDTO(Order order);

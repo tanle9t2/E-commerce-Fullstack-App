@@ -19,6 +19,10 @@ public class OrderDetailDTO {
 
     private int skuId;
     private int quantity;
+    private String variation;
+    private String productName;
+    private String image;
+    private double price;
     @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
     private LocalDateTime createdAt;
 }

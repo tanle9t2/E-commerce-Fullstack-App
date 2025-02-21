@@ -15,6 +15,7 @@ import com.tanle.e_commerce.mapper.UserMapper;
 import com.tanle.e_commerce.request.UpdateUserInforRequeset;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.UserService;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
@@ -166,41 +167,48 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new UsernameNotFoundException("Not found username"));
 
         return myUser.getAddresses().stream()
+                .filter(address -> address.isActive())
                 .map(address -> addressMapper.convertDTO(address))
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public UserDTO addAddress(Integer userId, Address address) {
-        MyUser myUser = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
+    public AddressDTO addAddress(String username, AddressDTO addressDTO) {
+        MyUser myUser = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Not found user"));
+        Address address = addressMapper.convertEntity(addressDTO);
         myUser.addAddress(address);
         userRepository.save(myUser);
-        return mapper.convertDTO(myUser);
+        return addressMapper.convertDTO(address);
     }
 
     @Override
     @Transactional
-    public MessageResponse updateAddress(Address address) {
-        Address addressDB = addressRepository.save(address);
+    public MessageResponse updateAddress(AddressDTO addressDTO) {
+        Address address = addressMapper.convertEntity(addressDTO);
+        addressRepository.save(address);
         return MessageResponse.builder()
                 .status(HttpStatus.OK)
                 .message("Successfully update")
-                .data(addressDB)
+                .data(address)
                 .build();
     }
 
     @Override
     @Transactional
-    public MessageResponse deleteAddress(Integer userId, Integer addressId) {
-        Address addressDB = addressRepository.findById(addressId)
-                .orElseThrow(() -> new ResourceNotFoundExeption("Not found address"));
-        MyUser myUser = userRepository.findById(userId)
+    public MessageResponse deleteAddress(String username, Integer addressId) {
+        MyUser myUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user"));
-        myUser.getAddresses().remove(addressDB);
-        addressRepository.delete(addressDB);
+        Optional<Address> isSuccess = myUser.getAddresses().stream()
+                .filter(address -> address.getId() == addressId)
+                .findFirst();
+        if (!isSuccess.isPresent())
+            throw new BadCredentialsException("Don't have permission");
 
+        Address addressDB = isSuccess.get();
+        addressDB.setActive(false);
+        addressRepository.save(addressDB);
         return MessageResponse.builder()
                 .message("Successfully delete Address")
                 .status(HttpStatus.OK)

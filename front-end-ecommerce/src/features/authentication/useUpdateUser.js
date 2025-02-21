@@ -4,14 +4,13 @@ import toast from "react-hot-toast";
 
 export function useUpdateUser() {
     const queryClient = useQueryClient();
-
-    const {isLoading, mutate: updateUser} = useMutation({
-        mutationFn:({userData,image}) => updateUserAPI(userData,image),
-        onSuccess:() => {
+    const { isLoading, mutate: updateUser } = useMutation({
+        mutationFn: ({ userData, image }) => updateUserAPI(userData, image),
+        onSuccess: () => {
             toast.success("Cập nhật thành công")
         },
-        onError: (error) => toast.error(error.message) 
+        onError: (error) => toast.error(error.message)
     })
 
-    return {isLoading, updateUser}
+    return { isLoading, updateUser }
 }
