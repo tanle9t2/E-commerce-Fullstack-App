@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class PaymentServiceImpl implements PaymentService {
@@ -45,16 +46,22 @@ public class PaymentServiceImpl implements PaymentService {
     @Transactional
     public PaymentRespone createPayment(HttpServletRequest request) {
         String bankCode = request.getParameter("bankCode");
-        int orderId = Integer.parseInt(request.getParameter("orderId"));
-        Order order = orderJpaRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundExeption("Not found order"));
+        List<String> orderIds = Collections.singletonList(request.getParameter("orderId"));
+        long amount = orderIds.stream()
+                .mapToLong(o -> {
+                    Order order = orderJpaRepository.findById(Integer.parseInt(o))
+                            .orElseThrow(() -> new ResourceNotFoundExeption("Not found order"));
+                    return order.getOrderDetails()
+                            .stream()
+                            .mapToLong(od -> (long) (od.getQuantity() * od.getSku().getPrice()))
+                            .sum() * 100L;
+                })
+                .sum();
+        String ids = orderIds.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(","));
 
-        long amount = order.getOrderDetails()
-                .stream()
-                .mapToLong(o -> (long) (o.getQuantity() * o.getSku().getPrice()))
-                .sum() * 100L;
-
-        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(orderId);
+        Map<String, String> vnpParamsMap = vnPayConfig.getVNPayConfig(ids);
         vnpParamsMap.put("vnp_Amount", String.valueOf(amount));
         if (bankCode != null && !bankCode.isEmpty()) {
             vnpParamsMap.put("vnp_BankCode", bankCode);
@@ -104,51 +111,40 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     @Override
-    public PaymentDTO handlePayment(Map<String, String> params) {
-
+    public PaymentRespone handlePayment(Map<String, String> params) {
         String status = params.get("vnp_ResponseCode");
         if (!verifySignature(params)) {
             throw new IllegalStateException("Signature verification failed");
         }
+        PaymentRespone paymentRespone = new PaymentRespone();
+        paymentRespone.setCode(status);
+        List<String> orderIds = Arrays.stream(params.get("vnp_TxnRef").split(",")).toList();
         if (status.equals("00")) {
-            Order order = orderJpaRepository.findById(Integer.parseInt(params.get("vnp_TxnRef")))
-                    .orElseThrow(() -> new ResourceNotFoundExeption("Not found order"));
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             LocalDateTime dateTime = LocalDateTime.parse(params.get(VNPayParams.PAY_DATE), formatter);
-            Payment payment = Payment.builder()
-                    .status(StatusPayment.SUCCESS)
-                    .amount(Double.parseDouble(params.get("vnp_Amount")) / 100)
-                    .createdAt(dateTime)
+            orderIds.forEach(o -> {
+                Order order = orderJpaRepository.findById(Integer.parseInt(params.get("vnp_TxnRef")))
+                        .orElseThrow(() -> new ResourceNotFoundExeption("Not found order"));
+                Payment payment = Payment.builder()
+                        .status(StatusPayment.SUCCESS)
+                        .amount(Double.parseDouble(params.get("vnp_Amount")) / 100)
+                        .createdAt(dateTime)
+                        .order(order)
+                        .build();
+                paymentRepository.save(payment);
+            });
+            paymentRespone.setMessage("Successfully payment");
 
-                    .order(order)
-                    .build();
-
-            paymentRepository.save(payment);
-            return paymentMapper.convertDTO(payment);
+        } else {
+            orderIds.forEach(o -> {
+                Order order = orderJpaRepository.findById(Integer.parseInt(params.get("vnp_TxnRef")))
+                        .orElseThrow(() -> new ResourceNotFoundExeption("Not found order"));
+                order.setStatus(StatusOrder.AWAITING_PAYMENT);
+                orderJpaRepository.save(order);
+            });
+            paymentRespone.setMessage("Failure payment");
         }
-        return null;
-
-    }
-
-    public static String buildDataString(Map<String, String> vnpParamsMap) {
-        String vnp_RequestId = vnpParamsMap.getOrDefault("vnp_RequestId", "");
-        String vnp_Version = vnpParamsMap.getOrDefault("vnp_Version", "");
-        String vnp_Command = vnpParamsMap.getOrDefault("vnp_Command", "");
-        String vnp_TmnCode = vnpParamsMap.getOrDefault("vnp_TmnCode", "");
-        String vnp_TransactionType = vnpParamsMap.getOrDefault("vnp_TransactionType", "");
-        String vnp_TxnRef = vnpParamsMap.getOrDefault("vnp_TxnRef", "");
-        String vnp_Amount = vnpParamsMap.getOrDefault("vnp_Amount", "");
-        String vnp_TransactionNo = vnpParamsMap.getOrDefault("vnp_TransactionNo", "");
-        String vnp_TransactionDate = vnpParamsMap.getOrDefault("vnp_TransactionDate", "");
-        String vnp_CreateBy = vnpParamsMap.getOrDefault("vnp_CreateBy", "");
-        String vnp_CreateDate = vnpParamsMap.getOrDefault("vnp_CreateDate", "");
-        String vnp_IpAddr = vnpParamsMap.getOrDefault("vnp_IpAddr", "");
-        String vnp_OrderInfo = vnpParamsMap.getOrDefault("vnp_OrderInfo", "");
-
-        // Concatenate values with "|"
-        return String.join("|", vnp_RequestId, vnp_Version, vnp_Command, vnp_TmnCode,
-                vnp_TransactionType, vnp_TxnRef, vnp_Amount, vnp_TransactionNo,
-                vnp_TransactionDate, vnp_CreateBy, vnp_CreateDate, vnp_IpAddr, vnp_OrderInfo);
+        return paymentRespone;
     }
 
 

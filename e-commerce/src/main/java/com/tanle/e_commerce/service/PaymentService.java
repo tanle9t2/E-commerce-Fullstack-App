@@ -13,6 +13,6 @@ import java.util.Map;
 public interface PaymentService {
     PaymentRespone createPayment(HttpServletRequest request);
 
-    PaymentDTO handlePayment(Map<String, String> params);
+    PaymentRespone handlePayment(Map<String, String> params);
 
 }

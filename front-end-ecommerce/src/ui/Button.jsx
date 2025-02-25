@@ -17,6 +17,7 @@ const sizes = {
   large: css`
     font-size: 1.6rem;
     padding: 1.2rem 2.4rem;
+    width:20%;
     font-weight: 500;
   `,
 };

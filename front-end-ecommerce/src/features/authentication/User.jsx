@@ -82,7 +82,7 @@ function User() {
     
           <DropdownMenu>
             <MenuItem onClick={() =>naviate('/user/account/profile')}>Tài Khoản Của Tôi</MenuItem>
-            <MenuItem>Đơn Mua</MenuItem>
+            <MenuItem onClick={() =>naviate('/user/account/purchase')}>Đơn Mua</MenuItem>
             <MenuItem onClick={() => handleOnClickLogout()}>Đăng Xuất</MenuItem>
           </DropdownMenu>
     

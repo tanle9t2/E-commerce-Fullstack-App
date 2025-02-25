@@ -16,3 +16,18 @@ export async function getOrders(token) {
         throw new Error("Failed getting cart");
     }
 }
+export async function createOrder(data, token) {
+    console.log(data)
+    try {
+        const res = await orderAPI.post("", data, {
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        });
+
+        return res.data;
+    } catch (error) {
+        console.error("Failed create order:", error);
+        throw new Error("Failed create order");
+    }
+}

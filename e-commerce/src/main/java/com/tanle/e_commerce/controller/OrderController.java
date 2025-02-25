@@ -2,6 +2,8 @@ package com.tanle.e_commerce.controller;
 
 import com.tanle.e_commerce.dto.OrderDTO;
 import com.tanle.e_commerce.entities.MyUser;
+import com.tanle.e_commerce.entities.Order;
+import com.tanle.e_commerce.request.OrderCreatedRequest;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.SearchRequest;
@@ -16,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,52 +45,65 @@ public class OrderController {
             @RequestParam(name = "order", required = false) String order,
             @RequestParam(name = "tenantId") String tenantId
     ) throws BadRequestException {
-        Map<String,String > mp =  new HashMap<>();
-        mp.put("orderId",orderId);
-        mp.put("startDate",startDate);
-        mp.put("endDate",endDate);
-        mp.put("paymentId",paymentId);
-        mp.put("username",username);
-        mp.put("sortBy",sortBy);
-        mp.put("order",order);
-        mp.put("status",status);
-        mp.put("tenantId",tenantId);
-        PageResponse<OrderDTO> response = orderService.searchOrder(mp,Integer.parseInt(page),Integer.parseInt(pageSize));
-        return new ResponseEntity<>(response,HttpStatus.OK);
+        Map<String, String> mp = new HashMap<>();
+        mp.put("orderId", orderId);
+        mp.put("startDate", startDate);
+        mp.put("endDate", endDate);
+        mp.put("paymentId", paymentId);
+        mp.put("username", username);
+        mp.put("sortBy", sortBy);
+        mp.put("order", order);
+        mp.put("status", status);
+        mp.put("tenantId", tenantId);
+        PageResponse<OrderDTO> response = orderService.searchOrder(mp, Integer.parseInt(page), Integer.parseInt(pageSize));
+        return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     @GetMapping("/orderList")
     public ResponseEntity<PageResponse<OrderDTO>> getOrders(
             @RequestBody SearchRequest orderRequest
-            ) {
+    ) {
         PageResponse<OrderDTO> response = orderService.getOrders(orderRequest);
 
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+
     @GetMapping("/order/{orderId}")
     public ResponseEntity<OrderDTO> getOrder(@PathVariable int orderId) {
         OrderDTO orderDTO = orderService.getOrders(orderId);
-        return new ResponseEntity<>(orderDTO,HttpStatus.OK);
+        return new ResponseEntity<>(orderDTO, HttpStatus.OK);
     }
+
     @GetMapping("/order/purchase")
     public ResponseEntity<PageResponse<OrderDTO>> getOrderByUser(@AuthenticationPrincipal MyUser user
-            , @RequestParam(name = "type", required = false) String type) {
-        PageResponse<OrderDTO>  orderDTOS= orderService.getPurchaseUser(user.getUsername(), type);
+            , @RequestParam(name = "type", required = false) String type
+            , @RequestParam(name = "page", required = false, defaultValue = PAGE_DEFAULT) String page
+            , @RequestParam(name = "size", required = false, defaultValue = PAGE_SIZE) String size) {
+        PageResponse<OrderDTO> orderDTOS = orderService.getPurchaseUser(user.getUsername(), type
+                , Integer.parseInt(page), Integer.parseInt(size));
         return ResponseEntity.status(HttpStatus.OK).body(orderDTOS);
     }
+
     @PostMapping("/order")
-    public ResponseEntity<OrderDTO> createOrder(@RequestBody OrderDTO orderDTO) {
-        OrderDTO response = orderService.createOrder(orderDTO);
-        return new ResponseEntity<>(response,HttpStatus.OK);
+    public ResponseEntity<MessageResponse> createOrder(
+            @AuthenticationPrincipal MyUser user
+            ,@RequestBody List<OrderCreatedRequest> orderDTO) {
+        MessageResponse response = orderService.createOrder(user,orderDTO);
+        return ResponseEntity.ok(response);
+
     }
+
+
     @PutMapping("/order/status")
     public ResponseEntity<MessageResponse> updateStatusOrder(@RequestBody Map<String, Object> request) {
         MessageResponse messageResponse = orderService.updateStatusOrder(request);
-        return new ResponseEntity<>(messageResponse,HttpStatus.OK);
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
+
     @PostMapping("/order/cancelOrder")
     public ResponseEntity<MessageResponse> cancelOrder(@RequestBody Map<String, Object> request) {
         MessageResponse messageResponse = orderService.handleOrderCancellation(request);
-        return new ResponseEntity<>(messageResponse,HttpStatus.OK);
+        return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 
 }

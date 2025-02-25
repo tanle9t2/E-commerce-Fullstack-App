@@ -36,7 +36,6 @@ const ProductInfo = styled.div`
 function CartRow({cartItem}) {
     const {tenant,items} = cartItem;
     const {cartItemTick,handleAddCartItemTick, handleRemoveCartItemTick} = useCartContext();
-
     let cnt = 0;
     let itemCheckIds= []
     items.forEach(item => cartItemTick.forEach(c => {
@@ -48,10 +47,14 @@ function CartRow({cartItem}) {
     const [countCheck,setCountCheck] = useState(cnt)
     function handleOnchange(e) {
         if(e.target.checked) {
-            const newItem = items.map(({ skuId, quantity, sellPrice }) => ({
+            const newItem = items.map(({ skuId, quantity, modelName,sellPrice,product }) => ({
+                "tenantName":tenant.name,
                 skuId,
                 quantity,
                 sellPrice,
+                modelName,
+                "name":product.name,
+                "image":product.images[0].imageUrl,
               }));
             handleAddCartItemTick(newItem);              
             setCountCheck(items.length);
@@ -76,7 +79,8 @@ function CartRow({cartItem}) {
                 </ProductInfo>
             </ProductRow>
         </Table.Row>
-       {items.map((item) => <CartItem key={item.skuId} 
+       {items.map((item) => <CartItem key={item.skuId}
+            tenantName = {tenant.name} 
             skuId={item.skuId}
             setCountCheck = {setCountCheck}
             isChecked={itemCheckIds.includes(item.skuId)}

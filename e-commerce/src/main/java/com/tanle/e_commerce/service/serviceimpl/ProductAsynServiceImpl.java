@@ -11,10 +11,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.internal.LazilyParsedNumber;
+import com.tanle.e_commerce.Repository.Jpa.ProductRepository;
 import com.tanle.e_commerce.dto.CategoryDTO;
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.dto.SKUDTO;
 import com.tanle.e_commerce.entities.Product;
+import com.tanle.e_commerce.mapper.ProductMapper;
 import com.tanle.e_commerce.mapper.SKUMapper;
 import com.tanle.e_commerce.service.CategoryService;
 import com.tanle.e_commerce.service.ProductAsycnService;
@@ -52,6 +54,10 @@ public class ProductAsynServiceImpl implements ProductAsycnService {
     @Autowired
     private CategoryService categoryService;
     @Autowired
+    private ProductRepository productRepository;
+    @Autowired
+    private ProductMapper productMapper;
+    @Autowired
     private SKUService skuService;
     private final String INDEX_NAME = "product-index";
     private static final Logger LOG = LoggerFactory.getLogger(ProductAsycnService.class);
@@ -69,6 +75,22 @@ public class ProductAsynServiceImpl implements ProductAsycnService {
         ProductDTO product = productService.findById(entityId);
         elasticsearchRestTemplate.save(product);
         LOG.info("Create Product - {}", product.getId());
+    }
+
+    public void createAll() {
+        IndexCoordinates indexCoordinates = IndexCoordinates.of(INDEX_NAME);
+        // Check if the index exists
+        IndexOperations indexOperations = elasticsearchRestTemplate.indexOps(indexCoordinates);
+        if (!indexOperations.exists()) {
+
+            indexOperations.create();
+            System.out.println("Index created: " + INDEX_NAME);
+        }
+        productRepository.findAll()
+                .stream()
+                .forEach(p -> {
+                    elasticsearchRestTemplate.save(productMapper.asInput(p));
+                });
     }
 
     @Override

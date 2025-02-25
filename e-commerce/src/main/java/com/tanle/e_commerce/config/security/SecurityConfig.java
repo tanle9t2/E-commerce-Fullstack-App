@@ -48,11 +48,13 @@ public class SecurityConfig {
     };
     private final String[] URL_PERMIT_ALL = new String[]{
             "/api/v1/user/register"
+            ,"/api/v1/search"
             , "/api/v1/user/login"
             , "/api/v1/tenant/login"
             , "/api/v1/user/logout"
             , "/api/v1/user/refreshToken"
             , "/api/v1/payment"
+            , "/api/v1/vn-pay-callback"
             , "/api/v1/product_list"
             , "api/v1/tenant/{tenantId}"
             ,"api/v1/product/{productId}"

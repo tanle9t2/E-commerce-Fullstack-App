@@ -33,6 +33,9 @@ const StyledWord = styled.div`
 const CustomForm = styled(Form)`
   position:absolute;
 `
+const CustomButton = styled(Button)`
+  width:100%;
+`
 function LoginForm() {
   const { login , isLoading } = useLogin();
   const { register,handleSubmit,formState, getValues, reset } = useForm();
@@ -92,9 +95,9 @@ function LoginForm() {
         />
       </FormRowVertical>
       <FormRowVertical error={loginError}>
-        <Button size="large" disabled={isLoading}> 
+        <CustomButton disabled={isLoading}> 
           {!isLoading ? "Đăng nhập" : <SpinnerMini />}
-        </Button>
+        </CustomButton>
       </FormRowVertical>
       <FormRowVertical>
         <a className="text-blue-600" href="#">Quên mật khẩu</a>

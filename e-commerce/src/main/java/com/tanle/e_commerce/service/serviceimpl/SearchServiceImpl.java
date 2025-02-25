@@ -89,59 +89,63 @@ public class SearchServiceImpl implements SearchService {
     public PageResponse<ProductDTO> searchProduct(Map<String, String> condition, int page, int size) {
         String keyword = condition.get("keyword");
         String order = condition.get("order");
-        Double minPrice =  condition.get("minPrice") == null
-                ? 0 : Double.parseDouble(condition.get("minPrice"));
-        Double maxPrice = condition.get("maxPrice") == null
-                ? Double.MAX_VALUE :Double.parseDouble(condition.get("maxPrice"));
+
+        Double minPrice = condition.get("minPrice") != null ? Double.parseDouble(condition.get("minPrice")) : 0.0;
+        Double maxPrice = condition.get("maxPrice") != null ? Double.parseDouble(condition.get("maxPrice")) : null;
+
         var boolQuery = QueryBuilders.bool();
+
         if (condition.get("category") != null) {
-            String[] categoryIds = condition.get("category").toString().split(",");
+            String[] categoryIds = condition.get("category").split(",");
             var categoryQuery = QueryBuilders.bool();
             for (var id : categoryIds) {
                 categoryQuery.should(builder -> builder.term(t -> t.field("category.id").value(id)));
             }
             boolQuery.must(categoryQuery.build()._toQuery());
         }
-        BoolQuery shouldQuery = QueryBuilders.bool().should(
-                        builder -> builder.matchPhrasePrefix(
-                                prefix -> prefix.field("name").query(keyword)
-                                        .maxExpansions(2).slop(1).boost(2.0F))
-                )
-                .should(builder ->
-                        builder.multiMatch(m ->
-                                m.fields("name").query(keyword).fuzziness("AUTO").prefixLength(1)))
-                .should(
-                        builder -> builder.matchPhrasePrefix(
-                                prefix -> prefix.field("description").query(keyword).maxExpansions(2).slop(1))
-                )
-                .should(
-                        builder -> builder.matchPhrasePrefix(
-                                prefix -> prefix.field("category.name").query(keyword).maxExpansions(2).slop(1))
-                )
+
+        BoolQuery shouldQuery = QueryBuilders.bool()
+                .should(builder -> builder.matchPhrasePrefix(
+                        prefix -> prefix.field("name").query(keyword).maxExpansions(2).slop(1).boost(2.0F)))
+                .should(builder -> builder.multiMatch(m -> m.fields("name").query(keyword).fuzziness("AUTO").prefixLength(1)))
+                .should(builder -> builder.matchPhrasePrefix(
+                        prefix -> prefix.field("description").query(keyword).maxExpansions(2).slop(1)))
+                .should(builder -> builder.matchPhrasePrefix(
+                        prefix -> prefix.field("category.name").query(keyword).maxExpansions(2).slop(1)))
                 .build();
+
         boolQuery.must(shouldQuery._toQuery());
-        NativeQuery query = new NativeQueryBuilder()
+
+        NativeQueryBuilder queryBuilder = new NativeQueryBuilder()
                 .withQuery(boolQuery.build()._toQuery())
-                .withFilter(f -> f.range(
-                        r -> r.field("price").gte(JsonData.of(minPrice)).lte(JsonData.of(maxPrice))))
-                .withPageable(PageRequest.of(page,size))
-                .withSort(s -> {
-                    if(condition.get("order") != null) {
-                        SortOrder sortOrder = condition.get("order").equals("desc") ? SortOrder.Desc : SortOrder.Asc;
-                        return s.field(f -> f.field("price").order(sortOrder));
-                    }
-                    return s.field(f -> f.field("_score").order(SortOrder.Desc));
-                })
-                .build();
-        Long totalProduct = elasticsearchOperations
-                .count(query,ProductDTO.class);
-        var products = elasticsearchOperations.search(query,ProductDTO.class)
+                .withPageable(PageRequest.of(page, size));
+
+        // Apply price range filter only if maxPrice is not null
+        if (maxPrice != null) {
+            queryBuilder.withFilter(f -> f.range(r -> r.field("price").gte(JsonData.of(minPrice)).lte(JsonData.of(maxPrice))));
+        } else {
+            queryBuilder.withFilter(f -> f.range(r -> r.field("price").gte(JsonData.of(minPrice))));
+        }
+
+        queryBuilder.withSort(s -> {
+            if (order != null) {
+                SortOrder sortOrder = order.equals("desc") ? SortOrder.Desc : SortOrder.Asc;
+                return s.field(f -> f.field("price").order(sortOrder));
+            }
+            return s.field(f -> f.field("_score").order(SortOrder.Desc));
+        });
+
+        NativeQuery query = queryBuilder.build();
+
+        Long totalProduct = elasticsearchOperations.count(query, ProductDTO.class);
+        var products = elasticsearchOperations.search(query, ProductDTO.class)
                 .stream()
                 .map(hit -> hit.getContent())
                 .collect(Collectors.toList());
 
-        return new PageResponse<>(products,page,products.size(),totalProduct,HttpStatus.OK);
+        return new PageResponse<>(products, page, products.size(), totalProduct, HttpStatus.OK);
     }
+
 
     @Override
     public ProductDTO test(String id) {

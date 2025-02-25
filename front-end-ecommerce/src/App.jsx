@@ -15,6 +15,8 @@ import { AuthContextProvider } from "./context/AuthContext";
 import PasswordChange from "./features/authentication/PasswordChange";
 import Address from "./features/authentication/Address";
 import OrderHistory from "./features/orders/OrderHistory";
+import PaymentPage from "./pages/PaymentPage";
+import SearchPage from "./pages/SearchPage"
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -35,6 +37,7 @@ function App() {
             <Routes>
               <Route element={<AppLayout />}>
                 <Route path="/" element={<HomePage />} />
+                <Route path="search" element={<SearchPage />} />
                 <Route path="product/:productId" element={<Product />} />
                 <Route path="/user/account/" element={<ProfileLayout />}>
                   <Route path="purchase" element ={<OrderHistory/>}/>
@@ -44,6 +47,7 @@ function App() {
                 </Route>
               </Route>
               <Route path="cart" element={<Cart />} />
+              <Route path="checkout" element={<PaymentPage />} />
               <Route path="login" element={<Login />} />
             </Routes>
           </BrowserRouter>

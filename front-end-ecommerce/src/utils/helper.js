@@ -62,3 +62,30 @@ export const isValidDate = (day, month, year) => {
         date.getDate() === day
     );
 }
+const statusTranslations = {
+    COMPLETE: "Hoàn thành",
+    PROCESSING: "Đang xử lý",
+    AWAITING_PAYMENT: "Đang chờ thanh toán",
+    CANCELED: "Đã hủy",
+    CANCELLATION_REQUEST: "Yêu cầu hủy"
+};
+
+export const translateStatus = (status) => {
+    return statusTranslations[status] || "Trạng thái không xác định";
+}
+export const getDateRange = () => {
+    const date = new Date();
+
+    // Move to the next day
+    const startDate = new Date(date);
+    startDate.setDate(startDate.getDate() + 2);
+
+    // Move to 4 days later
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 4);
+
+    // Format the dates
+    const formatDate = (d) => ` ${d.getDate()} Tháng ${d.getMonth() + 1}`;
+
+    return `${formatDate(startDate)} -${formatDate(endDate)}`;
+}

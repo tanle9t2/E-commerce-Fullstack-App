@@ -3,15 +3,15 @@ package com.tanle.e_commerce.service.serviceimpl;
 import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.json.JsonData;
-import com.tanle.e_commerce.Repository.Jpa.OrderCancellationRepository;
-import com.tanle.e_commerce.Repository.Jpa.OrderJpaRepository;
-import com.tanle.e_commerce.Repository.Jpa.TenantRepository;
-import com.tanle.e_commerce.Repository.Jpa.UserRepository;
+import com.tanle.e_commerce.Repository.Jpa.*;
+import com.tanle.e_commerce.dto.AddressDTO;
 import com.tanle.e_commerce.dto.OrderDTO;
 import com.tanle.e_commerce.entities.*;
 import com.tanle.e_commerce.entities.enums.StatusOrder;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
+import com.tanle.e_commerce.mapper.AddressMapper;
 import com.tanle.e_commerce.mapper.OrderMapper;
+import com.tanle.e_commerce.request.OrderCreatedRequest;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.SearchRequest;
@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
@@ -33,9 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,6 +42,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Autowired
     private OrderJpaRepository orderJPARepository;
+    @Autowired
+    private AddressMapper addressMapper;
+    @Autowired
+    private AddressRepository addressRepository;
     @Autowired
     private TenantRepository tenantRepository;
     @Autowired
@@ -127,18 +130,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public PageResponse<OrderDTO> getPurchaseUser(String username, String type) {
-        List<Order> orders = orderJPARepository.findOrderId(username
-                , type != null ? StatusOrder.valueOf(type.toUpperCase()) : null);
-        List<OrderDTO> orderDTOS = orders.stream()
-                .map(o -> orderMapper.convertDTO(o))
-                .collect(Collectors.toList());
-        return new PageResponse<>(orderDTOS, 0, orderDTOS.size(), (long) orderDTOS.size(), HttpStatus.OK);
+    public PageResponse<OrderDTO> getPurchaseUser(String username, String type, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<Order> orders = orderJPARepository.findOrderId(username
+                , type != null ? StatusOrder.valueOf(type.toUpperCase()) : null
+                , pageable);
+        return getResult(orders);
     }
 
     @Override
     @Transactional
-    public OrderDTO createOrder(OrderDTO orderDTO) {
+    public OrderDTO createOrder(MyUser user, OrderDTO orderDTO) {
         Order order = orderMapper.convertEntity(orderDTO);
         order.setCreatedAt(LocalDateTime.now());
         order.setStatus(StatusOrder.PROCESSING);
@@ -148,6 +150,35 @@ public class OrderServiceImpl implements OrderService {
         }
         orderJPARepository.save(order);
         return orderMapper.convertDTO(order);
+    }
+
+    @Override
+    @Transactional
+    public MessageResponse createOrder(MyUser user, List<OrderCreatedRequest> orderDTOS) {
+        AddressDTO addressDTO = addressMapper.convertDTO(addressRepository.findById(orderDTOS.get(0).getAddressId())
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found address")));
+        List<OrderDTO> items = orderDTOS.stream()
+                .map(or -> {
+                    OrderDTO orderDTO = OrderDTO.builder()
+                            .receiptAddress(addressDTO)
+                            .note(or.getNote())
+                            .paymentMethodId(or.getPaymentMethodId())
+                            .itemList(or.getItems())
+                            .build();
+                    orderDTO.setUserOrder(orderDTO.buildUserOrder(user.getId(), user.getFullName()));
+                    return orderDTO;
+                })
+                .map(or -> createOrder(user, or))
+                .collect(Collectors.toList());
+
+        return MessageResponse.builder()
+                .status(HttpStatus.OK)
+                .data(Map.of("orderIds", items.stream()
+                        .map(i -> i.getId())
+                        .collect(Collectors.toList()),
+                        "paymentMethodId", orderDTOS.get(0).getPaymentMethodId()))
+                .message("Successfully create order")
+                .build();
     }
 
     @Override
@@ -180,10 +211,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public PageResponse<OrderDTO> getOrders(Integer tenantId, int page, int size) {
-        Tenant tenant = tenantRepository.findById(tenantId)
-                .orElseThrow(() -> new ResourceNotFoundExeption("Not found tenant"));
         Pageable pageable = PageRequest.of(page, size);
-        Page<Order> orderPage = orderJPARepository.findOrderByTenant(tenant, pageable);
+        Page<Order> orderPage = orderJPARepository.findOrderByTenant(tenantId, pageable);
         return getResult(orderPage);
     }
 
@@ -235,6 +264,6 @@ public class OrderServiceImpl implements OrderService {
         Order order = orderJPARepository.findById(integer)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found order"));
 
-        return order.getTenant().getMyUser().getUsername().equals(username);
+        return true;
     }
 }

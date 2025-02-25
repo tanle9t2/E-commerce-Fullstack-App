@@ -12,6 +12,7 @@ import org.springframework.data.elasticsearch.annotations.FieldType;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -35,13 +36,13 @@ public class OrderDTO {
     @Field(type = FieldType.Integer)
     private TenantOrder tenantOrder;
     @Field(type = FieldType.Object)
-    private List<OrderDetailDTO> itemList;
+    private Set<OrderDetailDTO> itemList;
     @Field(type = FieldType.Object)
     private AddressDTO receiptAddress;
-    @Field(type = FieldType.Integer)
-    private int paymentId;
     @Field(type = FieldType.Date)
     private LocalDateTime payTime;
+    private String note;
+    private int paymentMethodId;
     @Data
     @NoArgsConstructor
     public class UserOrder {

@@ -12,7 +12,10 @@ import { useAuthContext } from "../../context/AuthContext";
 const CartContainer = styled.div`
   position: relative;
   color:var(--black-color);
+  display:flex;
+  justify-content:center;
   margin-left:20px;
+
   &::after {
     content: "";
     position: absolute;

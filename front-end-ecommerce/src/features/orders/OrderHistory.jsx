@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import Button from "../../ui/Button";
 import Highlight from "../../ui/Highlight";
 import { useOrders } from "./useOrders";
 import Spinner from "../../ui/Spinner";
 import OrderCard from "./OderCard"
+import { useNavigate, useSearchParams } from "react-router-dom";
+import toast from "react-hot-toast";
 // Styled Components
 const Container = styled.div`
   width: 100%;
@@ -28,9 +30,29 @@ const FilterButton = styled.button`
 `;
 const OrderHistory = () => {
     const [filter, setFilter] = useState("all");
-    const {isLoading,orders} = useOrders()
-    if(isLoading) return <Spinner/>
-    
+    const { isLoading, orders } = useOrders()
+    const [searchParams, setSearchParams] = useSearchParams();
+    useEffect(() => {
+        if (!isLoading) {
+            const responseCode = searchParams.get("payment");
+            if (!responseCode) return;
+
+            if (responseCode === "00") {
+                toast.success("Thanh toán thành công");
+            } else {
+                toast.error("Thanh toán thất bại");
+            }
+            const newParams = new URLSearchParams(searchParams);
+            newParams.delete("payment");
+
+            // Update the URL without navigation
+            setSearchParams(newParams, { replace: true });
+        }
+
+    }, [isLoading]); // Empty array so it runs only once after mount
+
+    if (isLoading) return <Spinner />
+
     const filteredOrders =
         filter === "all" ? orders : orders.filter((o) => o.status === filter);
     return (
@@ -57,7 +79,7 @@ const OrderHistory = () => {
             </FilterWrapper>
 
             {orders.data.map((order) => (
-              <OrderCard key={order.id} order={order}/>
+                <OrderCard key={order.id} order={order} />
             ))}
         </Container>
     );

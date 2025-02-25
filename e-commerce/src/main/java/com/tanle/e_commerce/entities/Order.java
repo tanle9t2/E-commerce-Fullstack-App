@@ -34,14 +34,11 @@ public class Order {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private StatusOrder status;
-
+    @Column(name = "note")
+    private String note;
     @ManyToOne
     @JoinColumn(name = "user_id")
     private MyUser myUser;
-
-    @ManyToOne
-    @JoinColumn(name = "tenant_id")
-    private Tenant tenant;
 
     @OneToOne
     @JoinColumn(name = "address_id")
@@ -54,7 +51,9 @@ public class Order {
 
     @OneToMany(mappedBy = "order",cascade = CascadeType.ALL)
     private List<OrderDetail> orderDetails;
-
+    @ManyToOne
+    @JoinColumn(name = "payment_method_id")
+    private PaymentMethod paymentMethod;
     public void addOrderDetail(OrderDetail orderDetail) {
         if(orderDetails == null) this.orderDetails = new ArrayList<>();
         OrderDetailKey key = new OrderDetailKey(this.getId(),orderDetail.getSku().getId(),LocalDateTime.now());

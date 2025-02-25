@@ -21,7 +21,7 @@ public class SearchController {
     @Autowired
     private SearchService service;
 
-    @GetMapping("/search")
+    @GetMapping("/search1")
     public PageResponse<Product> searchKeyword(
             @RequestParam(name = "keyword") String keyword,
             @RequestParam(name = "category",required = false) String category,
@@ -40,7 +40,7 @@ public class SearchController {
         mp.put("order",order);
         return service.findBySpecs(mp,page,Integer.parseInt(PAGE_SIZE));
     }
-    @GetMapping("/search2")
+    @GetMapping("/search")
     public PageResponse<ProductDTO> search(
             @RequestParam(name = "keyword") String keyword,
             @RequestParam(name = "category",required = false) String category,

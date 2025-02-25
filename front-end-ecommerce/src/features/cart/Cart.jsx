@@ -14,6 +14,7 @@ import EmptyCart from './EmptyCart';
 import Modal from '../../ui/Modal';
 import ConfirmDelete from '../../ui/ConfirmDelete';
 import useDeleteCartItem from './useDeleteCartItem';
+import { useNavigate } from 'react-router-dom';
 const Container = styled.div`
     padding: var(--padding-container);
   font-family: Arial, sans-serif;
@@ -66,6 +67,7 @@ const StickyPayment = styled.div`
   background-color:var(--white-color);
 `;
 const ShopeeCart = () => {
+  const navigate = useNavigate();
   const {isLoading ,cart} = useCart();
   const {cartItemTick,handleAddCartItemTick, handleRemoveAll} = useCartContext();
   const {isLoading:isDeleting, deleteCartItem} = useDeleteCartItem()
@@ -74,11 +76,14 @@ const ShopeeCart = () => {
   function handleOnChange(e) {
     if(e.target.checked) {
       const newItems = cart.shopOrders.flatMap(shop =>
-        shop.items.map(({ skuId, quantity, sellPrice,image }) => ({
+        shop.items.map(({skuId, quantity, modelName,sellPrice,product }) => ({
+          "tenantName": shop.tenant.name,
           skuId,
           quantity,
           sellPrice,
-          image
+          modelName,
+          "name":product.name,
+          "image": product.images[0].imageUrl
         }))
       );
     handleAddCartItemTick(newItems);
@@ -156,7 +161,7 @@ const ShopeeCart = () => {
             </Modal>
             
             <Title2>Tổng thanh toán ({cartItemTick.length} Sản phẩm): <Highlight> {formatCurrencyVND(totalPrice)}</Highlight></Title2>
-              <Button size ="large">Thanh toán</Button>
+              <Button onClick={() => navigate("/checkout")} size ="large">Thanh toán</Button>
             </StickyPayment>
           </Table.Footer>
           </Table>

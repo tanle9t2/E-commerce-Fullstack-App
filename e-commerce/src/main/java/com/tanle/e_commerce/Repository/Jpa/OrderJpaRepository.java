@@ -15,7 +15,15 @@ import java.util.List;
 @Repository
 public interface OrderJpaRepository extends JpaRepository<Order,Integer>, JpaSpecificationExecutor<Order>{
 
-    Page<Order> findOrderByTenant(Tenant tenant, Pageable pageable);
+    @Query("""
+        FROM Order o, OrderDetail  od, SKU s, Product  p, Tenant t
+        WHERE o.id = od.order.id  
+        AND s.id = od.sku.id
+        AND p.id = s.product.id
+        AND t.id = p.tenant.id
+        AND t.id = ?1
+    """)
+    Page<Order> findOrderByTenant(int tenantId, Pageable pageable);
 
     @Query("""
             FROM Order o JOIN MyUser u
@@ -23,5 +31,5 @@ public interface OrderJpaRepository extends JpaRepository<Order,Integer>, JpaSpe
             where u.username = ?1 
             and (?2 is null or o.status = ?2)
         """)
-    List<Order> findOrderId(String username, StatusOrder type);
+    Page<Order> findOrderId(String username, StatusOrder type, Pageable pageable);
 }

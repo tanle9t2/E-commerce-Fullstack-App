@@ -68,7 +68,7 @@ const DeleteButton = styled(Highlight)`
     text-decoration:underline;
 `;
 
-function CartItem({isChecked,skuId,image,nameProduct,quantity,modelName, sellPrice,setCountCheck}) {
+function CartItem({tenantName,isChecked,skuId,image,nameProduct,quantity,modelName, sellPrice,setCountCheck}) {
     const {handleAddCartItemTick, handleUpdateQuantity,handleRemoveCartItemTick} = useCartContext();
     const {updateCartItem} = useUpdateCart()
     const {deleteCartItem} = useDeleteCartItem();
@@ -77,9 +77,13 @@ function CartItem({isChecked,skuId,image,nameProduct,quantity,modelName, sellPri
             setCountCheck(cnt => cnt++);
             handleAddCartItemTick([
                 {
+                    "tenantName": tenantName,
                     "skuId":skuId,
                     "quantity":quantity,
                     "sellPrice":sellPrice,
+                    "image":image,
+                    "modelName":modelName,
+                    "name":nameProduct
                 }
             ])
         } else {
