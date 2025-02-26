@@ -72,7 +72,7 @@ function NavSearch() {
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchRef = useRef(null);
     const { data, isLoading, error } = useQuery({
-        queryKey: ["search", debouncedSearch],
+        queryKey: ["searchNav", debouncedSearch],
         queryFn: () => searchProduct({keyword:debouncedSearch}),
         enabled: !!debouncedSearch,
     });

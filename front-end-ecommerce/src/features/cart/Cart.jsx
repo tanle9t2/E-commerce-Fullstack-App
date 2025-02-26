@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import Logo from '../../ui/Logo';
 import { CiSquareMinus, CiSquarePlus } from 'react-icons/ci';
@@ -15,6 +15,9 @@ import Modal from '../../ui/Modal';
 import ConfirmDelete from '../../ui/ConfirmDelete';
 import useDeleteCartItem from './useDeleteCartItem';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { searchProduct } from '../../services/apiProduct';
+import useDebounce from '../../hook/useDebounce';
 const Container = styled.div`
     padding: var(--padding-container);
   font-family: Arial, sans-serif;
@@ -66,30 +69,89 @@ const StickyPayment = styled.div`
   font-size:1.8rem !important;
   background-color:var(--white-color);
 `;
+const SuggestionsList = styled.ul`
+  position: absolute;
+  width: 100%;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-top: 5px;
+  list-style: none;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  top:45px;
+  z-index:10;
+`;
+
+const SuggestionItem = styled.li`
+  padding: 10px;
+  cursor: pointer;
+  &:hover {
+    background: #f0f0f0;
+  }
+`;
 const ShopeeCart = () => {
   const navigate = useNavigate();
-  const {isLoading ,cart} = useCart();
-  const {cartItemTick,handleAddCartItemTick, handleRemoveAll} = useCartContext();
-  const {isLoading:isDeleting, deleteCartItem} = useDeleteCartItem()
+  const { isLoading, cart } = useCart();
+  const { cartItemTick, handleAddCartItemTick, handleRemoveAll } = useCartContext();
+  const { isLoading: isDeleting, deleteCartItem } = useDeleteCartItem()
   const checkAllUseRef = useRef(null);
-  if(isLoading) return <Spinner/>
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearch = useDebounce(searchTerm, 500);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef(null);
+  const { data, error } = useQuery({
+    queryKey: ["searchNav", debouncedSearch],
+    queryFn: () => searchProduct({ keyword: debouncedSearch }),
+    enabled: !!debouncedSearch,
+  });
+
+  function hanleOnClickSuggess(id) {
+    navigate(`/product/${id}`)
+    setSearchTerm("")
+    setShowSuggestions(false)
+  }
+  function handleOnClickFind(keyword) {
+    navigate(`/search?keyword=${keyword}`)
+    setSearchTerm("")
+    setShowSuggestions(false)
+  }
+  function handleEnter(e) {
+    if (e.key === "Enter") {
+      navigate(`/search?keyword=${searchTerm}`)
+      setSearchTerm("")
+      setShowSuggestions(false)
+    }
+  }
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+  if (isLoading) return <Spinner />
   function handleOnChange(e) {
-    if(e.target.checked) {
+    if (e.target.checked) {
       const newItems = cart.shopOrders.flatMap(shop =>
-        shop.items.map(({skuId, quantity, modelName,sellPrice,product }) => ({
+        shop.items.map(({ skuId, quantity, modelName, sellPrice, product }) => ({
           "tenantName": shop.tenant.name,
           skuId,
           quantity,
           sellPrice,
           modelName,
-          "name":product.name,
+          "name": product.name,
           "image": product.images[0].imageUrl
         }))
       );
-    handleAddCartItemTick(newItems);
+      handleAddCartItemTick(newItems);
     } else {
       handleRemoveAll();
-    } 
+    }
   }
   function handleOnClickAll() {
     if (checkAllUseRef.current) {
@@ -98,77 +160,88 @@ const ShopeeCart = () => {
   }
   function handleOnRemove() {
     const cartItems = cart.shopOrders.flatMap(shop =>
-      shop.items.reduce((acc,{skuId}) => {
+      shop.items.reduce((acc, { skuId }) => {
         acc.push(skuId)
         return acc;
-      },[]));
-    deleteCartItem({cartId:1,cartItems})
+      }, []));
+    deleteCartItem({ cartId: 1, cartItems })
     handleRemoveAll();
   }
   const totalItems = cart.shopOrders.reduce((acc, data) => acc + data.items.length, 0);
   const isCheckedAll = totalItems === cartItemTick.length;
-  const totalPrice = cartItemTick.reduce((acc,{sellPrice,quantity}) =>acc + sellPrice*quantity,0)
+  const totalPrice = cartItemTick.reduce((acc, { sellPrice, quantity }) => acc + sellPrice * quantity, 0)
+  console.log(data)
   return (
-   <>
-    <Header>
-        <Logo opacity={false}/>
-        <div>
-          <SearchBar placeholder="SALE SHOP MỚi Đến 100.000Đ" />
-          <SearchButton>🔍
+    <>
+      <Header>
+        <Logo opacity={false} />
+        <div className='relative'>
+          <SearchBar ref={searchRef} value={searchTerm} placeholder={"Nhập tìm kiếm của bạn"} 
+                onFocus={() => setShowSuggestions(true)}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={(e) => handleEnter(e)} />
+          <SearchButton onClick={() => handleOnClickFind(searchTerm)}>🔍
           </SearchButton>
+          {data && showSuggestions && (
+            <SuggestionsList>
+              {data.data.map((item) => (
+                <SuggestionItem onClick={() => hanleOnClickSuggess(item.id)} key={item.id}>{item.name}</SuggestionItem>
+              ))}
+            </SuggestionsList>
+          )}
         </div>
       </Header>
-    <Container>
-      {
-        cart.shopOrders.length 
-        ? 
-        <>
-          <Table columns="3.5fr 1fr 1fr 0.5fr 1fr">
-          <Table.Header>
-              <Title> <input checked= {isCheckedAll} onChange={(e) => handleOnChange(e)} type="checkbox" className="mr-4" /> Sản Phẩm</Title>
-              <Title>Đơn Giá</Title>
-              <Title>Số Tiền</Title>
-              <Title>Số Lượng</Title>
-              <Title>Thao Tác</Title>
-          </Table.Header> 
-          <Table.Body
-          data={cart.shopOrders}
-          render={(cartItem) => (
-            <CartRow key={cartItem.id} cartItem={cartItem} />
-          )}
-          />
-          <Table.Footer>
-            <StickyPayment>
-            <Title2 >
-               <input 
-                ref={checkAllUseRef}
-                checked= {isCheckedAll} 
-                onChange={(e) => handleOnChange(e)} type="checkbox" className="mr-4" />
-                <span onClick={() => handleOnClickAll()}>  Chọn tất cả ({totalItems})</span>
-            </Title2>
-            <Modal>
-              <Modal.OpenButton opens="delete">
-                <Title2 disabled ={!cartItemTick.length}> Xóa</Title2>
-              </Modal.OpenButton>
-              <Modal.Window name="delete">
-                <ConfirmDelete
-                  resourceName="sản phẩm"
-                  quantity={cartItemTick.length}
-                  onConfirm={() => handleOnRemove()}
-                  disabled={isDeleting}
+      <Container>
+        {
+          cart.shopOrders.length
+            ?
+            <>
+              <Table columns="3.5fr 1fr 1fr 0.5fr 1fr">
+                <Table.Header>
+                  <Title> <input checked={isCheckedAll} onChange={(e) => handleOnChange(e)} type="checkbox" className="mr-4" /> Sản Phẩm</Title>
+                  <Title>Đơn Giá</Title>
+                  <Title>Số Tiền</Title>
+                  <Title>Số Lượng</Title>
+                  <Title>Thao Tác</Title>
+                </Table.Header>
+                <Table.Body
+                  data={cart.shopOrders}
+                  render={(cartItem) => (
+                    <CartRow key={cartItem.id} cartItem={cartItem} />
+                  )}
                 />
-                </Modal.Window>
-            </Modal>
-            
-            <Title2>Tổng thanh toán ({cartItemTick.length} Sản phẩm): <Highlight> {formatCurrencyVND(totalPrice)}</Highlight></Title2>
-              <Button onClick={() => navigate("/checkout")} size ="large">Thanh toán</Button>
-            </StickyPayment>
-          </Table.Footer>
-          </Table>
-        </>
-        : <EmptyCart/>
-      }
-     </Container>
+                <Table.Footer>
+                  <StickyPayment>
+                    <Title2 >
+                      <input
+                        ref={checkAllUseRef}
+                        checked={isCheckedAll}
+                        onChange={(e) => handleOnChange(e)} type="checkbox" className="mr-4" />
+                      <span onClick={() => handleOnClickAll()}>  Chọn tất cả ({totalItems})</span>
+                    </Title2>
+                    <Modal>
+                      <Modal.OpenButton opens="delete">
+                        <Title2 disabled={!cartItemTick.length}> Xóa</Title2>
+                      </Modal.OpenButton>
+                      <Modal.Window name="delete">
+                        <ConfirmDelete
+                          resourceName="sản phẩm"
+                          quantity={cartItemTick.length}
+                          onConfirm={() => handleOnRemove()}
+                          disabled={isDeleting}
+                        />
+                      </Modal.Window>
+                    </Modal>
+
+                    <Title2>Tổng thanh toán ({cartItemTick.length} Sản phẩm): <Highlight> {formatCurrencyVND(totalPrice)}</Highlight></Title2>
+                    <Button onClick={() => navigate("/checkout")} size="large">Thanh toán</Button>
+                  </StickyPayment>
+                </Table.Footer>
+              </Table>
+            </>
+            : <EmptyCart />
+        }
+      </Container>
     </>
   );
 };

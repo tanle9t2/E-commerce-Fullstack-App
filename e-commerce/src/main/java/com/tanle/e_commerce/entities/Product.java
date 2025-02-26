@@ -118,7 +118,7 @@ public class Product {
                 .createdAt(this.createdAt.toLocalDate())
                 .category(category.convertDTO())
                 .stock(stock)
-                .price(new double[]{})
+
 //                .options(this.getOptions()
 //                        .stream()
 //                        .collect(Collectors.groupingBy(Option::getName
@@ -132,17 +132,20 @@ public class Product {
         return dto;
     }
 
-    public double[] getPrice() {
-        double minPrice = this.skus.stream()
-                .mapToDouble(SKU::getPrice)
-                .min()
-                .orElseGet(() -> 0);
-        double maxPrice = this.skus.stream()
+    public double getMaxPrice() {
+        return this.skus.stream()
                 .mapToDouble(SKU::getPrice)
                 .max()
                 .orElseGet(() -> 0);
 
-        return new double[]{minPrice, maxPrice};
+
+    }
+
+    public double getMinPrice() {
+        return this.skus.stream()
+                .mapToDouble(SKU::getPrice)
+                .min()
+                .orElseGet(() -> 0);
     }
 
     @Override

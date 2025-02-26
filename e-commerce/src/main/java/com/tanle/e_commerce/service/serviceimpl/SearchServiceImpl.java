@@ -1,23 +1,36 @@
 package com.tanle.e_commerce.service.serviceimpl;
 
+import co.elastic.clients.elasticsearch._types.SortMode;
 import co.elastic.clients.elasticsearch._types.SortOrder;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.Aggregation;
+import co.elastic.clients.elasticsearch._types.aggregations.LongTermsAggregate;
+import co.elastic.clients.elasticsearch._types.aggregations.StringTermsAggregate;
 import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.json.JsonData;
 import com.tanle.e_commerce.Repository.Jpa.SearchRepository;
 import com.tanle.e_commerce.Repository.elasticsearch.ProductElasticsearchRepository;
 import com.tanle.e_commerce.dto.ProductDTO;
+import com.tanle.e_commerce.dto.ProductDocument;
 import com.tanle.e_commerce.entities.Product;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.SearchRequest;
 import com.tanle.e_commerce.request.SortRequest;
+import com.tanle.e_commerce.respone.PageSearchResponse;
 import com.tanle.e_commerce.service.SearchService;
 import com.tanle.e_commerce.utils.filter.*;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregation;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchAggregations;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.client.elc.NativeQueryBuilder;
+import org.springframework.data.elasticsearch.core.AggregationsContainer;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -86,13 +99,12 @@ public class SearchServiceImpl implements SearchService {
     }
 
     @Override
-    public PageResponse<ProductDTO> searchProduct(Map<String, String> condition, int page, int size) {
+    public PageSearchResponse searchProduct(Map<String, String> condition, int page, int size) {
         String keyword = condition.get("keyword");
         String order = condition.get("order");
-
+        String sortBy = condition.get("sortBy");
         Double minPrice = condition.get("minPrice") != null ? Double.parseDouble(condition.get("minPrice")) : 0.0;
         Double maxPrice = condition.get("maxPrice") != null ? Double.parseDouble(condition.get("maxPrice")) : null;
-
         var boolQuery = QueryBuilders.bool();
 
         if (condition.get("category") != null) {
@@ -103,18 +115,27 @@ public class SearchServiceImpl implements SearchService {
             }
             boolQuery.must(categoryQuery.build()._toQuery());
         }
+        if (condition.get("location") != null) {
+            String[] locations = condition.get("location").split(",");
+            var categoryQuery = QueryBuilders.bool();
+            for (var location : locations) {
+                categoryQuery.should(builder -> builder.match(t -> t.field("tenantDocument.location").query(location)));
+            }
+            boolQuery.must(categoryQuery.build()._toQuery());
+        }
+        if (keyword != null && !keyword.isEmpty()) {
+            BoolQuery shouldQuery = QueryBuilders.bool()
+                    .should(builder -> builder.matchPhrasePrefix(
+                            prefix -> prefix.field("name").query(keyword).maxExpansions(2).slop(1).boost(2.0F)))
+                    .should(builder -> builder.multiMatch(m -> m.fields("name").query(keyword).fuzziness("AUTO").prefixLength(1)))
+                    .should(builder -> builder.matchPhrasePrefix(
+                            prefix -> prefix.field("description").query(keyword).maxExpansions(2).slop(1)))
+                    .should(builder -> builder.matchPhrasePrefix(
+                            prefix -> prefix.field("category.name").query(keyword).maxExpansions(2).slop(1)))
+                    .build();
 
-        BoolQuery shouldQuery = QueryBuilders.bool()
-                .should(builder -> builder.matchPhrasePrefix(
-                        prefix -> prefix.field("name").query(keyword).maxExpansions(2).slop(1).boost(2.0F)))
-                .should(builder -> builder.multiMatch(m -> m.fields("name").query(keyword).fuzziness("AUTO").prefixLength(1)))
-                .should(builder -> builder.matchPhrasePrefix(
-                        prefix -> prefix.field("description").query(keyword).maxExpansions(2).slop(1)))
-                .should(builder -> builder.matchPhrasePrefix(
-                        prefix -> prefix.field("category.name").query(keyword).maxExpansions(2).slop(1)))
-                .build();
-
-        boolQuery.must(shouldQuery._toQuery());
+            boolQuery.must(shouldQuery._toQuery());
+        }
 
         NativeQueryBuilder queryBuilder = new NativeQueryBuilder()
                 .withQuery(boolQuery.build()._toQuery())
@@ -122,34 +143,82 @@ public class SearchServiceImpl implements SearchService {
 
         // Apply price range filter only if maxPrice is not null
         if (maxPrice != null) {
-            queryBuilder.withFilter(f -> f.range(r -> r.field("price").gte(JsonData.of(minPrice)).lte(JsonData.of(maxPrice))));
+            queryBuilder.withFilter(f -> f.range(r -> r.field("minPrice").gte(JsonData.of(minPrice)).lte(JsonData.of(maxPrice))));
         } else {
-            queryBuilder.withFilter(f -> f.range(r -> r.field("price").gte(JsonData.of(minPrice))));
+            queryBuilder.withFilter(f -> f.range(r -> r.field("minPrice").gte(JsonData.of(minPrice))));
         }
 
         queryBuilder.withSort(s -> {
-            if (order != null) {
-                SortOrder sortOrder = order.equals("desc") ? SortOrder.Desc : SortOrder.Asc;
-                return s.field(f -> f.field("price").order(sortOrder));
+            if (sortBy != null) {
+                if (sortBy.equals("price")) {
+                    SortOrder sortOrder = order.equals("desc") ? SortOrder.Desc : SortOrder.Asc;
+                    return s.field(f -> f
+                            .field("minPrice")
+                            .order(sortOrder)
+                    );
+                } else if (sortBy.equals("newest")) {
+                    SortOrder sortOrder = order.equals("desc") ? SortOrder.Desc : SortOrder.Asc;
+                    return s.field(f -> f.field("createdAt").order(sortOrder));
+                }
             }
             return s.field(f -> f.field("_score").order(SortOrder.Desc));
         });
-
+        queryBuilder.withAggregation("category", Aggregation.of(a ->
+                a.terms(t -> t.field("category.id").size(10))
+                        .aggregations("name", subAgg ->
+                                subAgg.terms(t -> t
+                                        .field("category.name.keyword")
+                                        .size(1) // Since one ID corresponds to one name
+                                )
+                        )
+        )).withAggregation("location", Aggregation.of(a ->
+                a.terms(t -> t.field("tenantDocument.location.keyword").size(10)))
+        );
         NativeQuery query = queryBuilder.build();
-
-        Long totalProduct = elasticsearchOperations.count(query, ProductDTO.class);
-        var products = elasticsearchOperations.search(query, ProductDTO.class)
+        Long totalProduct = elasticsearchOperations.count(query, ProductDocument.class);
+        SearchHits<ProductDocument> searchHits = elasticsearchOperations.search(query, ProductDocument.class);
+        var products = searchHits
                 .stream()
                 .map(hit -> hit.getContent())
                 .collect(Collectors.toList());
 
-        return new PageResponse<>(products, page, products.size(), totalProduct, HttpStatus.OK);
+        AggregationsContainer<?> aggregationsContainer = searchHits.getAggregations();
+        List<PageSearchResponse.FilterSearch> filterSearches = new ArrayList<>();
+        for (ElasticsearchAggregation aggregation : ((ElasticsearchAggregations) aggregationsContainer).aggregations()) {
+            Aggregate aggregate = aggregation.aggregation().getAggregate();
+            PageSearchResponse.FilterSearch filterSearch = new PageSearchResponse.FilterSearch();
+            filterSearch.setFilterName(aggregation.aggregation().getName());
+            // Iterate through buckets
+            if (aggregate.isLterms()) {
+                for (var bucket : ((LongTermsAggregate) aggregate._get()).buckets().array()) {
+                    for (var sub : bucket.aggregations().entrySet()) {
+                        filterSearch.addFilterItem(bucket.key()
+                                , ((StringTermsAggregate) sub.getValue()._get()).buckets().array().get(0).key().stringValue()
+                                , ((StringTermsAggregate) sub.getValue()._get()).buckets().array().get(0).docCount());
+                    }
+                }
+            } else if (aggregate.isSterms()) {
+                for (var bucket : ((StringTermsAggregate) aggregate._get()).buckets().array()) {
+                    filterSearch.addFilterItem(null,bucket.key().stringValue(), bucket.docCount());
+                }
+            }
+
+            filterSearches.add(filterSearch);
+        }
+
+        return PageSearchResponse.builder()
+                .data(products)
+                .count(totalProduct)
+                .totalElement(products.size())
+                .filter(filterSearches)
+                .status(HttpStatus.OK)
+                .build();
     }
 
 
     @Override
     public ProductDTO test(String id) {
-       ProductDTO productDTO= elasticsearchOperations.get(id,ProductDTO.class);
-       return productDTO;
+        ProductDTO productDTO = elasticsearchOperations.get(id, ProductDTO.class);
+        return productDTO;
     }
 }

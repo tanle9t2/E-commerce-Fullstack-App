@@ -7,6 +7,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { PAGE_SIZE_PRODUCT } from "../../utils/constant";
 import { useSearchProduct } from "./useSearchProduct";
+import { useSearchParams } from "react-router-dom";
 
 const SortingContainer = styled.div`
   display: flex;
@@ -26,7 +27,7 @@ const Label = styled.span`
 `;
 
 const Button = styled.button`
-  background: ${(props) => (props.active ? "#e74c3c" : "#fff")};
+  background: ${(props) => (props.active ? "var(--primary-color)" : "var(--color-white)")};
   color: ${(props) => (props.active ? "white" : "black")};
   border: 1px solid #ddd;
   padding: 8px 12px;
@@ -46,6 +47,7 @@ const Dropdown = styled.select`
   border: 1px solid #ddd;
   border-radius: 5px;
   font-size: 14px;
+  color: ${(props) => (props.isActive ? "var(--primary-color)" : "var(--black-color)")};
   cursor: pointer;
 `;
 const PaginationContainer = styled.div`
@@ -62,58 +64,63 @@ const PageNumber = styled.span`
   margin-right: 10px;
   color: #e74c3c;
 `;
-
-const PaginationButton = styled.button`
-  background: ${(props) => (props.disabled ? "#fff" : "#f0f0f0")};
-  border: 1px solid #ddd;
-  padding: 6px 12px;
-  margin-right: 5px;
-  border-radius: 5px;
-  cursor: ${(props) => (props.disabled ? "not-allowed" : "pointer")};
-  color: ${(props) => (props.disabled ? "#ccc" : "#333")};
-
-  &:hover {
-    background: ${(props) => (props.disabled ? "#fff" : "#ddd")};
-  }
-`;
-function ProductSearch({ columns }) {
-    const { response, isLoading } = useSearchProduct();
-    const [activeSort, setActiveSort] = useState("relevant");
-    const [priceSort, setPriceSort] = useState("lowToHigh");
-    if (isLoading) return <Spinner />
-    const {data:products,page:currentPage,totalElement} = response;
-    const totalPages = Math.ceil(totalElement/PAGE_SIZE_PRODUCT)
-    console.log(products)
+function ProductSearch({ columns,totalPages,products }) {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const [activeSort, setActiveSort] = useState(searchParams.get("sortBy") || "relevant-desc");
+    const currentPage = searchParams.get("page") ? parseInt(searchParams.get("page")) :1;
+    function handleNextPage() {
+      const next = currentPage === totalPages ? currentPage : currentPage + 1;
+      searchParams.set("page", next);
+      setSearchParams(searchParams);
+    }
+    function handlePrevPage() {
+      const prev = currentPage <= 1 ? currentPage : currentPage -1;
+      searchParams.set("page", prev);
+      setSearchParams(searchParams);
+    }
+    function onClickSort(value) {
+        if(!value) return; 
+        const arr = value.split("-")
+        setActiveSort(value)
+        searchParams.set("sortBy", arr[0]);
+        searchParams.set("order", arr[1])
+        setSearchParams(searchParams);
+    }
     return (
         <div>
             <SortingContainer>
                 <div>
                     <Label>Sắp xếp theo</Label>
-                    <Button active={activeSort === "relevant"} onClick={() => setActiveSort("relevant")}>Liên Quan</Button>
-                    <Button active={activeSort === "newest"} onClick={() => setActiveSort("newest")}>Mới Nhất</Button>
-                    <Button active={activeSort === "bestseller"} onClick={() => setActiveSort("bestseller")}>Bán Chạy</Button>
-                    <Dropdown onChange={(e) => setPriceSort(e.target.value)} value={priceSort}>
-                        <option value="lowToHigh">Giá: Thấp đến Cao</option>
-                        <option value="highToLow">Giá: Cao đến Thấp</option>
+                    <Button active={activeSort === "relevant-desc"|| activeSort === "relevant"} onClick={() => onClickSort("relevant-desc")}>Liên Quan</Button>
+                    <Button active={activeSort === "newest-desc" || activeSort === "newest"} onClick={() => onClickSort("newest-desc")}>Mới Nhất</Button>
+                    <Button active={activeSort === "bestseller-desc" || activeSort === "bestseller"} onClick={() => onClickSort("bestseller-desc")}>Bán Chạy</Button>
+                    <Dropdown value={activeSort} isActive={activeSort.split("-")[0] === "price"} onChange={(e) =>{
+                        onClickSort(e.target.value)
+                    }}>
+                        {activeSort.split("-")[0] !== "price" && <option value="">Giá</option>}
+                        <option value="price-asc">Giá: Thấp đến Cao</option>
+                        <option value="price-desc">Giá: Cao đến Thấp</option>
                     </Dropdown>
                 </div>
-                <PaginationContainer>
-                    <PageNumber>
-                        {currentPage}/{totalPages}
-                    </PageNumber>
-                    <Button
-                        disabled={currentPage === 1}
-                        // onClick={() => onPageChange(currentPage - 1)}
-                    >
-                        {"<"}
-                    </Button>
-                    <Button
-                        disabled={currentPage === totalPages}
-                        // onClick={() => onPageChange(currentPage + 1)}
-                    >
-                        {">"}
-                    </Button>
-                </PaginationContainer>
+                { totalPages !==1 &&
+                   <PaginationContainer>
+                   <PageNumber>
+                       {currentPage}/{totalPages}
+                   </PageNumber>
+                   <Button
+                       disabled={currentPage === 1}
+                       onClick={() => handlePrevPage()}
+                   >
+                       {"<"}
+                   </Button>
+                   <Button
+                       disabled={currentPage === totalPages}
+                       onClick={() => handleNextPage()}
+                   >
+                       {">"}
+                   </Button>
+               </PaginationContainer>
+                }
             </SortingContainer>
 
             <Section columns={columns}>

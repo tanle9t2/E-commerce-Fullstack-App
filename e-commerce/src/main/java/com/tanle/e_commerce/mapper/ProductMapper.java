@@ -1,6 +1,7 @@
 package com.tanle.e_commerce.mapper;
 
 import com.tanle.e_commerce.dto.ProductDTO;
+import com.tanle.e_commerce.dto.ProductDocument;
 import com.tanle.e_commerce.dto.SKUDTO;
 import com.tanle.e_commerce.entities.Option;
 import com.tanle.e_commerce.entities.OptionValue;
@@ -25,7 +26,8 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring", uses = {SKUMapper.class, CategoryMapper.class})
 @DecoratedWith(ProductMapperDecorator.class)
 public interface ProductMapper {
-    @Mapping(target = "price", expression = "java(mapPrice(product))")
+    @Mapping(target = "minPrice", expression = "java(mapMinPrice(product))")
+    @Mapping(target = "maxPrice", expression = "java(mapMaxPrice(product))")
     @Mapping(target = "stock", expression = "java(mapStock(product))")
     @Mapping(target = "options", expression = "java(mapOptions(product))")
     @Mapping(target = "tenantId",source = "product.tenant.id")
@@ -33,12 +35,21 @@ public interface ProductMapper {
 
     @Mapping(target = "options", expression = "java(mapOptionsBack(productDTO))")
     Product toEntity(ProductDTO productDTO);
+    @Mapping(target = "options", expression = "java(mapOptions(product))")
+    @Mapping(target = "minPrice", expression = "java(mapMinPrice(product))")
+    @Mapping(target = "maxPrice", expression = "java(mapMaxPrice(product))")
+    @Mapping(target = "stock", expression = "java(mapStock(product))")
+    ProductDocument toDocument(Product product);
+
 
     @Mapping(target = "options", expression = "java(mapOptionsBack(dto))")
     void update(@MappingTarget Product product, ProductDTO dto);
 
-    default double[] mapPrice(Product product) {
-        return product.getPrice();
+    default double mapMinPrice(Product product) {
+        return product.getMinPrice();
+    }
+    default double mapMaxPrice(Product product) {
+        return product.getMaxPrice();
     }
 
     default int mapStock(Product product) {

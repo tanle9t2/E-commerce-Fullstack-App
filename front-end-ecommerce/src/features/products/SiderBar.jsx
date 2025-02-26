@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-
+import {translateFilter} from"../../utils/helper"
+import { useSearchParams } from "react-router-dom";
 const SidebarContainer = styled.div`
   width: 250px;
   padding: 25px 0;
@@ -28,18 +29,6 @@ const Checkbox = styled.input`
   margin-right: 8px;
   cursor: pointer;
 `;
-const categories = [
-    { id: 1, name: "Áo thun", count: 15 },
-    { id: 2, name: "Áo Thun", count: 12 },
-    { id: 3, name: "Áo Hoodie", count: 11 },
-    { id: 4, name: "Hoodie và Áo nỉ", count: 3 },
-];
-const location = [
-    { id: 1, name: "Áo thun", count: 15 },
-    { id: 2, name: "Áo Thun", count: 12 },
-    { id: 3, name: "Áo Hoodie", count: 11 },
-    { id: 4, name: "Hoodie và Áo nỉ", count: 3 },
-]
 const FilterContainer = styled.div`
   display: flex;
   flex-direction: column;
@@ -81,72 +70,81 @@ const ApplyButton = styled.button`
     background-color: #c0392b;
   }
 `;
-function Sidebar() {
-    const [selectedFilters, setSelectedFilters] = useState([])
+
+const FilterItem = ({ name, listItems }) => {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const selectedFilters = new Set(searchParams.get(name)?.split(",") || []);
+    const handleCheckboxChange = (id) => {
+        const newSelected = new Set(selectedFilters);
+
+        if (newSelected.has(id)) {
+            newSelected.delete(id);
+        } else {
+            newSelected.add(id);
+        }
+
+        // Update URL parameters
+        const updatedParams = new URLSearchParams(searchParams);
+        if (newSelected.size > 0) {
+            updatedParams.set(name, Array.from(newSelected).join(","));
+        } else {
+            updatedParams.delete(name);
+        }
+        setSearchParams(updatedParams);
+    };
+    return (
+        <FilterWrapper>
+            <FilterTitle>{translateFilter(name)}</FilterTitle>
+            <FilterContainer>
+                {listItems.map((item) => (
+                    <Label key={item.id !== null? item.id : item.name}>
+                        <Checkbox
+                            type="checkbox"
+                            checked={selectedFilters.has(item.id !== null? `${item.id}` : item.name)}
+                            onChange={() => handleCheckboxChange(item.id !== null? `${item.id}` : item.name)}
+                        />
+                        {item.name} ({item.value})
+                    </Label>
+                ))}
+            </FilterContainer>
+        </FilterWrapper>
+    );
+};
+function Sidebar({ filters }) {
+    console.log(filters)
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
-
-
-    const handleCheckboxChange = (id) => {
-        setSelectedFilters((prev) =>
-            prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-        );
-    };
-
+    const [searchParams, setSearchParams] = useSearchParams();
+    function handleOnClick() {
+        searchParams.set("minPrice", minPrice)
+        searchParams.set("maxPrice", maxPrice)
+        setSearchParams(searchParams);
+    }
     return (
         <SidebarContainer>
             <Header>Bộ lọc tìm kiếm</Header>
+            {filters.map(filter => <FilterItem name={filter.filterName} listItems={filter.filterItems}/>)}
             <FilterWrapper>
-                <FilterTitle>Theo Danh Mục</FilterTitle>
                 <FilterContainer>
-                    {categories.map((category) => (
-                        <Label key={category.id}>
-                            <Checkbox
-                                type="checkbox"
-                                checked={selectedFilters.includes(category.id)}
-                                onChange={() => handleCheckboxChange(category.id)}
-                            />
-                            {category.name} ({category.count})
-                        </Label>
-                    ))}
+                    <FilterTitle>Khoảng Giá</FilterTitle>
+                    <InputContainer>
+                        <Input
+                            type="number"
+                            placeholder="₫ TỪ"
+                            value={minPrice}
+                            onChange={(e) => setMinPrice(e.target.value)}
+                        />
+                        —
+                        <Input
+                            type="number"
+                            placeholder="₫ ĐẾN"
+                            value={maxPrice}
+                            onChange={(e) => setMaxPrice(e.target.value)}
+                        />
+                    </InputContainer>
+                    <ApplyButton onClick={()=> handleOnClick()} >Áp Dụng</ApplyButton>
                 </FilterContainer>
             </FilterWrapper>
-            <FilterWrapper>
-                <FilterTitle>Nơi bán</FilterTitle>
-                <FilterContainer>
-                    {location.map((category) => (
-                        <Label key={category.id}>
-                            <Checkbox
-                                type="checkbox"
-                                checked={selectedFilters.includes(category.id)}
-                                onChange={() => handleCheckboxChange(category.id)}
-                            />
-                            {category.name} ({category.count})
-                        </Label>
-                    ))}
-                </FilterContainer>
-            </FilterWrapper>
-           <FilterWrapper>
-           <FilterContainer>
-                <FilterTitle>Khoảng Giá</FilterTitle>
-                <InputContainer>
-                    <Input
-                        type="number"
-                        placeholder="₫ TỪ"
-                        value={minPrice}
-                        onChange={(e) => setMinPrice(e.target.value)}
-                    />
-                    —
-                    <Input
-                        type="number"
-                        placeholder="₫ ĐẾN"
-                        value={maxPrice}
-                        onChange={(e) => setMaxPrice(e.target.value)}
-                    />
-                </InputContainer>
-                <ApplyButton >Áp Dụng</ApplyButton>
-            </FilterContainer>
-           </FilterWrapper>
         </SidebarContainer>
     );
 };

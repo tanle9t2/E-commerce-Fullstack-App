@@ -3,6 +3,7 @@ package com.tanle.e_commerce.controller;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.tanle.e_commerce.Repository.Jpa.ProductRepository;
 import com.tanle.e_commerce.dto.ProductDTO;
+import com.tanle.e_commerce.dto.ProductDocument;
 import com.tanle.e_commerce.entities.Product;
 import com.tanle.e_commerce.mapper.ProductMapper;
 import com.tanle.e_commerce.respone.ApiResponse;
@@ -34,15 +35,12 @@ public class TestController {
 //        ApiResponse<ProductDTO> products = productService.save(product);
         return null;
     }
-    @GetMapping("/asyn")
-    public void asynData() {
-        productAsynService.createAll();
-    }
+
     @GetMapping("/test")
     public ResponseEntity test() {
         List<Product> products = productRepository.findAll();
         for (Product p : products) {
-            ProductDTO productDTO = productMapper.asInput(p);
+            ProductDocument productDTO = productMapper.toDocument(p);
             elasticsearchOperations.save(productDTO);
         }
         return ResponseEntity.status(200).body("ok");

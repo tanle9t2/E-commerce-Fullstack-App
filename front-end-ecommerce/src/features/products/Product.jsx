@@ -70,30 +70,20 @@ function Product() {
     const {isLoading, product} = useProduct()
     const [state, dispatch] = useReducer(reducer, initOptionsState);
     const [skuState,setSkuState] = useState({});
-    const {isLoading: isLoadingAddCartItem, addCartItem} = useAddCartItem();
+    const { addCartItem} = useAddCartItem();
     const [quantity, setQuantity] = useState(1); // Initial value is 1
     const [error,setError] = useState(false);
     const navigate = useNavigate();
     const {handleAddCartItemTick} = useCartContext();
     useEffect(() => {
         if(!isLoading && product) {
-            const price = product.price[0] ===product.price[1] ?product.price[0] : product.price;
+            const price = product.minPrice ===product.maxPrice ?product.minPrice :[product.minPrice,product.maxPrice];
             setSkuState(() => ({
                 "price": price,
                 "stock": product.stock
               }));
         }
     },[isLoading,product])
-    // const isFirstRender = useRef(true);
-    // useEffect(() => {
-    //     if(!isLoading && product){
-    //         if (isFirstRender.current) {
-    //             isFirstRender.current = false; // Mark first render as done
-    //             return;
-    //         }
-    //         setError(Object.keys(state).length !== Object.keys(product.options).length);
-    //     }
-    // }, [state, product,isLoading]);
     useEffect(() => {
         if (!isLoading && product) {
             const isSelected = Object.keys(state).length === Object.keys(product.options).length;

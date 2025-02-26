@@ -16,6 +16,7 @@ import com.tanle.e_commerce.dto.CategoryDTO;
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.dto.SKUDTO;
 import com.tanle.e_commerce.entities.Product;
+import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import com.tanle.e_commerce.mapper.ProductMapper;
 import com.tanle.e_commerce.mapper.SKUMapper;
 import com.tanle.e_commerce.service.CategoryService;
@@ -50,8 +51,6 @@ public class ProductAsynServiceImpl implements ProductAsycnService {
     @Autowired
     private ElasticsearchOperations elasticsearchRestTemplate;
     @Autowired
-    private ProductService productService;
-    @Autowired
     private CategoryService categoryService;
     @Autowired
     private ProductRepository productRepository;
@@ -72,26 +71,12 @@ public class ProductAsynServiceImpl implements ProductAsycnService {
             indexOperations.create();
             System.out.println("Index created: " + INDEX_NAME);
         }
-        ProductDTO product = productService.findById(entityId);
-        elasticsearchRestTemplate.save(product);
+        Product product = productRepository.findById(entityId)
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found"));
+        elasticsearchRestTemplate.save(productMapper.toDocument(product));
         LOG.info("Create Product - {}", product.getId());
     }
 
-    public void createAll() {
-        IndexCoordinates indexCoordinates = IndexCoordinates.of(INDEX_NAME);
-        // Check if the index exists
-        IndexOperations indexOperations = elasticsearchRestTemplate.indexOps(indexCoordinates);
-        if (!indexOperations.exists()) {
-
-            indexOperations.create();
-            System.out.println("Index created: " + INDEX_NAME);
-        }
-        productRepository.findAll()
-                .stream()
-                .forEach(p -> {
-                    elasticsearchRestTemplate.save(productMapper.asInput(p));
-                });
-    }
 
     @Override
     public void update(int entityId, JsonObject payload) {

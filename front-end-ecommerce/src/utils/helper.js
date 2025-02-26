@@ -69,9 +69,17 @@ const statusTranslations = {
     CANCELED: "Đã hủy",
     CANCELLATION_REQUEST: "Yêu cầu hủy"
 };
+const Filters = {
+    category: "Theo danh mục",
+    location: "Nơi bán"
+}
 
 export const translateStatus = (status) => {
     return statusTranslations[status] || "Trạng thái không xác định";
+}
+export const translateFilter = (filter) => {
+
+    return Filters[filter.toLowerCase()] || "Filter không xác định"
 }
 export const getDateRange = () => {
     const date = new Date();

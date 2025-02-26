@@ -18,7 +18,7 @@ export async function getProducts() {
         throw new Error("Failed getting cart");
     }
 }
-export async function searchProduct({ keyword, category, minPrice, maxPrice, sortBy, order, page }) {
+export async function searchProduct({ keyword, location, category, minPrice, maxPrice, sortBy, order, size, page }) {
     const params = {};
     if (keyword) params.keyword = keyword;
     if (category) params.category = category;
@@ -26,7 +26,9 @@ export async function searchProduct({ keyword, category, minPrice, maxPrice, sor
     if (maxPrice) params.maxPrice = maxPrice;
     if (sortBy) params.sortBy = sortBy;
     if (order) params.order = order;
-    if (page !== undefined) params.page = page; // Include page if defined (even if 0)
+    if (size) params.size = size;
+    if (location) params.location = location;
+    if (page !== undefined) params.page = page; // Include page if defined (even if 0)  
 
     try {
         const res = await searchAPI.get("", { params });

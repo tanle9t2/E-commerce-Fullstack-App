@@ -23,48 +23,35 @@ import java.util.Map;
 @AllArgsConstructor
 @Builder
 @Data
-@Getter
-@Setter
-@Document(indexName = "product-index")
 public class ProductDTO {
-    @Id
-    @Field(type = FieldType.Integer)
+
     private Integer id;
-    @Field(type = FieldType.Text)
+
     private String name;
-    @Field(type = FieldType.Double)
-    private double[] price;
-    @Field(type = FieldType.Integer)
+
+    private double minPrice;
+
+    private double maxPrice;
+
     private int reorderLevel;
-    @Field(type = FieldType.Double)
+
     private int stock;
-    @Field(type = FieldType.Text)
+
     private String description;
-    @Field(type = FieldType.Date, format = DateFormat.year_month_day)
+
     private LocalDate createdAt;
-    @Field(type = FieldType.Object)
+
     private CategoryDTO category;
-    @Field(type = FieldType.Text)
+
     private String skuNo;
-    @Field(type = FieldType.Object)
+
     private List<SKUDTO> skus;
     private int totalSell;
-    @Field(type = FieldType.Integer)
+
     private int tenantId;
     private Map<String, Option> options;
-    @Field(type = FieldType.Object)
+
     private List<Image> images;
 
-    @Override
-    public String toString() {
-        return "Product{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", reorderLevel=" + reorderLevel +
-                ", description='" + description + '\'' +
-                ", create_at='" + createdAt + '\'' +
-                ", category=" + category +
-                '}';
-    }
 
 }

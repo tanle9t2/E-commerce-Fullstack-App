@@ -58,7 +58,7 @@ public class ProductDeserializer extends StdDeserializer<ProductDTO> {
                 .reorderLevel(reorderLevel)
                 .createdAt(createAt)
                 .stock(stock)
-                .price(new double[]{})
+
                 .options(options)
                 .category(categoryDTO)
                 .build();

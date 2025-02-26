@@ -3,6 +3,7 @@ package com.tanle.e_commerce.mapper.decoratormapper;
 import com.tanle.e_commerce.Repository.Jpa.CommentRepository;
 import com.tanle.e_commerce.Repository.Jpa.OrderDetailRepository;
 import com.tanle.e_commerce.dto.ProductDTO;
+import com.tanle.e_commerce.dto.ProductDocument;
 import com.tanle.e_commerce.entities.Product;
 import com.tanle.e_commerce.mapper.CommentMapper;
 import com.tanle.e_commerce.mapper.ProductMapper;
@@ -29,5 +30,17 @@ public abstract class ProductMapperDecorator implements ProductMapper {
                 .orElse(0);
         productDTO.setTotalSell(sell);
         return productDTO;
+    }
+
+    @Override
+    public ProductDocument toDocument(Product product) {
+        ProductDocument productDocument = delegate.toDocument(product);
+        ProductDocument.TenantDocument tenantDocument = new ProductDocument.TenantDocument();
+        tenantDocument.setId(product.getTenant().getId());
+        tenantDocument.setName(product.getTenant().getName());
+        tenantDocument.setLocation(product.getTenant().getPickupAddress().getCity());
+
+        productDocument.setTenantDocument(tenantDocument);
+        return productDocument;
     }
 }
