@@ -12,6 +12,7 @@ public interface CategoryService {
     PageResponse<CategoryDTO> findAll(Pageable pageable);
 
     CategoryDTO findById(Integer id);
+    List<CategoryDTO> findByTenantId(Integer id);
 
     CategoryDTO createCategory(Integer parent, CategoryDTO categoryDTO);
 

@@ -24,6 +24,7 @@ function ProductDescription({description,stock,category}) {
             </Category>
             ))}
             </TextWithLabel>
+            
             <TextWithLabel label="Kho">
                     {stock}
             </TextWithLabel>

@@ -21,7 +21,8 @@ public interface CategoryRepository extends JpaRepository<Category, Integer>
 
     @Query(value = "select c from Category as c where c.id =?1 and c.tenant.id =?2")
     Optional<Category> byIdAndTenant(Integer parentId, Integer tenantId);
-
+    @Query(value = "select c from Category as c where c.tenant.id =?1")
+    List<Category> findByTenantId(Integer tenantId);
     @Query(value = """
                 SELECT parent.name
                 FROM Category AS node,

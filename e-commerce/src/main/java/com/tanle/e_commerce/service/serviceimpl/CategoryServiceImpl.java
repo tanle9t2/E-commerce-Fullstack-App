@@ -45,6 +45,15 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public List<CategoryDTO> findByTenantId(Integer id) {
+        List<Category> categories = categoryRepository.findByTenantId(id);
+        return categories.stream()
+                .map(c -> categoryMapper.convertDTO(c))
+                .collect(Collectors.toList());
+
+    }
+
+    @Override
     @Transactional
     public CategoryDTO createCategory(Integer parentId, CategoryDTO category) {
         Tenant tenant = tenantRepository.findById(category.getTenantId())

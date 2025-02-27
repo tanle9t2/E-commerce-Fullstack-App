@@ -17,6 +17,8 @@ import Address from "./features/authentication/Address";
 import OrderHistory from "./features/orders/OrderHistory";
 import PaymentPage from "./pages/PaymentPage";
 import SearchPage from "./pages/SearchPage"
+import PageNotFound from "./ui/PageNotFound";
+import Tenant from "./features/tenant/Tenant";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -37,6 +39,7 @@ function App() {
             <Routes>
               <Route element={<AppLayout />}>
                 <Route path="/" element={<HomePage />} />
+                <Route path="/shop/:shopId" element={<Tenant />} />
                 <Route path="search" element={<SearchPage />} />
                 <Route path="product/:productId" element={<Product />} />
                 <Route path="/user/account/" element={<ProfileLayout />}>
@@ -45,6 +48,7 @@ function App() {
                   <Route path="password" element={<PasswordChange />} />
                   <Route path="address" element={<Address />} />
                 </Route>
+                <Route path="*" element ={<PageNotFound/>}/>
               </Route>
               <Route path="cart" element={<Cart />} />
               <Route path="checkout" element={<PaymentPage />} />

@@ -13,6 +13,7 @@ import com.tanle.e_commerce.Repository.elasticsearch.ProductElasticsearchReposit
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.dto.ProductDocument;
 import com.tanle.e_commerce.entities.Product;
+import com.tanle.e_commerce.respone.FilterSearchResponse;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.request.SearchRequest;
 import com.tanle.e_commerce.request.SortRequest;
@@ -100,6 +101,86 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public PageSearchResponse searchProduct(Map<String, String> condition, int page, int size) {
+        NativeQueryBuilder queryBuilder = builderQuery(condition, page, size);
+
+        NativeQuery query = queryBuilder.build();
+        Long totalProduct = elasticsearchOperations.count(query, ProductDocument.class);
+        SearchHits<ProductDocument> searchHits = elasticsearchOperations.search(query, ProductDocument.class);
+        var products = searchHits
+                .stream()
+                .map(hit -> hit.getContent())
+                .collect(Collectors.toList());
+
+
+        return PageSearchResponse.builder()
+                .data(products)
+                .count(totalProduct)
+                .totalElement(products.size())
+
+                .status(HttpStatus.OK)
+                .build();
+    }
+
+    @Override
+    public List<FilterSearchResponse> getFilterSearch(Map<String, String> condition) {
+        NativeQueryBuilder queryBuilder = builderQuery(condition);
+        queryBuilder.withAggregation("category", Aggregation.of(a ->
+                a.terms(t -> t.field("category.id").size(10))
+                        .aggregations("name", subAgg ->
+                                subAgg.terms(t -> t
+                                        .field("category.name.keyword")
+                                        .size(1) // Since one ID corresponds to one name
+                                )
+                        )
+        )).withAggregation("location", Aggregation.of(a ->
+                a.terms(t -> t.field("tenantDocument.location.keyword").size(10)))
+        );
+        NativeQuery query = queryBuilder.build();
+        SearchHits<ProductDocument> searchHits = elasticsearchOperations.search(query, ProductDocument.class);
+        AggregationsContainer<?> aggregationsContainer = searchHits.getAggregations();
+        List<FilterSearchResponse> filterSearches = new ArrayList<>();
+        for (ElasticsearchAggregation aggregation : ((ElasticsearchAggregations) aggregationsContainer).aggregations()) {
+            Aggregate aggregate = aggregation.aggregation().getAggregate();
+            FilterSearchResponse filterSearch = new FilterSearchResponse();
+            filterSearch.setFilterName(aggregation.aggregation().getName());
+            // Iterate through buckets
+            if (aggregate.isLterms()) {
+                for (var bucket : ((LongTermsAggregate) aggregate._get()).buckets().array()) {
+                    for (var sub : bucket.aggregations().entrySet()) {
+                        filterSearch.addFilterItem(bucket.key()
+                                , ((StringTermsAggregate) sub.getValue()._get()).buckets().array().get(0).key().stringValue()
+                                , ((StringTermsAggregate) sub.getValue()._get()).buckets().array().get(0).docCount());
+                    }
+                }
+            } else if (aggregate.isSterms()) {
+                for (var bucket : ((StringTermsAggregate) aggregate._get()).buckets().array()) {
+                    filterSearch.addFilterItem(null, bucket.key().stringValue(), bucket.docCount());
+                }
+            }
+
+            filterSearches.add(filterSearch);
+        }
+        return filterSearches;
+    }
+
+    @Override
+    public Map<Integer, String> searchHint(String keyword) {
+        NativeQueryBuilder queryBuilder = builderQuery(Map.of("keyword", keyword), 0, 10);
+        NativeQuery query = queryBuilder.build();
+        SearchHits<ProductDocument> searchHits = elasticsearchOperations.search(query, ProductDocument.class);
+        var products = searchHits
+                .stream()
+                .map(p -> p.getContent())
+                .collect(Collectors.toMap(p -> p.getId(), p -> p.getName()));
+
+        return products;
+    }
+
+    private NativeQueryBuilder builderQuery(Map<String, String> condition) {
+        return builderQuery(condition, 0, 0);
+    }
+
+    private NativeQueryBuilder builderQuery(Map<String, String> condition, int page, int size) {
         String keyword = condition.get("keyword");
         String order = condition.get("order");
         String sortBy = condition.get("sortBy");
@@ -136,16 +217,18 @@ public class SearchServiceImpl implements SearchService {
 
             boolQuery.must(shouldQuery._toQuery());
         }
-
         NativeQueryBuilder queryBuilder = new NativeQueryBuilder()
-                .withQuery(boolQuery.build()._toQuery())
-                .withPageable(PageRequest.of(page, size));
-
+                .withQuery(boolQuery.build()._toQuery());
+        if (size != 0) {
+            queryBuilder.withPageable(PageRequest.of(page, size));
+        }
         // Apply price range filter only if maxPrice is not null
         if (maxPrice != null) {
-            queryBuilder.withFilter(f -> f.range(r -> r.field("minPrice").gte(JsonData.of(minPrice)).lte(JsonData.of(maxPrice))));
+            queryBuilder.withFilter(f -> f.range(r -> r.field("minPrice")
+                    .gte(JsonData.of(minPrice)).lte(JsonData.of(maxPrice))));
         } else {
-            queryBuilder.withFilter(f -> f.range(r -> r.field("minPrice").gte(JsonData.of(minPrice))));
+            queryBuilder.withFilter(f -> f.range(r -> r.field("minPrice")
+                    .gte(JsonData.of(minPrice))));
         }
 
         queryBuilder.withSort(s -> {
@@ -163,58 +246,9 @@ public class SearchServiceImpl implements SearchService {
             }
             return s.field(f -> f.field("_score").order(SortOrder.Desc));
         });
-        queryBuilder.withAggregation("category", Aggregation.of(a ->
-                a.terms(t -> t.field("category.id").size(10))
-                        .aggregations("name", subAgg ->
-                                subAgg.terms(t -> t
-                                        .field("category.name.keyword")
-                                        .size(1) // Since one ID corresponds to one name
-                                )
-                        )
-        )).withAggregation("location", Aggregation.of(a ->
-                a.terms(t -> t.field("tenantDocument.location.keyword").size(10)))
-        );
-        NativeQuery query = queryBuilder.build();
-        Long totalProduct = elasticsearchOperations.count(query, ProductDocument.class);
-        SearchHits<ProductDocument> searchHits = elasticsearchOperations.search(query, ProductDocument.class);
-        var products = searchHits
-                .stream()
-                .map(hit -> hit.getContent())
-                .collect(Collectors.toList());
 
-        AggregationsContainer<?> aggregationsContainer = searchHits.getAggregations();
-        List<PageSearchResponse.FilterSearch> filterSearches = new ArrayList<>();
-        for (ElasticsearchAggregation aggregation : ((ElasticsearchAggregations) aggregationsContainer).aggregations()) {
-            Aggregate aggregate = aggregation.aggregation().getAggregate();
-            PageSearchResponse.FilterSearch filterSearch = new PageSearchResponse.FilterSearch();
-            filterSearch.setFilterName(aggregation.aggregation().getName());
-            // Iterate through buckets
-            if (aggregate.isLterms()) {
-                for (var bucket : ((LongTermsAggregate) aggregate._get()).buckets().array()) {
-                    for (var sub : bucket.aggregations().entrySet()) {
-                        filterSearch.addFilterItem(bucket.key()
-                                , ((StringTermsAggregate) sub.getValue()._get()).buckets().array().get(0).key().stringValue()
-                                , ((StringTermsAggregate) sub.getValue()._get()).buckets().array().get(0).docCount());
-                    }
-                }
-            } else if (aggregate.isSterms()) {
-                for (var bucket : ((StringTermsAggregate) aggregate._get()).buckets().array()) {
-                    filterSearch.addFilterItem(null,bucket.key().stringValue(), bucket.docCount());
-                }
-            }
-
-            filterSearches.add(filterSearch);
-        }
-
-        return PageSearchResponse.builder()
-                .data(products)
-                .count(totalProduct)
-                .totalElement(products.size())
-                .filter(filterSearches)
-                .status(HttpStatus.OK)
-                .build();
+        return queryBuilder;
     }
-
 
     @Override
     public ProductDTO test(String id) {

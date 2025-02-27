@@ -18,33 +18,10 @@ import java.util.Map;
 @Builder
 public class PageSearchResponse {
     private List<ProductDocument> data;
-    private List<FilterSearch> filter;
     private int page;
     private int totalElement;
     private Long count;
     private HttpStatus status;
 
-    @Data
-    public static class FilterSearch {
-        private String filterName;
-        private List<FilterItems> filterItems;
 
-        public void addFilterItem(Long id, String name, Long value) {
-            if (filterItems == null)
-                filterItems = new ArrayList<>();
-
-            FilterItems newFilterItem = new FilterItems();
-            newFilterItem.setId(id);
-            newFilterItem.setName(name);
-            newFilterItem.setValue(value);
-
-            this.filterItems.add(newFilterItem);
-        }
-    }
-    @Data
-    private static class FilterItems {
-        private Long id;
-        private String name;
-        private Long value;
-    }
 }

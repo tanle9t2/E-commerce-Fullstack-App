@@ -2,14 +2,13 @@ import styled from "styled-components";
 import Input from "./Input"
 import Logo from "./Logo"
 import CartNav from '../features/cart/CartNav'
-import { HiOutlineSearch, HiOutlineShoppingCart } from "react-icons/hi";
+import { HiOutlineSearch } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import CartNavNoAuth from "../features/cart/CartNavNoAuth";
 import { useEffect, useRef, useState } from "react";
-import useDebounce from "../hook/useDebounce";
-import { useQuery } from "@tanstack/react-query";
-import { searchProduct } from "../services/apiProduct";
+
+import { useSearchHint } from "../features/products/useSearchHint";
 
 const SearchBar = styled.div`
     width:100%;
@@ -32,14 +31,6 @@ const StyledNavSearch = styled.div`
     display:grid;
     grid-template-columns:0.15fr 0.7fr 0.15fr;
 `
-const SearchInput = styled.input`
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-  outline: none;
-`;
 
 const SuggestionsList = styled.ul`
   position: absolute;
@@ -68,14 +59,9 @@ const SuggestionItem = styled.li`
 function NavSearch() {
     const { isAuthenticated } = useAuthContext();
     const [searchTerm, setSearchTerm] = useState("");
-    const debouncedSearch = useDebounce(searchTerm, 500);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchRef = useRef(null);
-    const { data, isLoading, error } = useQuery({
-        queryKey: ["searchNav", debouncedSearch],
-        queryFn: () => searchProduct({keyword:debouncedSearch}),
-        enabled: !!debouncedSearch,
-    });
+    const { hint, isLoading, error } = useSearchHint(searchTerm)
     const navigate = useNavigate();
     function hanleOnClickSuggess(id) {
         navigate(`/product/${id}`)
@@ -107,19 +93,22 @@ function NavSearch() {
         <StyledNavSearch>
             <Logo />
             <SearchBar ref={searchRef}>
-                <Input onFocus={() => setShowSuggestions(true)} 
-                value={searchTerm} defaultValue={"Nhập tìm kiếm của bạn"} 
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => handleEnter(e)}
+                <Input onFocus={() => setShowSuggestions(true)}
+                    value={searchTerm} defaultValue={"Nhập tìm kiếm của bạn"}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onKeyDown={(e) => handleEnter(e)}
                 />
                 <StyledFindIcon onClick={() => handleOnClickFind(searchTerm)}>
-                    <HiOutlineSearch/>
+                    <HiOutlineSearch />
                 </StyledFindIcon>
-                {data&& showSuggestions && ( 
+                {!isLoading && showSuggestions && (
                     <SuggestionsList>
-                        {data.data.map((item) => (
-                            <SuggestionItem onClick={() =>hanleOnClickSuggess(item.id)} key={item.id}>{item.name}</SuggestionItem>
+                        {Object.entries(hint).map(([key, item]) => (
+                            <SuggestionItem onClick={() => hanleOnClickSuggess(key)} key={key}>
+                                {item}
+                            </SuggestionItem>
                         ))}
+
                     </SuggestionsList>
                 )}
             </SearchBar>

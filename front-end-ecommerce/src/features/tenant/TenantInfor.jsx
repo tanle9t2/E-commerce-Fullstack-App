@@ -50,6 +50,7 @@ const ShopDetail =styled.div`
 `
 function TenantInfor({tenantId}) {
     const {tenant, isLoading} = useTenant(tenantId);
+  
     if(isLoading) return;
     const {name, tenantImage,totalComment,totalProduct,createdAt,following} = tenant;
     return (

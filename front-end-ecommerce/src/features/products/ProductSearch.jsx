@@ -1,13 +1,11 @@
 
 import ProductItem from "./ProductItem"
-import { useProducts } from "./useProducts"
-import Spinner from "../../ui/Spinner"
 import Section from "../../ui/Section"
 import React, { useState } from "react";
 import styled from "styled-components";
-import { PAGE_SIZE_PRODUCT } from "../../utils/constant";
-import { useSearchProduct } from "./useSearchProduct";
+
 import { useSearchParams } from "react-router-dom";
+import  Pagination  from "../../ui/Pagination";
 
 const SortingContainer = styled.div`
   display: flex;
@@ -126,6 +124,7 @@ function ProductSearch({ columns,totalPages,products }) {
             <Section columns={columns}>
                 {products.map(product => <ProductItem key={product.id} product={product} />)}
             </Section>
+            <Pagination pages={totalPages}/>
         </div>
     )
 }

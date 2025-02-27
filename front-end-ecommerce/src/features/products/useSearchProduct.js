@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useSearchParams } from "react-router-dom";
-import { searchProduct } from "../../services/apiProduct";
+import { searchProduct } from "../../services/apiSearch";
 import { PAGE_SIZE_PRODUCT } from "../../utils/constant";
 
 export function useSearchProduct() {
@@ -15,7 +15,7 @@ export function useSearchProduct() {
     const maxPrice = searchParams.get("maxPrice")
     const location = searchParams.get("location")
     const { isLoading,
-        data: { data: products, count, page: currentPage, filter } = {},
+        data: { data: products, count, page: currentPage } = {},
         error } = useQuery({
             queryKey: ["search", keyword, location, minPrice, maxPrice, category, sortBy, order, page],
             queryFn: () => searchProduct({ keyword, location, minPrice, maxPrice, category, sortBy, order, size: PAGE_SIZE_PRODUCT, page })
@@ -35,5 +35,5 @@ export function useSearchProduct() {
         });
     }
 
-    return { isLoading, products, currentPage, totalPages: pageCount, filter, error }
+    return { isLoading, products, currentPage, count, totalPages: pageCount, error }
 }

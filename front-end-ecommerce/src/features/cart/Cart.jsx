@@ -16,8 +16,8 @@ import ConfirmDelete from '../../ui/ConfirmDelete';
 import useDeleteCartItem from './useDeleteCartItem';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { searchProduct } from '../../services/apiProduct';
 import useDebounce from '../../hook/useDebounce';
+import { useSearchHint } from '../products/useSearchHint';
 const Container = styled.div`
     padding: var(--padding-container);
   font-family: Arial, sans-serif;
@@ -99,14 +99,9 @@ const ShopeeCart = () => {
   const { isLoading: isDeleting, deleteCartItem } = useDeleteCartItem()
   const checkAllUseRef = useRef(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const debouncedSearch = useDebounce(searchTerm, 500);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef(null);
-  const { data, error } = useQuery({
-    queryKey: ["searchNav", debouncedSearch],
-    queryFn: () => searchProduct({ keyword: debouncedSearch }),
-    enabled: !!debouncedSearch,
-  });
+  const {isLoading:loadingHint,hint} = useSearchHint(searchTerm)
 
   function hanleOnClickSuggess(id) {
     navigate(`/product/${id}`)
@@ -170,7 +165,6 @@ const ShopeeCart = () => {
   const totalItems = cart.shopOrders.reduce((acc, data) => acc + data.items.length, 0);
   const isCheckedAll = totalItems === cartItemTick.length;
   const totalPrice = cartItemTick.reduce((acc, { sellPrice, quantity }) => acc + sellPrice * quantity, 0)
-  console.log(data)
   return (
     <>
       <Header>
@@ -182,9 +176,9 @@ const ShopeeCart = () => {
                 onKeyDown={(e) => handleEnter(e)} />
           <SearchButton onClick={() => handleOnClickFind(searchTerm)}>🔍
           </SearchButton>
-          {data && showSuggestions && (
+          {!loadingHint && showSuggestions && (
             <SuggestionsList>
-              {data.data.map((item) => (
+              {hint.map((item) => (
                 <SuggestionItem onClick={() => hanleOnClickSuggess(item.id)} key={item.id}>{item.name}</SuggestionItem>
               ))}
             </SuggestionsList>

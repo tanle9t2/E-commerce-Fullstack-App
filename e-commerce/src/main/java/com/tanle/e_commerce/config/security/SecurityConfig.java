@@ -42,13 +42,12 @@ public class SecurityConfig {
     @Autowired
     private CustomAccessDeniedExceptionHandler accessDeniedException;
 
-    private final String[] URL_ADMIN = new String[]{
-            "/api/v1/cart/{cartId:[0-9]+}",
-            "/api/v1/order/{orderId:[0-9]+}"
-    };
+
     private final String[] URL_PERMIT_ALL = new String[]{
             "/api/v1/user/register"
             ,"/api/v1/search"
+            ,"/api/v1/search-hint"
+            ,"/api/v1/filter-search"
             , "/api/v1/user/login"
             , "/api/v1/tenant/login"
             , "/api/v1/user/logout"

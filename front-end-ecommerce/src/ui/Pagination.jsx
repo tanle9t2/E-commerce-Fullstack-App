@@ -1,13 +1,13 @@
 import { Pagination as MyPagination } from '@mui/material';
 import {  useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { PAGE_SIZE_COMMENT } from '../utils/constant';
+
 const StyledPagination = styled.div`
     display:flex;
     justify-content:center;
     font-size:3rem;
 `
-function Pagination({totalResult}) {
+function Pagination({pages}) {
     const [searchParams,setSearchParams] = useSearchParams();
     const currentPage = searchParams.get("page") ?parseInt(searchParams.get("page")): 1;
 
@@ -15,7 +15,7 @@ function Pagination({totalResult}) {
         searchParams.set("page", value);
         setSearchParams(searchParams);
     }
-    const pages = Math.ceil(totalResult/PAGE_SIZE_COMMENT)
+
     if(pages <=1) return null;
     return (
         <StyledPagination>

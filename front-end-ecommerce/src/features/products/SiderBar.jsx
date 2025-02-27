@@ -111,7 +111,7 @@ const FilterItem = ({ name, listItems }) => {
     );
 };
 function Sidebar({ filters }) {
-    console.log(filters)
+   
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
     const [searchParams, setSearchParams] = useSearchParams();
