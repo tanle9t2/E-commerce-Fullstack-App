@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
   servlet:
     multipart:
       enabled: true
@@ -45,7 +47,8 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-
+  sendgrid:
+    api-key: ${SENDGRID_API_KEY}
   mail:
     from: fcletan12@gmail.com
 
@@ -70,7 +73,7 @@ lombok:
 application:
   security:
     jwt:
-      secret-key: VBLoLSe1wHc3a4SelQyKN2uExewLWNeTF1XY2EqrFQjuFGtgxtYBXKCPfwqGNrMP
+      secret-key: ${JWT_SECRET_KEY}
       expiration: 86400 # a day
       refresh-token:
         expiration: 604800 # a week
@@ -87,7 +90,7 @@ payment:
     refundUrl: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
     url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
     tmnCode: MEBTRFP0
-    secretKey: ILFTJ080X209IM562X1NKYTMZ70RLVJO
+    secretKey: ${VNPAY_SECRET_KEY}
     returnUrl: http://localhost:8080/ecommerce-server/api/v1/vn-pay-callback
     version: 2.1.0
     command: pay
@@ -101,5 +104,5 @@ server:
 
 cloudinary:
   cloud-name: dlwjpzshh
-  api-key: 497612656226171
-  api-secret: qOeW7pf9nv4en3YgAEKLuQjh1RY
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}

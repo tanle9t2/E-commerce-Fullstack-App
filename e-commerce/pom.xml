@@ -136,6 +136,11 @@
             <artifactId>spring-data-elasticsearch</artifactId>
             <version>5.0.0</version> <!-- Ensure compatibility with your Spring Boot version -->
         </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>java-dotenv</artifactId>
+            <version>5.2.2</version>
+        </dependency>
 
         <dependency>
             <groupId>org.elasticsearch.client</groupId>
