@@ -5,6 +5,7 @@ import com.tanle.e_commerce.dto.CategoryDTO;
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.dto.TenantDTO;
 
+import com.tanle.e_commerce.respone.CategoryFilterResponse;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.request.TenantRegisterRequest;
 
@@ -42,7 +43,7 @@ public class TenantController extends BaseUserController {
         TenantDTO tenantDTO = tenantService.findById(tenantId);
         PageResponse<ProductDTO> products = productService.findByTenant(Integer.parseInt(PAGE_DEFAULT),
                 Integer.parseInt(PAGE_SIZE), tenantId);
-        List<CategoryDTO> categoryDTOS = categoryService.findByTenantId(tenantId);
+        List<CategoryFilterResponse> categoryDTOS = categoryService.getCategoryFollowLevel(tenantId, 1);
 
         return ResponseEntity.ok(Map.of("tenantInfor", tenantDTO
                 , "products", products

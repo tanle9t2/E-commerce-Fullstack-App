@@ -5,7 +5,8 @@ import React, { useState } from "react";
 import styled from "styled-components";
 
 import { useSearchParams } from "react-router-dom";
-import  Pagination  from "../../ui/Pagination";
+import Pagination from "../../ui/Pagination";
+import Empty from "../../ui/Empty"
 
 const SortingContainer = styled.div`
   display: flex;
@@ -62,71 +63,74 @@ const PageNumber = styled.span`
   margin-right: 10px;
   color: #e74c3c;
 `;
-function ProductSearch({ columns,totalPages,products }) {
-    const [searchParams, setSearchParams] = useSearchParams();
-    const [activeSort, setActiveSort] = useState(searchParams.get("sortBy") || "relevant-desc");
-    const currentPage = searchParams.get("page") ? parseInt(searchParams.get("page")) :1;
-    function handleNextPage() {
-      const next = currentPage === totalPages ? currentPage : currentPage + 1;
-      searchParams.set("page", next);
-      setSearchParams(searchParams);
-    }
-    function handlePrevPage() {
-      const prev = currentPage <= 1 ? currentPage : currentPage -1;
-      searchParams.set("page", prev);
-      setSearchParams(searchParams);
-    }
-    function onClickSort(value) {
-        if(!value) return; 
-        const arr = value.split("-")
-        setActiveSort(value)
-        searchParams.set("sortBy", arr[0]);
-        searchParams.set("order", arr[1])
-        setSearchParams(searchParams);
-    }
-    return (
-        <div>
-            <SortingContainer>
-                <div>
-                    <Label>Sắp xếp theo</Label>
-                    <Button active={activeSort === "relevant-desc"|| activeSort === "relevant"} onClick={() => onClickSort("relevant-desc")}>Liên Quan</Button>
-                    <Button active={activeSort === "newest-desc" || activeSort === "newest"} onClick={() => onClickSort("newest-desc")}>Mới Nhất</Button>
-                    <Button active={activeSort === "bestseller-desc" || activeSort === "bestseller"} onClick={() => onClickSort("bestseller-desc")}>Bán Chạy</Button>
-                    <Dropdown value={activeSort} isActive={activeSort.split("-")[0] === "price"} onChange={(e) =>{
-                        onClickSort(e.target.value)
-                    }}>
-                        {activeSort.split("-")[0] !== "price" && <option value="">Giá</option>}
-                        <option value="price-asc">Giá: Thấp đến Cao</option>
-                        <option value="price-desc">Giá: Cao đến Thấp</option>
-                    </Dropdown>
-                </div>
-                { totalPages !==1 &&
-                   <PaginationContainer>
-                   <PageNumber>
-                       {currentPage}/{totalPages}
-                   </PageNumber>
-                   <Button
-                       disabled={currentPage === 1}
-                       onClick={() => handlePrevPage()}
-                   >
-                       {"<"}
-                   </Button>
-                   <Button
-                       disabled={currentPage === totalPages}
-                       onClick={() => handleNextPage()}
-                   >
-                       {">"}
-                   </Button>
-               </PaginationContainer>
-                }
-            </SortingContainer>
+function ProductSearch({ columns, totalPages, products }) {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeSort, setActiveSort] = useState(searchParams.get("sortBy") || "relevant-desc");
+  const currentPage = searchParams.get("page") ? parseInt(searchParams.get("page")) : 1;
 
-            <Section columns={columns}>
-                {products.map(product => <ProductItem key={product.id} product={product} />)}
-            </Section>
-            <Pagination pages={totalPages}/>
+  if (!products.length) return < Empty />
+
+  function handleNextPage() {
+    const next = currentPage === totalPages ? currentPage : currentPage + 1;
+    searchParams.set("page", next);
+    setSearchParams(searchParams);
+  }
+  function handlePrevPage() {
+    const prev = currentPage <= 1 ? currentPage : currentPage - 1;
+    searchParams.set("page", prev);
+    setSearchParams(searchParams);
+  }
+  function onClickSort(value) {
+    if (!value) return;
+    const arr = value.split("-")
+    setActiveSort(value)
+    searchParams.set("sortBy", arr[0]);
+    searchParams.set("order", arr[1])
+    setSearchParams(searchParams);
+  }
+  return (
+    <div>
+      <SortingContainer>
+        <div>
+          <Label>Sắp xếp theo</Label>
+          <Button active={activeSort === "relevant-desc" || activeSort === "relevant"} onClick={() => onClickSort("relevant-desc")}>Liên Quan</Button>
+          <Button active={activeSort === "newest-desc" || activeSort === "newest"} onClick={() => onClickSort("newest-desc")}>Mới Nhất</Button>
+          <Button active={activeSort === "bestseller-desc" || activeSort === "bestseller"} onClick={() => onClickSort("bestseller-desc")}>Bán Chạy</Button>
+          <Dropdown value={activeSort} isActive={activeSort.split("-")[0] === "price"} onChange={(e) => {
+            onClickSort(e.target.value)
+          }}>
+            {activeSort.split("-")[0] !== "price" && <option value="">Giá</option>}
+            <option value="price-asc">Giá: Thấp đến Cao</option>
+            <option value="price-desc">Giá: Cao đến Thấp</option>
+          </Dropdown>
         </div>
-    )
+        {totalPages !== 1 &&
+          <PaginationContainer>
+            <PageNumber>
+              {currentPage}/{totalPages}
+            </PageNumber>
+            <Button
+              disabled={currentPage === 1}
+              onClick={() => handlePrevPage()}
+            >
+              {"<"}
+            </Button>
+            <Button
+              disabled={currentPage === totalPages}
+              onClick={() => handleNextPage()}
+            >
+              {">"}
+            </Button>
+          </PaginationContainer>
+        }
+      </SortingContainer>
+
+      <Section columns={columns}>
+        {products.map(product => <ProductItem key={product.id} product={product} />)}
+      </Section>
+      <Pagination pages={totalPages} />
+    </div>
+  )
 }
 
 export default ProductSearch

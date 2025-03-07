@@ -65,11 +65,8 @@ public class UserController extends BaseUserController {
                 .phoneNumber(phoneNumber)
                 .sex(sex)
                 .build();
-        userService.update(user, requeset);
-        return ResponseEntity.ok(MessageResponse.builder()
-                .message("Update successfull user")
-                .status(HttpStatus.OK)
-                .build());
+        MessageResponse response = userService.update(user, requeset);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/password")
@@ -81,11 +78,11 @@ public class UserController extends BaseUserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<UserDTO> registUser(@RequestBody RegisterUserDTO registerUserDTO) {
+    public ResponseEntity<MessageResponse> registerUser(@RequestBody RegisterUserDTO registerUserDTO) {
         UserDTO userDTO = userService.registerUser(registerUserDTO);
-        tokenSerice.registerToken(userDTO.getUsername());
+        MessageResponse tokenMessage = tokenSerice.registerToken(userDTO.getUsername());
         cartService.createCart(userDTO.getUserId());
-        return new ResponseEntity<>(userDTO, HttpStatus.OK);
+        return new ResponseEntity<>(tokenMessage, HttpStatus.OK);
     }
 
     @PostMapping("/follow")

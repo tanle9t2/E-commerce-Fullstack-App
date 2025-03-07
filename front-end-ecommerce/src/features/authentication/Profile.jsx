@@ -7,6 +7,8 @@ import Spinner from "../../ui/Spinner";
 import { useUpdateUser } from "./useUpdateUser";
 import { splitName, validateEmail } from "../../utils/helper";
 import toast from "react-hot-toast";
+import { set } from "react-hook-form";
+import { useAuthContext } from "../../context/AuthContext";
 
 const ProfileContent = styled.div`
   flex: 1;
@@ -92,13 +94,15 @@ const FileInput = styled.input`
 `;
 
 const Profile = () => {
+
   const [name, setName] = useState("");
   const [gender, setGender] = useState(false);
   const [dob, setDob] = useState({ day: "", month: "", year: "" });
   const [changeDob, setChangeDob] = useState(false);
-  const [changeEmail,setChangeEmail] = useState(false)
-  const [changePhone,setChangePhone] = useState(false);
+  const [changeEmail, setChangeEmail] = useState(false)
+  const [changePhone, setChangePhone] = useState(false);
   const [image, setImage] = useState(null);
+  const [file, setFile] = useState(null);
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
 
@@ -108,39 +112,41 @@ const Profile = () => {
   const months = useMemo(() => [...Array(12)].map((_, i) => i + 1), []);
   const years = useMemo(() => [...Array(50)].map((_, i) => 2025 - i), []);
 
-  
+
   useEffect(() => {
     if (!isLoading && user) {
       const { firstName, lastName, dateOfBirth, email, phoneNumber, sex } = user;
       const dobArrays = dateOfBirth?.split("-") || ["", "", ""];
       setDob({ day: dobArrays[2], month: dobArrays[1], year: dobArrays[0] });
-      setName(`${firstName} ${lastName}`);
+      setName(`${firstName} ${lastName || ""}`);
       setPhone(phoneNumber);
       setGender(sex);
       setEmail(email);
     }
   }, [isLoading, user]);
-
   if (isLoading || updateLoading) return <Spinner />;
-  
+
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
-    if (file) setImage(URL.createObjectURL(file));
+    if (file) {
+      setFile(file);
+      setImage(URL.createObjectURL(file))
+    };
   };
 
   const handleOnClickUpdate = () => {
-    if(!validateEmail(email)) {
-        toast.error("Email không hợp lệ")
-        return;
+    if (!validateEmail(email)) {
+      toast.error("Email không hợp lệ")
+      return;
     }
     const userData = {
       ...splitName(name),
       phoneNumber: phone,
-      dob: `${dob.day.toString().padStart(2, "0")}/${dob.month.toString().padStart(2, "0")}/${dob.year}`,
+      dob: dob.day ? `${dob.day.toString().padStart(2, "0")}/${dob.month.toString().padStart(2, "0")}/${dob.year}` : null,
       sex: gender,
     };
-    updateUser({ userData, image },{
-      onSettled:() => {
+    updateUser({ userData, image: file }, {
+      onSettled: () => {
         setChangeDob(false);
       }
     });
@@ -184,22 +190,22 @@ const Profile = () => {
           <span>{email}</span>
           <ButtonChange onClick={() => setChangeEmail(!changeEmail)}>Thay đổi</ButtonChange>
         </div>
-        :<>
-           <Input value={email} onChange={(e) => { setEmail(e.target.value)}}/>
-        </>
+          : <>
+            <Input value={email} onChange={(e) => { setEmail(e.target.value) }} />
+          </>
         }
-        
+
 
         <Label>Số điện thoại</Label>
         {phone && !changePhone ? <div className="flex">
           <span>{phone}</span>
           <ButtonChange onClick={() => setChangePhone(!changePhone)}>Thay đổi</ButtonChange>
         </div>
-        :<>
-           <Input value={phone} onChange={(e) => handleOnChangePhone(e)}/>
-        </>
+          : <>
+            <Input value={phone} onChange={(e) => handleOnChangePhone(e)} />
+          </>
         }
-        
+
 
         <Label>Giới tính</Label>
         <RadioGroup>
@@ -215,9 +221,9 @@ const Profile = () => {
 
         <div>
           <Label>Ngày sinh</Label>
-          {dob && !changeDob ? (
+          {dob.day && !changeDob ? (
             <>
-              <span>{`${dob.day}/${dob.month}/${dob.year.substring(0,4)}`}</span>
+              <span>{`${dob.day}/${dob.month}/${dob.year.substring(0, 4)}`}</span>
               <ButtonChange onClick={() => setChangeDob(!changeDob)}>Thay đổi</ButtonChange>
             </>
           ) : (

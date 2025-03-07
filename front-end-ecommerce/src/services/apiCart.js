@@ -1,18 +1,14 @@
 
-import { createAPI } from "./api";
 import { getAuthHeaders } from "../utils/helper"
-const CART_API = "http://localhost:8080/ecommerce-server/api/v1/cart";
+import { axiosPrivate } from "./api";
 
-const cartAPI = createAPI(CART_API)
+
+
 
 // Get cart by ID
-export async function getCart(token) {
+export async function getCart() {
     try {
-        const res = await cartAPI.get("", {
-            headers: {
-                "Authorization": `Bearer ${token}`
-            }
-        });
+        const res = await axiosPrivate.get("/cart");
 
         return res.data;
     } catch (error) {
@@ -24,7 +20,7 @@ export async function getCart(token) {
 // Add cart item
 export async function addCartItem({ skuId, quantity }) {
     try {
-        const res = await cartAPI.post("", { skuId, quantity }, {
+        const res = await axiosPrivate.post("/cart", { skuId, quantity }, {
             headers: getAuthHeaders()
         });
         return res.data;
@@ -37,7 +33,7 @@ export async function addCartItem({ skuId, quantity }) {
 // Delete cart item
 export async function deleteCartItem({ cartItems, token }) {
     try {
-        const res = await cartAPI.delete("/cartItem", {
+        const res = await axiosPrivate.delete("/cart/cartItem", {
             data: { cartItems }, // Attach body properly
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -53,7 +49,7 @@ export async function deleteCartItem({ cartItems, token }) {
 // Update cart item
 export async function updateCartItem(cartItem, token) {
     try {
-        const res = await cartAPI.put("/cartItem", cartItem, {
+        const res = await axiosPrivate.put("/cart/cartItem", cartItem, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }

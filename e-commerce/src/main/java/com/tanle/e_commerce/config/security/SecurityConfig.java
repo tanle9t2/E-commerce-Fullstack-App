@@ -45,12 +45,15 @@ public class SecurityConfig {
 
     private final String[] URL_PERMIT_ALL = new String[]{
             "/api/v1/user/register"
+            ,"/api/v1/email/sendOtp"
+            ,"/api/v1/email/verify-otp"
+            ,"/api/v1/products"
             ,"/api/v1/search"
+            ,"/api/v1/tenant/tenant-infor/1"
             ,"/api/v1/search-hint"
             ,"/api/v1/filter-search"
             , "/api/v1/user/login"
             , "/api/v1/tenant/login"
-            , "/api/v1/user/logout"
             , "/api/v1/user/refreshToken"
             , "/api/v1/payment"
             , "/api/v1/vn-pay-callback"
@@ -91,7 +94,6 @@ public class SecurityConfig {
 //                                , "/api/v1/user/registerToken").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
-                .httpBasic(Customizer.withDefaults())
                 .exceptionHandling(e -> e.accessDeniedHandler(accessDeniedException))
                 .logout(l -> {
                     l.logoutUrl("/user/logout");

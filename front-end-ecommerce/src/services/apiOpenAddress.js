@@ -1,12 +1,14 @@
 import axios from 'axios';
-import { createAPI } from './api';
+
 
 const BASE_URL = `https://provinces.open-api.vn/api`
 // const PROVINCE_API = `https://provinces.open-api.vn/api/p/`;
 // const DISTRICT_API = `https://provinces.open-api.vn/api/d/`;
 // const WARD_API = 'https://provinces.open-api.vn/api/w/';
 
-const openAddressAPI = createAPI(BASE_URL)
+const openAddressAPI = axios.create({
+    baseURL: BASE_URL
+})
 
 export const getProvinces = async function () {
     try {

@@ -24,7 +24,7 @@ public interface ProductService extends OwnerService<Product, Integer> {
 
     ProductDTO findById(Integer id);
 
-    PageResponse<ProductDTO> findByCategory(String categoryId, Pageable pageable);
+    PageResponse<ProductDTO> findByCategory(int categoryId, Pageable pageable);
 
     List<ProductDTO> findByOption(Integer optionId);
 

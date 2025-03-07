@@ -1,12 +1,9 @@
-import { createAPI } from "./api"
+import { axiosPrivate } from "./api"
 
-const PAYMENT_API = `http://localhost:8080/ecommerce-server/api/v1`
-
-const paymentAPI = createAPI(PAYMENT_API)
 
 export async function getMethods(token) {
     try {
-        const res = await paymentAPI.get("/payment/methods", {
+        const res = await axiosPrivate.get("/payment/methods", {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
@@ -20,7 +17,7 @@ export async function getMethods(token) {
 }
 export async function getPaymentUrl(bankCode, orderId) {
     try {
-        const res = await paymentAPI.get(`/payment?bankCode=${bankCode}&orderId=${orderId}`)
+        const res = await axiosPrivate.get(`/payment?bankCode=${bankCode}&orderId=${orderId}`)
         return res.data;
     } catch (error) {
         console.error("Failed getting payment url", error);

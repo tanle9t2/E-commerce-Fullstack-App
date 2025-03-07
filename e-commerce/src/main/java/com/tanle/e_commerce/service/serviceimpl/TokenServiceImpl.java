@@ -85,7 +85,7 @@ public class TokenServiceImpl implements TokenSerice {
         MyUser myUser = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found user: " + username));
         List<Token> revokeToken = myUser.getTokens().stream()
-                .filter(t -> !t.isRevoked() && !t.isRevoked())
+                .filter(t -> !t.isRevoked() && !t.isRefresh())
                 .collect(Collectors.toList());
         revokeToken.forEach(t -> {
             t.setRevoked(true);
@@ -98,6 +98,7 @@ public class TokenServiceImpl implements TokenSerice {
                 .status(HttpStatus.OK)
                 .build();
     }
+
     @Override
     @Transactional
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -136,6 +137,14 @@ public class TokenServiceImpl implements TokenSerice {
                             AuthenticationRespone.builder()
                                     .accessToken(accessToken)
                                     .refreshToken(refreshToken)
+                                    .userInfor(AuthenticationRespone.UserInfor.builder()
+                                            .id(myUserDetails.getId())
+                                            .username(myUserDetails.getUsername())
+                                            .email(myUserDetails.getUsername())
+                                            .avatar(myUserDetails.getAvtUrl())
+                                            .fullName(myUserDetails.getFullName())
+                                            .build()
+                                    )
                                     .build()
                     );
                 }

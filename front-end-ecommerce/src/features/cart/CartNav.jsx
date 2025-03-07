@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import { useCartContext } from "../../context/CartContext";
+
 import { useCart } from "./useCart";
 import { HiOutlineShoppingCart } from "react-icons/hi";
 import Button from "../../ui/Button";
@@ -134,52 +134,49 @@ const Outline = styled.div`
   padding:50px;
 `
 export default function ShoppingCart() {
-    const {isLoading,cart} = useCart();
-    const {isAuthenticated} = useAuthContext()
-    const navigate = useNavigate();
-    if(isLoading) return;
-    const authenticated = isAuthenticated()
-    const cartItems =authenticated 
-    ? cart.shopOrders.flatMap(shop =>
-        shop.items.reduce((acc, item) => {
-          acc.push(item);
-          return acc;
-        }, [])
-      )
-    :[];      
-    return (
-        <CartContainer>
-        <CartButton onClick={() => navigate('/cart')}>
-            <HiOutlineShoppingCart color="#ffff" fontSize={28} />
-            {authenticated && <CartCount>{cartItems.length}</CartCount>}
-        </CartButton>
-            <Dropdown>
-           {cartItems.length && authenticated
-           ? 
-           <>
-              <Header>Sản Phẩm Mới Thêm</Header>
-              <ItemList>
-                  {cartItems.map((item, index) => (
-                  <Item onClick={() => navigate(`/product/${item.product.id}`)} key={index}>
-                      <ItemImage src={item.product.images[0].imageUrl} alt={item.product.name} />
-                      <ItemName>{item.product.name}</ItemName>
-                      <ItemPrice>{formatCurrencyVND(item.sellPrice)}</ItemPrice>
-                    
-                  </Item>
-                  ))}
-              </ItemList>  
-                <Footer>
-                    <p>{cartItems.length} Thêm Hàng Vào Giỏ</p>
-                    <Button onClick={() => navigate("/cart")}>Xem Giỏ Hàng</Button> 
-                </Footer>
-                </>
-                : <Outline>
-                <EmptyImage/>
-                <p>Chưa có sản phẩm</p>
-             </Outline>
-             }
-            </Dropdown>
-       
-        </CartContainer>
-    );
+  const { isLoading, cart } = useCart();
+  const navigate = useNavigate();
+  if (isLoading) return;
+  const cartItems = cart.shopOrders.flatMap(shop =>
+    shop.items.reduce((acc, item) => {
+      acc.push(item);
+      return acc;
+    }, [])
+  )
+
+  return (
+    <CartContainer>
+      <CartButton onClick={() => navigate('/cart')}>
+        <HiOutlineShoppingCart color="#ffff" fontSize={28} />
+        <CartCount>{cartItems.length}</CartCount>
+      </CartButton>
+      <Dropdown>
+        {cartItems.length
+          ?
+          <>
+            <Header>Sản Phẩm Mới Thêm</Header>
+            <ItemList>
+              {cartItems.map((item, index) => (
+                <Item onClick={() => navigate(`/product/${item.product.id}`)} key={index}>
+                  <ItemImage src={item.product.images[0].imageUrl} alt={item.product.name} />
+                  <ItemName>{item.product.name}</ItemName>
+                  <ItemPrice>{formatCurrencyVND(item.sellPrice)}</ItemPrice>
+
+                </Item>
+              ))}
+            </ItemList>
+            <Footer>
+              <p>{cartItems.length} Thêm Hàng Vào Giỏ</p>
+              <Button onClick={() => navigate("/cart")}>Xem Giỏ Hàng</Button>
+            </Footer>
+          </>
+          : <Outline>
+            <EmptyImage />
+            <p>Chưa có sản phẩm</p>
+          </Outline>
+        }
+      </Dropdown>
+
+    </CartContainer>
+  );
 }

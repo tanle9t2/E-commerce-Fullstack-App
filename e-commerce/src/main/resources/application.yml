@@ -45,6 +45,9 @@ spring:
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
+ 
+  mail:
+    from: fcletan12@gmail.com
 
 logging:
   level:
@@ -78,7 +81,6 @@ application:
       topic3: "dbs_.ecommerce.category"
       topic4: "dbs_.ecommerce.options"
       topic5: "dbs_.ecommerce.option_value"
-
 
 payment:
   vnPay:

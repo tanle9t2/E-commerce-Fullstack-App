@@ -1,6 +1,7 @@
 package com.tanle.e_commerce.controller;
 
 import com.tanle.e_commerce.dto.CategoryDTO;
+import com.tanle.e_commerce.respone.CategoryFilterResponse;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.service.CategoryService;
@@ -27,14 +28,22 @@ public class CategoryController {
             @RequestParam(value = "page", required = false, defaultValue = PAGE_DEFAULT) int page,
             @RequestParam(value = "subcategory", required = false, defaultValue = "Root") String parent
     ) {
-        Pageable pageable = PageRequest.of(page, Integer.parseInt(PAGE_SIZE));
-        PageResponse<CategoryDTO> result = categoryService.getSubCategory(parent, pageable);
+
+        List<CategoryDTO> result = categoryService.getSubCategory(parent);
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
     @GetMapping("/category/tenant")
     public ResponseEntity<List<CategoryDTO>> getCategoryByTenant(@RequestParam(value = "tenantId") String tenantId) {
         List<CategoryDTO> categoryDTOS = categoryService.findByTenantId(Integer.parseInt(tenantId));
+        return ResponseEntity.ok(categoryDTOS);
+    }
+
+    @GetMapping("/category/level")
+    public ResponseEntity<List<CategoryFilterResponse>> getCategoryFollowLevel(@RequestParam(value = "tenantId") String tenantId,
+                                                                               @RequestParam(value = "level") String level) {
+        List<CategoryFilterResponse> categoryDTOS = categoryService.getCategoryFollowLevel(Integer.parseInt(tenantId)
+                , Integer.parseInt(level));
         return ResponseEntity.ok(categoryDTOS);
     }
 

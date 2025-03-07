@@ -1,8 +1,7 @@
-import { createAPI } from "./api";
+import { axiosPrivate } from "./api";
 
-const SEARCH_API_URL = "http://localhost:8080/ecommerce-server/api/v1/";
-const searchAPI = createAPI(SEARCH_API_URL)
-export async function searchProduct({ keyword, location, category, minPrice, maxPrice, sortBy, order, size, page }) {
+
+export async function searchProduct({ keyword, location, category, minPrice, maxPrice, lft, rgt, sortBy, order, size, page }) {
     const params = {};
     if (keyword) params.keyword = keyword;
     if (category) params.category = category;
@@ -12,10 +11,12 @@ export async function searchProduct({ keyword, location, category, minPrice, max
     if (order) params.order = order;
     if (size) params.size = size;
     if (location) params.location = location;
+    if (lft) params.lft = lft;
+    if (rgt) params.rgt = rgt;
     if (page !== undefined) params.page = page; // Include page if defined (even if 0)  
 
     try {
-        const res = await searchAPI.get("/search", { params });
+        const res = await axiosPrivate.get("/search", { params });
 
         return res.data;
     } catch (error) {
@@ -25,7 +26,7 @@ export async function searchProduct({ keyword, location, category, minPrice, max
 }
 export async function searchHint(keyword) {
     try {
-        const res = await searchAPI.get(`/search-hint?keyword=${keyword}`,);
+        const res = await axiosPrivate.get(`/search-hint?keyword=${keyword}`,);
 
         return res.data;
     } catch (error) {
@@ -36,7 +37,7 @@ export async function searchHint(keyword) {
 export async function getFilterSearch(keyword) {
 
     try {
-        const res = await searchAPI.get(`/filter-search?keyword=${keyword}`,);
+        const res = await axiosPrivate.get(`/filter-search?keyword=${keyword}`,);
 
         return res.data;
     } catch (error) {

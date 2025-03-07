@@ -26,6 +26,7 @@ const CategoryItem = styled.li`
   &:hover {
     background-color: #f5f5f5;
   }
+  color: ${props => (props.active ? '#ff4500' : '#333')};
 `;
 
 // Styled Subcategory List
@@ -42,49 +43,40 @@ const SubcategoryItem = styled.li`
   cursor: pointer;
 
   &:hover {
-    color: #000;
+    color: ${props => (props.active ? '#ff4500' : '#333')};
   }
 
-  &.best-seller {
-    color: #ff0000; // Red color for "Best Seller" as in the image
-  }
+  color: ${props => (props.active ? '#ff4500' : '#333')};
 `;
 
 // Main Component
-function TenantMenuCategory() {
-    return (
-        <Sidebar>
-            <CategoryList>
-                <CategoryItem>Sản Phẩm</CategoryItem>
+function TenantMenuCategory({ categories, activeCategory, handleOnClickCategory }) {
+  console.log(categories)
+  return (
+    <Sidebar>
+      <CategoryList>
+        <CategoryItem>Sản Phẩm</CategoryItem>
+        <CategoryItem>NEW ARRIVAL</CategoryItem>
+        <CategoryItem className="best-seller">BEST SELLER</CategoryItem>
+        {categories.slice(0, 5).map(({ parent, subCategory }) => (
+          <>
+            <CategoryItem active={activeCategory && activeCategory.id === parent.id}
+              onClick={() => handleOnClickCategory(parent.id, parent.left, parent.right)} key={parent.id}>{parent.name.toUpperCase()}</CategoryItem>
+            <SubcategoryList>
+              {
+                subCategory.map(item => <SubcategoryItem
+                  active={activeCategory && activeCategory.id === item.id}
+                  onClick={() => handleOnClickCategory(item.id, item.left, item.right)}
+                  key={item.id}>{item.name.toUpperCase()}</SubcategoryItem>)
+              }
+            </SubcategoryList>
+          </>
+        )
+        )}
 
-                <CategoryItem>NEW ARRIVAL</CategoryItem>
-                <CategoryItem className="best-seller">BEST SELLER</CategoryItem>
-
-                <CategoryItem>TOPS</CategoryItem>
-                <SubcategoryList>
-                    <SubcategoryItem>T-SHIRTS</SubcategoryItem>
-                    <SubcategoryItem>POLO</SubcategoryItem>
-                    <SubcategoryItem>SHIRTS</SubcategoryItem>
-                </SubcategoryList>
-                <CategoryItem>BOTTOMS</CategoryItem>
-                <SubcategoryList>
-                    <SubcategoryItem>SHORTPANTS</SubcategoryItem>
-                    <SubcategoryItem>PANTS</SubcategoryItem>
-                </SubcategoryList>
-                <CategoryItem>OUTERWEAR</CategoryItem>
-                <SubcategoryList>
-                    <SubcategoryItem>HOODIES</SubcategoryItem>
-                    <SubcategoryItem>HOODIES ZIPPER</SubcategoryItem>
-                    <SubcategoryItem>JACKETS</SubcategoryItem>
-                    <SubcategoryItem>SWEATERS</SubcategoryItem>
-                    <SubcategoryItem>CARDIGANS</SubcategoryItem>
-                    <SubcategoryItem>VARSITYS</SubcategoryItem>
-                    <SubcategoryItem>GILE</SubcategoryItem>
-                </SubcategoryList>
-                <CategoryItem>ACCESSORIES</CategoryItem>
-            </CategoryList>
-        </Sidebar>
-    );
+      </CategoryList>
+    </Sidebar>
+  );
 };
 
 export default TenantMenuCategory;

@@ -94,7 +94,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public PageResponse<ProductDTO> findByCategory(String categoryId, Pageable pageable) {
+    public PageResponse<ProductDTO> findByCategory(int categoryId, Pageable pageable) {
         Page<Product> page = productRepository.findProductByCategory(categoryId, pageable);
         return getResult(page);
     }

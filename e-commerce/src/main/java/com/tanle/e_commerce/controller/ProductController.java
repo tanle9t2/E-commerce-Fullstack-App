@@ -75,10 +75,10 @@ public class ProductController {
 
     @GetMapping("/products")
     public ResponseEntity<?> getProductByCategory(
-            @RequestParam("categoryname") String categoryName,
+            @RequestParam("categoryId") String categoryId,
             @RequestParam(value = "page", required = false, defaultValue = PAGE_DEFAULT) Integer page) {
         Pageable pageable = PageRequest.of(page, Integer.parseInt(PAGE_SIZE));
-        PageResponse<ProductDTO> productPageResponse = productService.findByCategory(categoryName, pageable);
+        PageResponse<ProductDTO> productPageResponse = productService.findByCategory(Integer.parseInt(categoryId), pageable);
         return new ResponseEntity<>(productPageResponse, HttpStatus.OK);
     }
 

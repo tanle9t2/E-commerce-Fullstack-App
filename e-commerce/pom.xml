@@ -144,6 +144,15 @@
         </dependency>
         <!-- https://mvnrepository.com/artifact/co.elastic.clients/elasticsearch-java -->
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.sendgrid</groupId>
+            <artifactId>sendgrid-java</artifactId>
+            <version>4.9.3</version>
+        </dependency>
 
         <dependency>
             <groupId>io.jsonwebtoken</groupId>

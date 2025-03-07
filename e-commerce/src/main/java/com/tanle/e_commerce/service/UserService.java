@@ -19,7 +19,7 @@ public interface UserService extends OwnerService<MyUser,Integer> {
     MessageResponse grantRole(Integer userId,String nameRole);
     UserDTO findById(Integer id);
     void delete(Integer id);
-    void update(MyUser user, UpdateUserInforRequeset requeset);
+    MessageResponse update(MyUser user, UpdateUserInforRequeset requeset);
     MessageResponse updateLastAccess(String username);
 
     MessageResponse followUser(Integer userId, Integer followingId);

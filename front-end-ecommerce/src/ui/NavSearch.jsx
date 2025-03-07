@@ -57,7 +57,7 @@ const SuggestionItem = styled.li`
 `;
 
 function NavSearch() {
-    const { isAuthenticated } = useAuthContext();
+    const { auth } = useAuthContext();
     const [searchTerm, setSearchTerm] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
     const searchRef = useRef(null);
@@ -112,7 +112,7 @@ function NavSearch() {
                     </SuggestionsList>
                 )}
             </SearchBar>
-            {isAuthenticated() ? <CartNav /> : <CartNavNoAuth />}
+            {auth ? <CartNav /> : <CartNavNoAuth />}
         </StyledNavSearch>
     )
 }

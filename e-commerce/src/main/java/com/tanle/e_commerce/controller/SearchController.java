@@ -60,25 +60,11 @@ public class SearchController {
 
     @GetMapping("/search")
     public ResponseEntity<PageSearchResponse> search(
-            @RequestParam(name = "keyword", defaultValue = "") String keyword,
-            @RequestParam(name = "category", required = false) String category,
-            @RequestParam(name = "minPrice", required = false) String minPrice,
-            @RequestParam(name = "maxPrice", required = false) String maxPrice,
-            @RequestParam(name = "sortBy", required = false) String sortBy,
-            @RequestParam(name = "order", required = false) String order,
-            @RequestParam(name = "location", required = false) String location,
-            @RequestParam(name = "page", required = false, defaultValue = PAGE_DEFAULT) String page,
-            @RequestParam(name = "size", required = false, defaultValue = PAGE_SIZE) String size
+            @RequestParam Map<String, String> params,
+            @RequestParam(name = "size", required = false, defaultValue = PAGE_SIZE) String size,
+            @RequestParam(name = "page", required = false, defaultValue = PAGE_DEFAULT) String page
     ) {
-        Map<String, String> mp = new HashMap<>();
-        mp.put("category", category);
-        mp.put("keyword", keyword);
-        mp.put("minPrice", minPrice);
-        mp.put("maxPrice", maxPrice);
-        mp.put("sortBy", sortBy);
-        mp.put("order", order);
-        mp.put("location", location);
-        PageSearchResponse pageSearchResponse = service.searchProduct(mp, Integer.parseInt(page), Integer.parseInt(size));
+        PageSearchResponse pageSearchResponse = service.searchProduct(params, Integer.parseInt(page), Integer.parseInt(size));
         return ResponseEntity.ok(pageSearchResponse);
     }
 

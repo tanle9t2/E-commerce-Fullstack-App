@@ -5,7 +5,7 @@ import { useAuthContext } from "../../context/AuthContext";
 import Spinner from "../../ui/Spinner";
 import { useLogout } from "./useLogout";
 
-const StyledUser =styled.div`
+const StyledUser = styled.div`
     display:flex;
     align-items:center;
 `;
@@ -55,39 +55,37 @@ const MenuItem = styled.div`
     color:var(--primary-color)
   }
 `;
-function User() {
-    const {user} = useAuthContext();
-    const {fullName,avatar}= user;
-    const {handleLogout} = useAuthContext()
-    const naviate= useNavigate();
-     const {isLoading: logoutLoading,logout} = useLogout()
-    if(logoutLoading) return <Spinner/>
-   function handleOnClickLogout() {
-      logout(
-        {},
-        {
-          onSuccess: () =>  {
-            handleLogout();
-          }
-        });
-   }
-    return (
-      
-        <DropdownContainer>
-         <StyledUser>
-            <Avatar src= {avatar}/>
-            <span>{fullName}</span>
-        </StyledUser>
-  
-    
-          <DropdownMenu>
-            <MenuItem onClick={() =>naviate('/user/account/profile')}>Tài Khoản Của Tôi</MenuItem>
-            <MenuItem onClick={() =>naviate('/user/account/purchase')}>Đơn Mua</MenuItem>
-            <MenuItem onClick={() => handleOnClickLogout()}>Đăng Xuất</MenuItem>
-          </DropdownMenu>
-    
-      </DropdownContainer>
-    )
+function User({ fullName, avatar }) {
+  const { handleLogout } = useAuthContext()
+  const naviate = useNavigate();
+  const { isLoading: logoutLoading, logout } = useLogout()
+  if (logoutLoading) return <Spinner />
+  function handleOnClickLogout() {
+    logout(
+      {},
+      {
+        onSuccess: () => {
+          handleLogout();
+        }
+      });
+  }
+  return (
+
+    <DropdownContainer>
+      <StyledUser>
+        <Avatar url={avatar} />
+        <span>{fullName}</span>
+      </StyledUser>
+
+
+      <DropdownMenu>
+        <MenuItem onClick={() => naviate('/user/account/profile')}>Tài Khoản Của Tôi</MenuItem>
+        <MenuItem onClick={() => naviate('/user/account/purchase')}>Đơn Mua</MenuItem>
+        <MenuItem onClick={() => handleOnClickLogout()}>Đăng Xuất</MenuItem>
+      </DropdownMenu>
+
+    </DropdownContainer>
+  )
 }
 
 export default User

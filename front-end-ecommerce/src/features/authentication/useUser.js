@@ -4,7 +4,7 @@ import { getUser } from "../../services/apiAuthentication";
 export function useUser() {
   const { isLoading, data: user } = useQuery({
     queryKey: ["user"],
-    queryFn: getUser,
+    queryFn: () => getUser(),
   });
 
   return { isLoading, user };

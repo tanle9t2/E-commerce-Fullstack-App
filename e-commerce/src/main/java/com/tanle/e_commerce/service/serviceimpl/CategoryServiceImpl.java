@@ -9,6 +9,7 @@ import com.tanle.e_commerce.entities.Product;
 import com.tanle.e_commerce.entities.Tenant;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
 import com.tanle.e_commerce.mapper.CategoryMapper;
+import com.tanle.e_commerce.respone.CategoryFilterResponse;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.respone.PageResponse;
 import com.tanle.e_commerce.service.CategoryService;
@@ -54,6 +55,19 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    public List<CategoryDTO> getSubCategoryFollowLevel(int parentId, int tenantId, int level) {
+        List<Object[]> result = categoryRepository.getSubcategoryFollowLevel(tenantId, level,parentId);
+        return result.stream()
+                .map(r -> CategoryDTO.builder()
+                        .id((int) r[0])
+                        .name((String) r[1])
+                        .left((int) r[2])
+                        .right((int) r[3])
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
     @Transactional
     public CategoryDTO createCategory(Integer parentId, CategoryDTO category) {
         Tenant tenant = tenantRepository.findById(category.getTenantId())
@@ -74,8 +88,7 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(parentId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found category"));
         List<Category> categories = new ArrayList<>();
-        categories.addAll(categoryRepository.getSubCategory(category.getName()
-                , Pageable.unpaged()).getContent());
+        categories.addAll(categoryRepository.getSubCategory(category.getName()));
         categories.add(category);
 
         //remove foreign key
@@ -103,17 +116,12 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public PageResponse<CategoryDTO> getSubCategory(String name, Pageable pageable) {
-        Page<Category> categories = categoryRepository.getSubCategory(name, pageable);
-        if (categories.getNumberOfElements() == 0) {
-            return new PageResponse<>(Collections.emptyList(), categories.getNumber() + 1
-                    , categories.getNumberOfElements(), categories.getTotalElements(), HttpStatus.OK);
-        }
-        List<CategoryDTO> categoryDTOS = categories.getContent().stream()
-                .map(Category::convertDTO)
+    public List<CategoryDTO> getSubCategory(String name) {
+        List<Category> categories = categoryRepository.getSubCategory(name);
+
+        return categories.stream()
+                .map(c -> categoryMapper.convertDTO(c))
                 .collect(Collectors.toList());
-        return new PageResponse<>(categoryDTOS, categories.getNumber() + 1
-                , categories.getNumberOfElements(), categories.getTotalElements(), HttpStatus.OK);
     }
 
     @Override
@@ -158,6 +166,25 @@ public class CategoryServiceImpl implements CategoryService {
 
         categoryRepository.save(category);
         return categoryMapper.convertDTO(category);
+    }
+
+    @Override
+    public List<CategoryFilterResponse> getCategoryFollowLevel(int tenantId, int level) {
+        List<Object[]> categories = categoryRepository.getCategoriesFollowLevel(tenantId, level);
+        List<CategoryFilterResponse> result = new ArrayList<>();
+        for (var x : categories) {
+            List<CategoryDTO> subCategory = getSubCategoryFollowLevel((Integer) x[0], tenantId, 1);
+            result.add(CategoryFilterResponse.builder()
+                    .parent(CategoryDTO.builder()
+                            .id((Integer) x[0])
+                            .left((Integer) x[2])
+                            .right((Integer) x[3])
+                            .name(String.valueOf(x[1]))
+                            .build())
+                    .subCategory(subCategory)
+                    .build());
+        }
+        return result;
     }
 
     @Override

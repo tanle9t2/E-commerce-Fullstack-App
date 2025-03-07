@@ -1,10 +1,8 @@
-import { createAPI } from "./api";
-const ORDER_API = `http://localhost:8080/ecommerce-server/api/v1/order`
-const orderAPI = createAPI(ORDER_API)
+import { axiosPrivate } from "./api";
 
 export async function getOrders(token) {
     try {
-        const res = await orderAPI.get("/purchase", {
+        const res = await axiosPrivate.get("/order/purchase", {
             headers: {
                 "Authorization": `Bearer ${token}`
             }
@@ -19,7 +17,7 @@ export async function getOrders(token) {
 export async function createOrder(data, token) {
     console.log(data)
     try {
-        const res = await orderAPI.post("", data, {
+        const res = await axiosPrivate.post("/order", data, {
             headers: {
                 "Authorization": `Bearer ${token}`
             }

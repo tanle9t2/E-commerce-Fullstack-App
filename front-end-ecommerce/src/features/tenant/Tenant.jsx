@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import Button from '../../ui/Button';
 import ProductSearch from '../products/ProductSearch';
@@ -10,6 +10,10 @@ import { Avatar } from '@mui/material';
 import LayoutWithSideBar from '../../ui/LayoutWithSideBar';
 import Sidebar from '../products/SiderBar';
 import TenantMenuCategory from './TenantMenuCategory';
+import { useGetProductByCategory } from './useGetProductByCategory';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { data } from 'autoprefixer';
+import { use } from 'react';
 
 // Header Section
 const Header = styled.header`
@@ -67,28 +71,48 @@ const NavItem = styled.a`
 
 
 const Tenant = () => {
-  const {isLoading,tenantInfor,categories,products}= useTenants();
-  if(isLoading) return <Spinner/>
-  console.log(tenantInfor,products,categories)
-  const {data,count,} = products;
-  const {name,totalProduct,totalComment,follower,following,createdAt,tenantImage} = tenantInfor;
-  const pages = Math.ceil(count/PAGE_SIZE_PRODUCT_TENANT);
+  const { isLoading, tenantInfor, categories, products } = useTenants();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeCategory, setActiveCateogry] = useState(null)
+  const { shopId } = useParams("shopId");
+  const [productsData, setProducts] = useState([])
+  const { isLoading: gettingProducts, getProducts } = useGetProductByCategory()
+  useEffect(() => {
+    if (!isLoading) {
+      setProducts(products.data);
+    }
+  }, [isLoading, products])
+  console.log(categories)
+  function handleOnClickCategory(id, lft, rgt) {
+    setActiveCateogry({ id, lft, rgt })
+    getProducts({ tenantId: shopId, category: id, lft, rgt },
+      {
+        onSuccess: (data) => {
+          setProducts(data.data)
+          searchParams.set("category", id)
+          setSearchParams(searchParams);
+        }
+      })
+  }
+  if (isLoading) return <Spinner />
+  const { count, } = products;
+  const { name, totalProduct, totalComment, follower, following, createdAt, tenantImage } = tenantInfor;
+  const pages = Math.ceil(count / PAGE_SIZE_PRODUCT_TENANT);
   return (
     <div>
       <Header>
         <div>
-         <div className='flex'>
-        <Avatar src={tenantImage} alt={name}/>
-          <div className='ml-5'>
-            <SellerName>{name}</SellerName>
-            <p>Online 4 phút trước</p>
+          <div className='flex'>
+            <Avatar src={tenantImage} alt={name} />
+            <div className='ml-5'>
+              <SellerName>{name}</SellerName>
+              <p>Online 4 phút trước</p>
+            </div>
           </div>
-         </div>
-         <div className='mt-5 flex justify-between'>
-         <ChatButton>Chat</ChatButton>
-         <ChatButton>+ Theo dõi</ChatButton>
-         </div>
-           
+          <div className='mt-5 flex justify-between'>
+            <ChatButton>Chat</ChatButton>
+            <ChatButton>+ Theo dõi</ChatButton>
+          </div>
         </div>
         <Stats>
           <StatItem>Sản Phẩm: {totalProduct}</StatItem>
@@ -100,19 +124,19 @@ const Tenant = () => {
         <div className='flex justify-between'>
         </div>
       </Header>
-
       <Nav>
-        <NavItem active>Dạo</NavItem>
-        <NavItem>TẤT CẢ SẢN PHẨM</NavItem>
-        {categories.slice(1,5).map(c => 
-          <NavItem key={c.id}>{c.name.toUpperCase()}</NavItem>
+        <NavItem active={activeCategory === null}>Dạo</NavItem>
+        <NavItem active={activeCategory && activeCategory.id === 0} onClick={() => handleOnClickCategory(0)}>TẤT CẢ SẢN PHẨM</NavItem>
+        {categories.slice(0, 5).map(({ parent }) =>
+          <NavItem active={activeCategory && activeCategory.id === parent.id} onClick={() => handleOnClickCategory(parent.id, parent.left, parent.right)} key={parent.id}>{parent.name.toUpperCase()}</NavItem>
         )}
         <NavItem>BEST SELLER</NavItem>
-       
       </Nav>
       <LayoutWithSideBar>
-          <TenantMenuCategory/>
-         <ProductSearch products={data} totalPages={pages}/>
+        <TenantMenuCategory activeCategory={activeCategory} handleOnClickCategory={handleOnClickCategory} categories={categories} />
+        {
+          (gettingProducts) ? <Spinner /> : <ProductSearch columns={5} products={productsData} totalPages={pages} />
+        }
       </LayoutWithSideBar>
     </div>
   );

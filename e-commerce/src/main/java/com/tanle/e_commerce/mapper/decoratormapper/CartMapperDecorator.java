@@ -30,19 +30,21 @@ public abstract class CartMapperDecorator implements CartMapper {
     @Override
     public CartDTO convertDTO(Cart cart) {
         CartDTO cartDTO = delegate.convertDTO(cart);
-        List<CartDTO.GroupCartItemDTO> groupCartItemDTOS = new ArrayList<>();
-        var object = cart.getCartItems().stream()
-                .collect(Collectors.groupingBy(item -> item.getSku().getProduct().getTenant()));
-        for (var x : object.entrySet()) {
-            List<CartItemDTO> cartItemDTOS = x.getValue().stream()
-                    .map(c -> cartItemMapper.convertDTO(c))
-                    .collect(Collectors.toList());
-            CartDTO.GroupCartItemDTO groupCartItemDTO = cartDTO.createGroupCartItemDTO(tenantMapper.convertDTO(x.getKey())
-                    , cartItemDTOS);
-            groupCartItemDTOS.add(groupCartItemDTO);
+        if(cart.getCartItems() != null) {
+            List<CartDTO.GroupCartItemDTO> groupCartItemDTOS = new ArrayList<>();
+            var object = cart.getCartItems().stream()
+                    .collect(Collectors.groupingBy(item -> item.getSku().getProduct().getTenant()));
+            for (var x : object.entrySet()) {
+                List<CartItemDTO> cartItemDTOS = x.getValue().stream()
+                        .map(c -> cartItemMapper.convertDTO(c))
+                        .collect(Collectors.toList());
+                CartDTO.GroupCartItemDTO groupCartItemDTO = cartDTO.createGroupCartItemDTO(tenantMapper.convertDTO(x.getKey())
+                        , cartItemDTOS);
+                groupCartItemDTOS.add(groupCartItemDTO);
+            }
+            groupCartItemDTOS.sort(Comparator.comparing((c) -> c.getTenant().getName()));
+            cartDTO.setShopOrders(groupCartItemDTOS);
         }
-        groupCartItemDTOS.sort(Comparator.comparing((c) -> c.getTenant().getName()));
-        cartDTO.setShopOrders(groupCartItemDTOS);
         return cartDTO;
     }
 

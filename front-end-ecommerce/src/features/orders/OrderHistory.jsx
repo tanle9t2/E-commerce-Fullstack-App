@@ -5,7 +5,8 @@ import Highlight from "../../ui/Highlight";
 import { useOrders } from "./useOrders";
 import Spinner from "../../ui/Spinner";
 import OrderCard from "./OderCard"
-import { useNavigate, useSearchParams } from "react-router-dom";
+import Empty from "../../ui/Empty"
+import { useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 // Styled Components
 const Container = styled.div`
@@ -28,6 +29,10 @@ const FilterButton = styled.button`
   cursor: pointer;
   border-radius: 5px;
 `;
+const CustomHighligh = styled(Highlight)`
+    cursor: pointer;
+    text-decoration:underline;
+`
 const OrderHistory = () => {
     const [filter, setFilter] = useState("all");
     const { isLoading, orders } = useOrders()
@@ -52,6 +57,9 @@ const OrderHistory = () => {
     }, [isLoading]); // Empty array so it runs only once after mount
 
     if (isLoading) return <Spinner />
+    if (!orders.data.length) return <Empty message={"Hiện tại bạn chưa có đơn hàng. Hãy bắt đầu mua sắm nào!"} >
+        <CustomHighligh ><a href="/">Mua sắm ngay</a></CustomHighligh>
+    </Empty>
 
     const filteredOrders =
         filter === "all" ? orders : orders.filter((o) => o.status === filter);

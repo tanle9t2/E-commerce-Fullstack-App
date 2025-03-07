@@ -37,38 +37,39 @@ const CustomButton = styled(Button)`
   width:100%;
 `
 function LoginForm() {
-  const { login , isLoading } = useLogin();
-  const { register,handleSubmit,formState, getValues, reset } = useForm();
+  const { login, isLoading } = useLogin();
+  const { register, handleSubmit, formState, getValues, reset } = useForm();
   const { errors } = formState;
   const navigate = useNavigate()
-  const {isAuthenticated} = useAuthContext();
+  // const { isAuthenticated } = useAuthContext();
   const [loginError, setLoginError] = useState("");
-  useEffect(() => {
-    if (isAuthenticated()) {
-      navigate('/');  // Redirect to the home page if the user is authenticated
-    }
-  }, [isAuthenticated, navigate]);  
+  // useEffect(() => {
+  //   if (isAuthenticated()) {
+  //     navigate('/');  // Redirect to the home page if the user is authenticated
+  //   }
+  // }, [isAuthenticated, navigate]);
   function onSubmit() {
     const username = getValues().username;
     const password = getValues().password;
     if (!username || !password) return;
     login(
-      { username,password},
+      { username, password },
       {
-      onError: (err) => {
-        setLoginError(err.message);
-      },}
+        onError: (err) => {
+          setLoginError(err.message);
+        },
+      }
     );
   }
 
   return (
     <CustomForm onSubmit={handleSubmit(onSubmit)}>
-        <FormRowVertical>
-            <h1 className="text-4xl">Đăng nhập</h1>
-        </FormRowVertical>
-      <FormRowVertical  error={errors?.username?.message} label="Username">
+      <FormRowVertical>
+        <h1 className="text-4xl">Đăng nhập</h1>
+      </FormRowVertical>
+      <FormRowVertical error={errors?.username?.message} label="Username">
         <Input
-            width="340px"
+          width="340px"
           id="email"
           // This makes this form better for password managers
           autoComplete="username"
@@ -78,7 +79,7 @@ function LoginForm() {
             required: "This field is required",
           })}
         />
-        
+
       </FormRowVertical>
 
       <FormRowVertical error={errors?.password?.message} label="Mật khẩu">
@@ -95,7 +96,7 @@ function LoginForm() {
         />
       </FormRowVertical>
       <FormRowVertical error={loginError}>
-        <CustomButton disabled={isLoading}> 
+        <CustomButton disabled={isLoading}>
           {!isLoading ? "Đăng nhập" : <SpinnerMini />}
         </CustomButton>
       </FormRowVertical>
@@ -104,27 +105,27 @@ function LoginForm() {
       </FormRowVertical>
       <FormRowVertical className>
         <StyledLoginSocical>
-            <StyledLineBreak/>
-            <StyledWord className="ml2 mr-2">Hoặc</StyledWord>
-            <StyledLineBreak/>
+          <StyledLineBreak />
+          <StyledWord className="ml2 mr-2">Hoặc</StyledWord>
+          <StyledLineBreak />
         </StyledLoginSocical>
         <ButtonGroup>
-        <Button variation = "secondary" size="medium"> 
-          <ButtonIcon>
-            <MdFacebook/>
-        </ButtonIcon>
-        <ButtonText>
-            Facebook
-        </ButtonText>
-        </Button>
-        <Button variation = "secondary" size="medium"> 
-          <ButtonIcon>
-          <FcGoogle />
-        </ButtonIcon>
-        <ButtonText>
-            Google
-        </ButtonText>
-        </Button>
+          <Button variation="secondary" size="medium">
+            <ButtonIcon>
+              <MdFacebook />
+            </ButtonIcon>
+            <ButtonText>
+              Facebook
+            </ButtonText>
+          </Button>
+          <Button variation="secondary" size="medium">
+            <ButtonIcon>
+              <FcGoogle />
+            </ButtonIcon>
+            <ButtonText>
+              Google
+            </ButtonText>
+          </Button>
         </ButtonGroup>
       </FormRowVertical>
       <FormRowVertical  >

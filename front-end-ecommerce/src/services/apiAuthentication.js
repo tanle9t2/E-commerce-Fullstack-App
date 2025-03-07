@@ -1,51 +1,27 @@
-import { data } from "autoprefixer";
-import { getAuthHeaders } from "../utils/helper";
-import { createAPI } from "./api";
-import axios from "axios";
 
-const AUTHENTICATION_API = "http://localhost:8080/ecommerce-server/api/v1";
-const authAPI = createAPI(AUTHENTICATION_API);
 
-// Setup Axios Interceptors for Token Refresh
-export const setupInterceptors = ({ setToken, handleLogout }) => {
-    authAPI.interceptors.response.use(
-        (response) => response,
-        async (error) => {
-            const originalRequest = error.config;
+import api, { axiosPrivate } from "./api";
 
-            if (error.response?.status === 401 && !originalRequest._retry) {
-                originalRequest._retry = true;
-
-                try {
-                    const refreshToken = localStorage.getItem("refreshToken");
-                    const response = await authAPI.post("/user/refresh-token", { refreshToken });
-
-                    // Update token
-                    const newAccessToken = response.data.accessToken;
-                    setToken(newAccessToken);
-                    authAPI.setAuthToken(newAccessToken);
-
-                    // Retry the original request with the new token
-                    originalRequest.headers["Authorization"] = `Bearer ${newAccessToken}`;
-                    return authAPI(originalRequest);
-                } catch (refreshError) {
-                    handleLogout();
-                    return Promise.reject(refreshError);
-                }
-            }
-            return Promise.reject(error);
-        }
-    );
-};
 
 // User Login
 export async function loginUser({ username, password }) {
     try {
-        const response = await axios.post(`${AUTHENTICATION_API}/user/login`, { username, password });
+        const response = await api.post(`/user/login`, { username, password });
         return response.data;
     } catch (error) {
         if (error.response?.status === 401) {
             throw new Error("Username/Password invalid");
+        }
+        throw error;
+    }
+}
+export async function signUp({ firstName, lastName, phoneNumber, email, username, password }) {
+    try {
+        const response = await api.post(`/user/register`, { firstName, lastName, phoneNumber, email, username, password });
+        return response.data;
+    } catch (error) {
+        if (error.response?.status === 409) {
+            throw new Error("Username đã tồn tài");
         }
         throw error;
     }
@@ -55,7 +31,7 @@ export async function loginUser({ username, password }) {
 export async function logoutUser() {
     const token = localStorage.getItem("accessToken");
     try {
-        const response = await authAPI.post("/user/logout", {
+        const response = await axiosPrivate.post("/user/logout", {
             headers: {
                 "Authorization": `Bearer ${JSON.parse(token)}`
             }
@@ -70,11 +46,8 @@ export async function logoutUser() {
 // Get Current User
 export async function getUser() {
     try {
-        const response = await authAPI.get("/user/",
-            {
-                headers: getAuthHeaders()
-            }
-        );
+
+        const response = await axiosPrivate.get("/user/")
         return response.data;
     } catch (error) {
         console.error("Error fetching user data:", error.response || error);
@@ -90,7 +63,7 @@ export async function updateUser(userData, file) {
             Object.keys(userData[key]).forEach((subKey) => {
                 formData.append(`${key}.${subKey}`, userData[key][subKey]);
             });
-        } else {
+        } else if (userData[key]) {
             // Append normal key-value pairs
             formData.append(key, userData[key]);
         }
@@ -102,7 +75,7 @@ export async function updateUser(userData, file) {
     }
     const token = localStorage.getItem("accessToken");
     try {
-        const response = await authAPI.post("/user/update", formData,
+        const response = await axiosPrivate.post("/user/update", formData,
             {
                 headers: {
                     "X-Requested-With": "XMLHttpRequest",
@@ -119,7 +92,7 @@ export async function updateUser(userData, file) {
 }
 export async function changePassword({ oldPassword, newPassword, confirmPassword, token }) {
     try {
-        const response = await authAPI.post(
+        const response = await axiosPrivate.post(
             "/user/password",
             { oldPassword, newPassword, confirmPassword }, // This is the body of the request
             {
@@ -134,15 +107,10 @@ export async function changePassword({ oldPassword, newPassword, confirmPassword
         throw error;
     }
 }
-export async function getAddress(token) {
+export async function getAddress() {
     try {
-        const response = await authAPI.get(
-            "/user/address",
-            {
-                headers: {
-                    "Authorization": `Bearer ${token}`
-                }
-            }
+        const response = await axiosPrivate.get(
+            "/user/address"
         );
         return response.data;
 
@@ -153,7 +121,7 @@ export async function getAddress(token) {
 }
 export async function updateAddress({ id, city, district, ward, streetNumber, firstName, lastName, phoneNumber }, token) {
     try {
-        const response = await authAPI.put(
+        const response = await axiosPrivate.put(
             "/user/address",
             { id, city, district, ward, streetNumber, firstName, lastName, phoneNumber },
             {
@@ -172,7 +140,7 @@ export async function updateAddress({ id, city, district, ward, streetNumber, fi
 }
 export async function createAddress({ city, district, ward, streetNumber, firstName, lastName, phoneNumber }, token) {
     try {
-        const response = await authAPI.post(
+        const response = await axiosPrivate.post(
             "/user/address",
             { city, district, ward, streetNumber, firstName, lastName, phoneNumber },
             {
@@ -190,7 +158,7 @@ export async function createAddress({ city, district, ward, streetNumber, firstN
 }
 export async function deleteAddress(addressId, token) {
     try {
-        const response = await authAPI.delete(
+        const response = await axiosPrivate.delete(
             `/user/address?addressId=${addressId}`,
             {
                 headers: {
@@ -205,4 +173,3 @@ export async function deleteAddress(addressId, token) {
         throw error;
     }
 }
-export { authAPI };

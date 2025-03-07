@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -21,23 +22,29 @@ public interface ProductRepository extends JpaRepository<Product, Integer>, JpaS
 
     Page<Product> findAllByName(String name, Pageable pageable);
 
-    @Query("from Product as p where p.category.id in (?1)")
-    Page<Product> findProductByCategory(String categoriesId, Pageable pageable);
+    @Query(""" 
+                SELECT p
+                FROM Product  p, Category node, Category parent
+                WHERE node.left between parent.left and parent.right
+                AND parent.id=:categoryId
+                AND p.category.id = node.id
+            """)
+    Page<Product> findProductByCategory(@Param("categoryId") Integer categoriesId, Pageable pageable);
 
     @Query("""
-    select SUM (s.stock) FROM Product as p JOIN SKU as s 
-        ON p.id = s.product.id
-        where p.id = ?1
-        group by (s.product.id)
-    """ )
+            select SUM (s.stock) FROM Product as p JOIN SKU as s 
+                ON p.id = s.product.id
+                where p.id = ?1
+                group by (s.product.id)
+            """)
     Integer getTotalStock(int productId);
 
     @Query("""
-       select MIN(s.price) from Product as p JOIN SKU as s
-       On p.id= s.product.id
-       where p.id = ?1
-       GROUP BY (s.product.id)
-    """)
+               select MIN(s.price) from Product as p JOIN SKU as s
+               On p.id= s.product.id
+               where p.id = ?1
+               GROUP BY (s.product.id)
+            """)
     Double getMinPrice(int productId);
 
     @Query("from Product as p where p.tenant.id = ?1")

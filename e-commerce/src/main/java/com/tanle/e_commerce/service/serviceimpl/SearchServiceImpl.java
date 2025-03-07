@@ -187,12 +187,24 @@ public class SearchServiceImpl implements SearchService {
         Double minPrice = condition.get("minPrice") != null ? Double.parseDouble(condition.get("minPrice")) : 0.0;
         Double maxPrice = condition.get("maxPrice") != null ? Double.parseDouble(condition.get("maxPrice")) : null;
         var boolQuery = QueryBuilders.bool();
-
+        if (condition.get("tenantId") != null) {
+            var tenantQuery = QueryBuilders.bool();
+            tenantQuery.should(builder ->
+                    builder.term(t -> t.field("tenantDocument,id").value(Integer.parseInt(condition.get("tenantId")))));
+            boolQuery.must(tenantQuery.build()._toQuery());
+        }
         if (condition.get("category") != null) {
             String[] categoryIds = condition.get("category").split(",");
+
             var categoryQuery = QueryBuilders.bool();
             for (var id : categoryIds) {
                 categoryQuery.should(builder -> builder.term(t -> t.field("category.id").value(id)));
+            }
+            if(condition.get("lft") != null) {
+                JsonData lft = JsonData.of(condition.get("lft"));
+                JsonData rgt = JsonData.of(condition.get("rgt"));
+                var category = QueryBuilders.bool();
+                categoryQuery.should(builder -> builder.range(r -> r.gte(lft).lte(rgt).field("category.left")));
             }
             boolQuery.must(categoryQuery.build()._toQuery());
         }

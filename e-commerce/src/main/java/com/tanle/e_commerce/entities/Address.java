@@ -33,5 +33,5 @@ public class Address {
     @Column(name = "ward")
     private String ward;
     @Column(name = "is_active")
-    private boolean isActive;
+    private boolean isActive ;
 }

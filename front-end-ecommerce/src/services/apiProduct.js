@@ -1,16 +1,11 @@
-
-import { createAPI } from "./api";
-
-const PRODUCT_API_URL = "http://localhost:8080/ecommerce-server/api/v1/";
-const COMMENT_API_URL = "http://localhost:8080/ecommerce-server/api/v1/comment";
+import api from "./api";
 
 
-const productAPI = createAPI(PRODUCT_API_URL)
-const commentAPI = createAPI(COMMENT_API_URL)
+
 
 export async function getProducts() {
     try {
-        const res = await productAPI.get("/product_list");
+        const res = await api.get("/product_list");
 
         return res.data;
     } catch (error) {
@@ -20,7 +15,7 @@ export async function getProducts() {
 }
 export async function getProductsOfTenant(tenantId) {
     try {
-        const res = await productAPI.get(`/product/tenant/${tenantId}`);
+        const res = await api.get(`/product/tenant/${tenantId}`);
 
         return res.data;
     } catch (error) {
@@ -31,7 +26,7 @@ export async function getProductsOfTenant(tenantId) {
 
 export async function getProduct(id) {
     try {
-        const res = await productAPI.get(`/product/${id}`);
+        const res = await api.get(`/product/${id}`);
 
         return res.data;
     } catch (error) {
@@ -41,7 +36,7 @@ export async function getProduct(id) {
 }
 export async function getVariationInfor(id) {
     try {
-        const res = await productAPI.get(`/product/sku/${id}`);
+        const res = await api.get(`/product/sku/${id}`);
 
         return res.data;
     } catch (error) {
@@ -51,7 +46,7 @@ export async function getVariationInfor(id) {
 }
 export async function getComments({ productId, page = 0 }) {
     try {
-        const res = await commentAPI.get(`/product/${productId}?page=${page}`);
+        const res = await api.get(`/comment/product/${productId}?page=${page}`);
 
         return res.data;
     } catch (error) {
