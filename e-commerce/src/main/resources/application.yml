@@ -42,11 +42,19 @@ spring:
   kafka:
     bootstrap-servers: 127.0.0.1:9091,127.0.0.1:9092,127.0.0.1:9093
     consumer:
-      group-id: search-asycn
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: "*"
+        spring.json.type.mapping: paymentEvent:com.tanle.e_commerce.event.PaymentEvent
       auto-offset-reset: earliest
+      group-id: search-async
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring.json.type.mapping:
+          paymentEvent:com.tanle.e_commerce.event.PaymentEvent,orderEvent:com.tanle.e_commerce.event.OrderEvent
   sendgrid:
     api-key: ${SENDGRID_API_KEY}
   mail:
@@ -84,6 +92,7 @@ application:
       topic3: "dbs_.ecommerce.category"
       topic4: "dbs_.ecommerce.options"
       topic5: "dbs_.ecommerce.option_value"
+      topicPayment: "dbs_.ecommerce.payemnt-topic"
 
 payment:
   vnPay:
@@ -106,3 +115,6 @@ cloudinary:
   cloud-name: dlwjpzshh
   api-key: ${CLOUDINARY_API_KEY}
   api-secret: ${CLOUDINARY_API_SECRET}
+
+sendgrid:
+  template-confirm-payment-id: d-d48c1e0a0ccf408397ee8a244d959d56

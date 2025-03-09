@@ -1,8 +1,16 @@
 package com.tanle.e_commerce.kafka;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.tanle.e_commerce.dto.CategoryDTO;
+import com.tanle.e_commerce.dto.ProductDTO;
+import com.tanle.e_commerce.dto.ProductDocument;
+import com.tanle.e_commerce.dto.SKUDTO;
+import com.tanle.e_commerce.mapper.deserialization.CategoryDocumentDeserializer;
+import com.tanle.e_commerce.mapper.deserialization.ProductDocumentSerializer;
+import com.tanle.e_commerce.mapper.deserialization.SkuDocumentDeserializer;
 import com.tanle.e_commerce.service.ProductAsycnService;
 
 import com.tanle.e_commerce.utils.KafkaOperator;
@@ -27,30 +35,33 @@ public class KafkaListenTopic {
 
     @KafkaListener(topics = "${application.kafka.topics.topic2}")
     public void handleSKUTopic(ConsumerRecord<?, ?> consumerRecord) {
-        JsonObject json = new Gson().fromJson((String) consumerRecord.value(), JsonObject.class);
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(SKUDTO.class, new SkuDocumentDeserializer())
+                .create();
+        JsonObject json = gson.fromJson((String) consumerRecord.value(), JsonObject.class);
         if (json != null) {
             JsonObject payload = json.get("payload").getAsJsonObject();
             if (payload != null) {
                 String op = payload.get("op").toString().replace("\"", "");
-                Integer id = null;
+                Integer productId = null;
                 Integer skuId = null;
 
                 switch (op) {
                     case KafkaOperator.CREATE:
-                        id = Integer.parseInt(payload.get("after").getAsJsonObject().get("product_id").toString());
+                        productId = Integer.parseInt(payload.get("after").getAsJsonObject().get("product_id").toString());
                         skuId = Integer.parseInt(payload.get("after").getAsJsonObject().get("sku_id").toString());
-                        productAsycnService.createSku(id, skuId);
+                        productAsycnService.createSku(productId, skuId);
                         break;
                     case KafkaOperator.UPDATE:
-                        id = Integer.parseInt(payload.get("before").getAsJsonObject().get("product_id").toString());
-                        skuId = Integer.parseInt(payload.get("after").getAsJsonObject().get("sku_id").toString());
+                        productId = Integer.parseInt(payload.get("after").getAsJsonObject().get("product_id").toString());
+                        SKUDTO skudto = gson.fromJson(payload.get("after"), SKUDTO.class);
 
-                        productAsycnService.updateSKU(id, skuId, payload);
+                        productAsycnService.updateSKU(productId, skudto);
                         break;
                     case KafkaOperator.DELETE:
-                        id = Integer.parseInt(payload.get("before").getAsJsonObject().get("product_id").toString());
+                        productId = Integer.parseInt(payload.get("before").getAsJsonObject().get("product_id").toString());
                         skuId = Integer.parseInt(payload.get("before").getAsJsonObject().get("sku_id").toString());
-                        productAsycnService.deleteSku(id, skuId);
+                        productAsycnService.deleteSku(productId, skuId);
                         break;
                 }
             }
@@ -59,20 +70,24 @@ public class KafkaListenTopic {
 
     @KafkaListener(topics = "${application.kafka.topics.topic3}")
     public void handleCategoryTopic(ConsumerRecord<?, ?> consumerRecord) {
-        JsonObject json = new Gson().fromJson((String) consumerRecord.value(), JsonObject.class);
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(CategoryDTO.class, new CategoryDocumentDeserializer())
+                .create();
+        JsonObject json = gson.fromJson((String) consumerRecord.value(), JsonObject.class);
         if (json != null) {
             JsonObject payload = json.get("payload").getAsJsonObject();
             if (payload != null) {
                 String op = payload.get("op").toString().replace("\"", "");
-                Integer id = null;
+                Integer productId = null;
                 switch (op) {
                     case KafkaOperator.UPDATE:
-                        id = Integer.parseInt(payload.get("after").getAsJsonObject().get("product_category_id").toString());
-                        productAsycnService.updateCategory(id, payload);
+                        CategoryDTO categoryDTO = gson.fromJson(payload.get("after"), CategoryDTO.class);
+                        productId = Integer.parseInt(payload.get("after").getAsJsonObject().get("product_category_id").toString());
+                        productAsycnService.updateCategory(productId, categoryDTO);
                         break;
                     case KafkaOperator.DELETE:
-                        id = Integer.parseInt(payload.get("before").getAsJsonObject().get("product_id").toString());
-                        productAsycnService.delete(id);
+                        productId = Integer.parseInt(payload.get("before").getAsJsonObject().get("product_id").toString());
+                        productAsycnService.delete(productId);
                         break;
                 }
             }
@@ -81,7 +96,10 @@ public class KafkaListenTopic {
 
     @KafkaListener(topics = "${application.kafka.topics.topic1}", groupId = "search-asycn")
     public void handleMessage(ConsumerRecord<?, ?> consumerRecord) {
-        JsonObject json = new Gson().fromJson((String) consumerRecord.value(), JsonObject.class);
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(ProductDocument.class, new ProductDocumentSerializer())
+                .create();
+        JsonObject json = gson.fromJson((String) consumerRecord.value(), JsonObject.class);
         if (json != null) {
             JsonObject payload = json.get("payload").getAsJsonObject();
             if (payload != null) {
@@ -93,8 +111,8 @@ public class KafkaListenTopic {
                         productAsycnService.create(id);
                         break;
                     case KafkaOperator.UPDATE:
-                        id = Integer.parseInt(payload.get("after").getAsJsonObject().get("product_id").toString());
-                        productAsycnService.update(id, payload);
+                        ProductDocument productDocument = gson.fromJson(payload.get("after"), ProductDocument.class);
+                        productAsycnService.update(productDocument);
                         break;
                     case KafkaOperator.DELETE:
                         id = Integer.parseInt(payload.get("before").getAsJsonObject().get("product_id").toString());

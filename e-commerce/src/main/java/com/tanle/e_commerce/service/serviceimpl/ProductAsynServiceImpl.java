@@ -14,6 +14,7 @@ import com.google.gson.internal.LazilyParsedNumber;
 import com.tanle.e_commerce.Repository.Jpa.ProductRepository;
 import com.tanle.e_commerce.dto.CategoryDTO;
 import com.tanle.e_commerce.dto.ProductDTO;
+import com.tanle.e_commerce.dto.ProductDocument;
 import com.tanle.e_commerce.dto.SKUDTO;
 import com.tanle.e_commerce.entities.Product;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
@@ -41,6 +42,7 @@ import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.data.elasticsearch.core.query.UpdateQuery;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -79,23 +81,17 @@ public class ProductAsynServiceImpl implements ProductAsycnService {
 
 
     @Override
-    public void update(int entityId, JsonObject payload) {
-        Map<String, Object> updateField = getUpdatedFiled(payload);
-        Document document = Document.create();
-        for (Map.Entry<String, Object> entry : updateField.entrySet()) {
-            if (entry.getKey().equals("product_category_id")) {
-                CategoryDTO categoryDTO = categoryService.findById((Integer) entry.getValue());
-                document.put("category", categoryDTO);
-            } else {
-                document.put(entry.getKey(), entry.getValue());
-            }
+    public void update(ProductDocument productDocument) {
+        ProductDocument oldProduct = elasticsearchRestTemplate.get(String.valueOf(productDocument.getId()),
+                ProductDocument.class, IndexCoordinates.of("product-index"));
+        if (oldProduct.getCategory().getId() != productDocument.getCategory().getId()) {
+            CategoryDTO categoryDTO = categoryService.findById(productDocument.getCategory().getId());
+            productDocument.setCategory(categoryDTO);
         }
-        UpdateQuery updateQuery = UpdateQuery.builder(String.valueOf(entityId))
-                .withDocument(document)
-                .build();
+        updateNonNullFields(productDocument, oldProduct);
         // Execute the update request using the Elasticsearch template
-        elasticsearchRestTemplate.update(updateQuery, IndexCoordinates.of(INDEX_NAME));
-        LOG.info("update Product - {}", entityId);
+        elasticsearchRestTemplate.update(oldProduct);
+        LOG.info("update Product - {}", productDocument.getId());
     }
 
     @Override
@@ -106,9 +102,8 @@ public class ProductAsynServiceImpl implements ProductAsycnService {
 
     @Override
     public void deleteSku(int entityId, int skuId) {
-        ProductDTO product = elasticsearchRestTemplate.get(String.valueOf(entityId),
-                ProductDTO.class, IndexCoordinates.of("product-index"));
-
+        ProductDocument product = elasticsearchRestTemplate.get(String.valueOf(entityId),
+                ProductDocument.class, IndexCoordinates.of("product-index"));
         for (SKUDTO skudto : product.getSkus()) {
             if (skudto.getSkuId() == skuId) {
                 product.getSkus().remove(skudto);
@@ -122,33 +117,38 @@ public class ProductAsynServiceImpl implements ProductAsycnService {
 
     @Override
     public void createSku(int entityId, int skuId) {
-        ProductDTO product = elasticsearchRestTemplate.get(String.valueOf(entityId),
-                ProductDTO.class, IndexCoordinates.of("product-index"));
+        ProductDocument product = elasticsearchRestTemplate.get(String.valueOf(entityId),
+                ProductDocument.class, IndexCoordinates.of("product-index"));
         SKUDTO skudto = skuService.findById(skuId);
         product.getSkus().add(skudto);
         elasticsearchRestTemplate.update(product);
     }
 
     @Override
-    public void updateCategory(int entityId, JsonObject payload) {
+    public void updateCategory(int entityId, CategoryDTO categoryDTO) {
         List<UpdateQuery> updateQueries = new ArrayList<>();
-        Map<String, Object> updatedField = getUpdatedFiled(payload);
-        Document document = Document.create();
-        document.put("category", updatedField);
         BoolQuery query = QueryBuilders.bool()
                 .should(
                         builder -> builder.term(
-                                prefix -> prefix.field("category.id").value(entityId))
+                                prefix -> prefix.field("category.id").value(categoryDTO.getId()))
                 )
                 .build();
         NativeQuery searchQuery = new NativeQueryBuilder()
                 .withQuery(query._toQuery())
                 .build();
+        SearchHits<ProductDocument> searchHits = elasticsearchRestTemplate.search(searchQuery, ProductDocument.class);
+        if (searchHits.getSearchHits().isEmpty()) return;
 
-        SearchHits<ProductDTO> searchHits = elasticsearchRestTemplate.search(searchQuery, ProductDTO.class);
-
-        for (SearchHit<ProductDTO> hit : searchHits.getSearchHits()) {
-            ProductDTO product = hit.getContent();
+        CategoryDTO oldCategory = searchHits.getSearchHits().get(0).getContent().getCategory();
+        if (oldCategory.getLeft() != categoryDTO.getLeft() || oldCategory.getRight() != categoryDTO.getRight()) {
+            List<String> path = List.of(categoryService.getSinglePath(categoryDTO.getId()).split(" > "));
+            oldCategory.setPathCategory(path);
+        }
+        updateNonNullFields(categoryDTO, oldCategory);
+        Document document = Document.create();
+        document.put("category", oldCategory);
+        for (SearchHit<ProductDocument> hit : searchHits.getSearchHits()) {
+            ProductDocument product = hit.getContent();
             UpdateQuery updateQuery = UpdateQuery.builder(String.valueOf(product.getId()))
                     .withDocument(document) // Partial update document
                     .build();
@@ -159,147 +159,35 @@ public class ProductAsynServiceImpl implements ProductAsycnService {
     }
 
     @Override
-    public void updateSKU(int entityId, int skuId, JsonObject payload) {
-        ProductDTO product = elasticsearchRestTemplate.get(String.valueOf(entityId),
-                ProductDTO.class, IndexCoordinates.of("product-index"));
-
-        Map<String, Object> updatedFields = getUpdatedFiled(payload);
-
-        for (SKUDTO s : product.getSkus()) {
-            if (s.getSkuId() == skuId) {
-                updatedFields.forEach((key, value) -> {
-                    try {
-                        if (key.equals("product_id")) {
-                            String prevId = (payload.get("after").getAsJsonObject().get("product_id").toString());
-                            ProductDTO p = elasticsearchRestTemplate.get(prevId,
-                                    ProductDTO.class, IndexCoordinates.of("product-index"));
-                            p.getSkus().add(s);
-                            product.getSkus().remove(s);
-                            elasticsearchRestTemplate.update(product);
-                            elasticsearchRestTemplate.update(p);
-                            return;
-                        } else {
-                            // Build the setter method name
-                            String setterName = "set" + Arrays.stream(key.split("_"))
-                                    .map(word -> word.substring(0, 1).toUpperCase() + word.substring(1))
-                                    .collect(Collectors.joining()); // Find the method in the class
-                            // Find the setter method in the entity class
-
-                            Method setterMethod = findSetterMethod(SKUDTO.class, setterName, value);
-                            if (setterMethod != null) {
-                                // Invoke the setter method with the correct value
-                                setterMethod.invoke(s, value);
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace(); // Handle exception as needed
-                    }
-                });
-
-                elasticsearchRestTemplate.update(product);
-                break;
-            }
+    public void updateSKU(Integer productId, SKUDTO skudto) {
+        ProductDocument product = elasticsearchRestTemplate.get(String.valueOf(productId),
+                ProductDocument.class, IndexCoordinates.of("product-index"));
+        SKUDTO skuOld = product.getSkus().stream()
+                .filter(s -> s.getSkuId() == skudto.getSkuId())
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundExeption("Not found sku"));
+        if (skudto.getSkuStock() != skuOld.getSkuStock()) {
+            product.setStock(product.getStock() - skudto.getSkuStock());
         }
-        LOG.info("update sku - {}", entityId);
+        updateNonNullFields(skudto, skuOld);
+        elasticsearchRestTemplate.update(product);
+        LOG.info("update sku - {}", product);
     }
 
-    private Object convertValue(Object value, Class<?> targetType) {
-        if (value == null) {
-            return null;
-        }
-
-        if (targetType.isAssignableFrom(value.getClass())) {
-            return value;
-        }
-
-        if (targetType == Integer.class || targetType == int.class) {
-            return Integer.parseInt(value.toString());
-        }
-
-        if (targetType == Double.class || targetType == double.class) {
-            return Double.parseDouble(value.toString());
-        }
-
-        if (targetType == Long.class || targetType == long.class) {
-            return Long.parseLong(value.toString());
-        }
-
-        if (targetType == String.class) {
-            return value.toString();
-        }
-
-        // Add more conversions here as needed
-
-        throw new IllegalArgumentException("Unsupported conversion from " + value.getClass() + " to " + targetType);
-    }
-
-    private Method findSetterMethod(Class<?> clazz, String setterName, Object value) {
-        Method[] methods = clazz.getDeclaredMethods();
-        for (Method method : methods) {
-            if (method.getName().equals(setterName)) {
-                Class<?> c = method.getParameterTypes()[0];
-                // Check if the setter method accepts the type of value we're passing
-                if (method.getParameterCount() == 1 && method.getParameterTypes()[0].isAssignableFrom(convertValue(value, c).getClass())) {
-                    return method;
+    private <T> void updateNonNullFields(T source, T target) {
+        for (Field field : source.getClass().getDeclaredFields()) {
+            field.setAccessible(true); // Allow access to private fields
+            try {
+                Object value = field.get(source);
+                if (value != null) {  // Only update non-null values
+                    field.set(target, value);
                 }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException("Failed to update field: " + field.getName(), e);
             }
         }
-        return null;
     }
 
-    private Object convertJsonElement(JsonElement element) {
-        if (element.isJsonPrimitive()) {
-            if (element.getAsJsonPrimitive().isString()) {
-                return element.getAsString(); // Return as String
-            } else if (element.getAsJsonPrimitive().isNumber()) {
-                // Get the number as a primitive value and ensure proper type conversion
-                Number number = element.getAsNumber();
-                if (number instanceof Integer) {
-                    return number.intValue();  // Explicitly return as Integer
-                } else if (number instanceof Long) {
-                    return number.longValue(); // Explicitly return as Long
-                } else if (number instanceof Double) {
-                    return number.doubleValue(); // Explicitly return as Double
-                } else if (number instanceof Float) {
-                    return number.floatValue(); // Explicitly return as Float
-                } else if (number instanceof LazilyParsedNumber) {
-                    // If it's a LazilyParsedNumber, convert to the appropriate type
-                    try {
-                        return number.intValue(); // Or number.intValue() based on your requirement
-                    } catch (Exception e) {
-                        return number.doubleValue(); // Fallback to double
-                    }
-                }
-                return number;  // Default case: return the number as is
-            } else if (element.getAsJsonPrimitive().isBoolean()) {
-                return element.getAsBoolean(); // Return as Boolean
-            }
-        } else if (element.isJsonObject()) {
-            return element.getAsJsonObject(); // Return as JsonObject
-        } else if (element.isJsonArray()) {
-            return element.getAsJsonArray(); // Return as JsonArray
-        }
-        return null;
-    }
 
-    private Map<String, Object> getUpdatedFiled(JsonObject payload) {
-        JsonObject afterObject = payload.getAsJsonObject("after");
-        JsonObject beforeObject = payload.getAsJsonObject("before");
-        Map<String, Object> updateField = new HashMap<>();
-        // Loop through the entries of the "after" JsonObject
-        for (Map.Entry<String, JsonElement> entry : beforeObject.entrySet()) {
-            String key = entry.getKey();
-            JsonElement beforeValue = entry.getValue();
-            // Check if the "after" object has the same key
-            if (afterObject.has(key)) {
-                JsonElement afterValue = afterObject.get(key);
-                // Compare the values
-                if (!beforeValue.equals(afterValue)) {
-                    updateField.put(key, convertJsonElement(afterValue));
-                }
-            }
-        }
-        return updateField;
-    }
 }
 

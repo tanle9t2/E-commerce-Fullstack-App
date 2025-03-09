@@ -1,11 +1,14 @@
 package com.tanle.e_commerce.service;
 
 import com.google.gson.JsonObject;
+import com.tanle.e_commerce.dto.CategoryDTO;
+import com.tanle.e_commerce.dto.ProductDocument;
+import com.tanle.e_commerce.dto.SKUDTO;
 
 public interface ProductAsycnService {
     void create(int entityId);
 
-    void update(int entityId, JsonObject payload);
+    void update(ProductDocument productDocument);
 
     void delete(int entityId);
 
@@ -13,8 +16,8 @@ public interface ProductAsycnService {
 
     void createSku(int entityId, int skuId);
 
-    void updateCategory(int entityId, JsonObject payload);
+    void updateCategory(int entityId, CategoryDTO categoryDTO);
 
-    void updateSKU(int entityId, int skuId, JsonObject payload);
+    void updateSKU(Integer productId, SKUDTO skudto);
 
 }

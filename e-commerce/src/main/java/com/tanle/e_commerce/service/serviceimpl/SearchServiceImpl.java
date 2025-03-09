@@ -133,7 +133,7 @@ public class SearchServiceImpl implements SearchService {
                                 )
                         )
         )).withAggregation("location", Aggregation.of(a ->
-                a.terms(t -> t.field("tenantDocument.location.keyword").size(10)))
+                a.terms(t -> t.field("tenant_document.location.keyword").size(10)))
         );
         NativeQuery query = queryBuilder.build();
         SearchHits<ProductDocument> searchHits = elasticsearchOperations.search(query, ProductDocument.class);
@@ -184,13 +184,13 @@ public class SearchServiceImpl implements SearchService {
         String keyword = condition.get("keyword");
         String order = condition.get("order");
         String sortBy = condition.get("sortBy");
-        Double minPrice = condition.get("minPrice") != null ? Double.parseDouble(condition.get("minPrice")) : 0.0;
+        Double minPrice = condition.get("minPrice") != null ? Double.parseDouble(condition.get("minPrice")) : null;
         Double maxPrice = condition.get("maxPrice") != null ? Double.parseDouble(condition.get("maxPrice")) : null;
         var boolQuery = QueryBuilders.bool();
         if (condition.get("tenantId") != null) {
             var tenantQuery = QueryBuilders.bool();
             tenantQuery.should(builder ->
-                    builder.term(t -> t.field("tenantDocument,id").value(Integer.parseInt(condition.get("tenantId")))));
+                    builder.term(t -> t.field("tenant_document.id").value(Integer.parseInt(condition.get("tenantId")))));
             boolQuery.must(tenantQuery.build()._toQuery());
         }
         if (condition.get("category") != null) {
@@ -200,10 +200,9 @@ public class SearchServiceImpl implements SearchService {
             for (var id : categoryIds) {
                 categoryQuery.should(builder -> builder.term(t -> t.field("category.id").value(id)));
             }
-            if(condition.get("lft") != null) {
+            if (condition.get("lft") != null) {
                 JsonData lft = JsonData.of(condition.get("lft"));
                 JsonData rgt = JsonData.of(condition.get("rgt"));
-                var category = QueryBuilders.bool();
                 categoryQuery.should(builder -> builder.range(r -> r.gte(lft).lte(rgt).field("category.left")));
             }
             boolQuery.must(categoryQuery.build()._toQuery());
@@ -212,7 +211,7 @@ public class SearchServiceImpl implements SearchService {
             String[] locations = condition.get("location").split(",");
             var categoryQuery = QueryBuilders.bool();
             for (var location : locations) {
-                categoryQuery.should(builder -> builder.match(t -> t.field("tenantDocument.location").query(location)));
+                categoryQuery.should(builder -> builder.match(t -> t.field("tenant_document.location").query(location)));
             }
             boolQuery.must(categoryQuery.build()._toQuery());
         }
@@ -236,10 +235,11 @@ public class SearchServiceImpl implements SearchService {
         }
         // Apply price range filter only if maxPrice is not null
         if (maxPrice != null) {
-            queryBuilder.withFilter(f -> f.range(r -> r.field("minPrice")
-                    .gte(JsonData.of(minPrice)).lte(JsonData.of(maxPrice))));
-        } else {
-            queryBuilder.withFilter(f -> f.range(r -> r.field("minPrice")
+            queryBuilder.withFilter(f -> f.range(r -> r.field("max_price")
+                    .lte(JsonData.of(maxPrice))));
+        }
+        if (minPrice != null) {
+            queryBuilder.withFilter(f -> f.range(r -> r.field("min_price")
                     .gte(JsonData.of(minPrice))));
         }
 
@@ -248,12 +248,12 @@ public class SearchServiceImpl implements SearchService {
                 if (sortBy.equals("price")) {
                     SortOrder sortOrder = order.equals("desc") ? SortOrder.Desc : SortOrder.Asc;
                     return s.field(f -> f
-                            .field("minPrice")
+                            .field("min_price")
                             .order(sortOrder)
                     );
                 } else if (sortBy.equals("newest")) {
                     SortOrder sortOrder = order.equals("desc") ? SortOrder.Desc : SortOrder.Asc;
-                    return s.field(f -> f.field("createdAt").order(sortOrder));
+                    return s.field(f -> f.field("created_at").order(sortOrder));
                 }
             }
             return s.field(f -> f.field("_score").order(SortOrder.Desc));

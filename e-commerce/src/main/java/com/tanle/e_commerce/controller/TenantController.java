@@ -46,7 +46,6 @@ public class TenantController extends BaseUserController {
         List<CategoryFilterResponse> categoryDTOS = categoryService.getCategoryFollowLevel(tenantId, 1);
 
         return ResponseEntity.ok(Map.of("tenantInfor", tenantDTO
-                , "products", products
                 , "categories", categoryDTOS));
     }
 

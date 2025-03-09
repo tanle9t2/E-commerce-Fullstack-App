@@ -16,13 +16,13 @@ const ProductImage = styled.img`
 `;
 
 const ProductDetails = styled.div`
-  flex: 1;
+    flex: 1;
     display:flex;
     align-items:center;
     justify-content:space-between;
 `;
 
-const ProductTitle = styled.p`
+const ProductTitle = styled.a`
   font-size: 1.6rem;
   font-weight:500;
 `;
@@ -35,23 +35,24 @@ const ProductVariation = styled.p`
     color:var(--secondary-color);
     font-size:1.4rem;
 `
-function OrderItem({item}) {
-    const {image,productName,variation,quantity,price} = item;
-    return (
-        <StyledOrderItem>
-        <ProductImage src={image} alt={productName} />
-        <ProductDetails>
-            <div>
-                <ProductTitle>{productName}</ProductTitle>
-                <ProductVariation>{variation}</ProductVariation>
-                <p>x{quantity}</p>
-            </div>
-            <div>
-                <ProductPrice>{formatCurrencyVND(price)}</ProductPrice>
-            </div>
-        </ProductDetails>
+function OrderItem({ item }) {
+
+  const { image, productId, productName, variation, quantity, price } = item;
+  return (
+    <StyledOrderItem>
+      <ProductImage src={image} alt={productName} />
+      <ProductDetails>
+        <div>
+          <ProductTitle href={`/product/${productId}`}>{productName}</ProductTitle>
+          <ProductVariation>{variation}</ProductVariation>
+          <p>x{quantity}</p>
+        </div>
+        <div>
+          <ProductPrice>{formatCurrencyVND(price)}</ProductPrice>
+        </div>
+      </ProductDetails>
     </StyledOrderItem>
-    )
+  )
 }
 
 export default OrderItem

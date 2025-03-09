@@ -20,6 +20,7 @@ public abstract class OrderDetailMapperDecorator implements OrderDetailMapper {
     public OrderDetailDTO converDTO(OrderDetail orderDetail) {
         OrderDetailDTO orderDetailDTO = orderDetailMapper.converDTO(orderDetail);
 
+        orderDetailDTO.setProductId(orderDetail.getSku().getProduct().getId());
         orderDetailDTO.setImage(orderDetail.getSku().getProduct().getImages().get(0).getImageUrl());
         orderDetailDTO.setProductName(orderDetail.getSku().getProduct().getName());
         orderDetailDTO.setVariation(orderDetail.getSku().getModalName());

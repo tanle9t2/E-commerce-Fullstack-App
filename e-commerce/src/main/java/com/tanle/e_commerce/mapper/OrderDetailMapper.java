@@ -11,7 +11,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = SKUMapper.class)
 @DecoratedWith(OrderDetailMapperDecorator.class)
 public interface OrderDetailMapper {
-    @Mapping(target = "createdAt", source = "id.createdAt")
+
     OrderDetailDTO converDTO(OrderDetail orderDetail);
     OrderDetail convertEntity(OrderDetailDTO orderDetailDTO);
 }

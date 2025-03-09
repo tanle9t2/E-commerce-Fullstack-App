@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import Logo from '../../ui/Logo';
-import { CiSquareMinus, CiSquarePlus } from 'react-icons/ci';
+
 import Table from '../../ui/Table';
 import CartRow from './CartRow';
 import { useCart } from './useCart';
@@ -15,9 +15,8 @@ import Modal from '../../ui/Modal';
 import ConfirmDelete from '../../ui/ConfirmDelete';
 import useDeleteCartItem from './useDeleteCartItem';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import useDebounce from '../../hook/useDebounce';
-import { useSearchHint } from '../products/useSearchHint';
+
+import { useSearchHint } from '../search/useSearchHint';
 const Container = styled.div`
     padding: var(--padding-container);
   font-family: Arial, sans-serif;
@@ -101,7 +100,7 @@ const ShopeeCart = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef(null);
-  const {isLoading:loadingHint,hint} = useSearchHint(searchTerm)
+  const { isLoading: loadingHint, hint } = useSearchHint(searchTerm)
 
   function hanleOnClickSuggess(id) {
     navigate(`/product/${id}`)
@@ -170,10 +169,10 @@ const ShopeeCart = () => {
       <Header>
         <Logo opacity={false} />
         <div className='relative'>
-          <SearchBar ref={searchRef} value={searchTerm} placeholder={"Nhập tìm kiếm của bạn"} 
-                onFocus={() => setShowSuggestions(true)}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyDown={(e) => handleEnter(e)} />
+          <SearchBar ref={searchRef} value={searchTerm} placeholder={"Nhập tìm kiếm của bạn"}
+            onFocus={() => setShowSuggestions(true)}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={(e) => handleEnter(e)} />
           <SearchButton onClick={() => handleOnClickFind(searchTerm)}>🔍
           </SearchButton>
           {!loadingHint && showSuggestions && (

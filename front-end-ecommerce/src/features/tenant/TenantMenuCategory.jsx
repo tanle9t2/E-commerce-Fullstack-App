@@ -51,7 +51,7 @@ const SubcategoryItem = styled.li`
 
 // Main Component
 function TenantMenuCategory({ categories, activeCategory, handleOnClickCategory }) {
-  console.log(categories)
+
   return (
     <Sidebar>
       <CategoryList>

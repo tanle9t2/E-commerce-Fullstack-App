@@ -12,6 +12,7 @@ import { formatCurrencyVND } from "../../utils/helper";
 import ButtonGroup from "../../ui/ButtonGroup";
 import { useCreateOrder } from "../orders/useCreateOrder";
 import { data } from "autoprefixer";
+import useDeleteCartItem from "../cart/useDeleteCartItem";
 
 const StyledCheckout = styled.div`
   font-family: Arial, sans-serif;
@@ -127,31 +128,32 @@ const AddresModal = ({ addresses, onCloseModal, selectedAddress, setSelectedAddr
 }
 
 function Checkout() {
-  const { cartItemTick } = useCartContext();
-  const [order,setOrder] =useState(null)
+  const { cartItemTick, handleRemoveCartItemTick } = useCartContext();
+  const [order, setOrder] = useState(null)
   const [selectedAddress, setSelectedAddress] = useState(0);
   const [selectedPayment, setSelectedPayment] = useState(1);
   const { isLoading, methods } = usePaymentMethods();
   const { isLoading: loadingAddress, addresses } = useAddress();
   const { getTotalPrice } = useCartContext();
-  const {isLoading:isCreating,createOrder} = useCreateOrder();
+  const { deleteCartItem } = useDeleteCartItem();
+  const { isLoading: isCreating, createOrder } = useCreateOrder();
   useEffect(() => {
     const grouped = cartItemTick.reduce((acc, item) => {
       if (!acc[item.tenantName]) {
         acc[item.tenantName] = {
           tenantName: item.tenantName,
-          items: [{ skuId: item.skuId, quantity: item.quantity }], 
-          note:null,
+          items: [{ skuId: item.skuId, quantity: item.quantity }],
+          note: null,
         };
       } else {
         acc[item.tenantName].items.push({ skuId: item.skuId, quantity: item.quantity });
       }
       return acc;
     }, {});
-  
+
     setOrder(Object.values(grouped));
-  }, [cartItemTick,setOrder]); // ✅ Runs when `cartItemTick` changes
-  if (loadingAddress ||isCreating) return <Spinner />
+  }, [cartItemTick, setOrder]); // ✅ Runs when `cartItemTick` changes
+  if (loadingAddress || isCreating) return <Spinner />
   const address = addresses[selectedAddress];
   const totalPrice = getTotalPrice();
   const groupedByTenant = cartItemTick.reduce((acc, item) => {
@@ -167,20 +169,30 @@ function Checkout() {
     }
     return acc;
   }, {});
-  function handleOnChangeNote(tenantName,value) {
+  function handleOnChangeNote(tenantName, value) {
 
-    setOrder(or => or.map(o => o.tenantName === tenantName ? {...o,"note":value}: o))
+    setOrder(or => or.map(o => o.tenantName === tenantName ? { ...o, "note": value } : o))
   }
   function handleOnClickOrder() {
-
-      const data = order.map(or => ( {
-        "items": or.items,
-        "addressId": addresses[selectedAddress].id,
-        "paymentMethodId":selectedPayment,
-        "note":or.note
-      }))
-      createOrder(data)
+    const cartItems = order.flatMap(or => or.items.flatMap(item => item.skuId))
+    const data = order.map(or => ({
+      "items": or.items,
+      "addressId": addresses[selectedAddress].id,
+      "paymentMethodId": selectedPayment,
+      "note": or.note
+    }))
+    createOrder(data, {
+      onSuccess: () => {
+        data.map((item) => {
+          console.log(item)
+          return item.items.skuId
+        })
+        handleRemoveCartItemTick(cartItems)
+        deleteCartItem({ cartId: 1, cartItems })
+      }
+    })
   }
+
   return (
     <StyledCheckout>
       <AddressSection>
@@ -199,7 +211,7 @@ function Checkout() {
         </Modal>
       </AddressSection>
 
-      <CheckoutCard handleOnChange = {handleOnChangeNote} data={Object.values(groupedByTenant)} />
+      <CheckoutCard handleOnChange={handleOnChangeNote} data={Object.values(groupedByTenant)} />
 
       <PaymentSection>
         <h4>Phương thức thanh toán</h4>

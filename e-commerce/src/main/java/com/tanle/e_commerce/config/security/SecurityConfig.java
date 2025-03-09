@@ -44,12 +44,14 @@ public class SecurityConfig {
 
 
     private final String[] URL_PERMIT_ALL = new String[]{
+
             "/api/v1/user/register"
+            ,"/test"
             ,"/api/v1/email/sendOtp"
             ,"/api/v1/email/verify-otp"
             ,"/api/v1/products"
             ,"/api/v1/search"
-            ,"/api/v1/tenant/tenant-infor/1"
+            ,"/api/v1/tenant/tenant-infor/{tenantId}"
             ,"/api/v1/search-hint"
             ,"/api/v1/filter-search"
             , "/api/v1/user/login"

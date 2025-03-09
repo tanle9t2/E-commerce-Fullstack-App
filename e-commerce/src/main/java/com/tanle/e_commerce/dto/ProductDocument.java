@@ -22,33 +22,48 @@ public class ProductDocument {
     @Id
     @Field(type = FieldType.Integer)
     private Integer id;
-    @Field(type = FieldType.Text)
-    private String name;
-    @Field(type = FieldType.Double)
-    private double minPrice;
-    @Field(type = FieldType.Double)
-    private double maxPrice;
-    @Field(type = FieldType.Integer)
-    private int reorderLevel;
-    @Field(type = FieldType.Double)
-    private int stock;
-    @Field(type = FieldType.Text)
-    private String description;
-    @Field(type = FieldType.Date, format = DateFormat.year_month_day)
-    private LocalDate createdAt;
-    @Field(type = FieldType.Object)
-    private CategoryDTO category;
-    @Field(type = FieldType.Text)
-    private String skuNo;
-    @Field(type = FieldType.Object)
-    private List<SKUDTO> skus;
-    private int totalSell;
-    @Field(type = FieldType.Object)
-    private TenantDocument tenantDocument;
-    private Map<String, Option> options;
-    @Field(type = FieldType.Object)
-    private List<Image> images;
 
+    @Field(type = FieldType.Text, name = "name")
+    private String name;
+
+    @Field(type = FieldType.Double, name = "min_price")
+    private double minPrice;
+
+    @Field(type = FieldType.Double, name = "max_price")
+    private double maxPrice;
+
+    @Field(type = FieldType.Integer, name = "reorder_level")
+    private int reorderLevel;
+
+    @Field(type = FieldType.Double, name = "stock")
+    private int stock;
+
+    @Field(type = FieldType.Text, name = "description")
+    private String description;
+
+    @Field(type = FieldType.Date, format = DateFormat.year_month_day, name = "created_at")
+    private LocalDate createdAt;
+
+    @Field(type = FieldType.Object, name = "category")
+    private CategoryDTO category;
+
+    @Field(type = FieldType.Text, name = "sku_no")
+    private String skuNo;
+
+    @Field(type = FieldType.Object, name = "skus")
+    private List<SKUDTO> skus;
+
+    @Field(type = FieldType.Integer, name = "total_sell")
+    private int totalSell;
+
+    @Field(type = FieldType.Object, name = "tenant_document")
+    private TenantDocument tenantDocument;
+
+    @Field(type = FieldType.Object, name = "options")
+    private Map<String, Option> options;
+
+    @Field(type = FieldType.Object, name = "images")
+    private List<Image> images;
     @Data
     public static class TenantDocument {
         private int id;

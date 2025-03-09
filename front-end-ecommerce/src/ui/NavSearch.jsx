@@ -8,7 +8,7 @@ import { useAuthContext } from "../context/AuthContext";
 import CartNavNoAuth from "../features/cart/CartNavNoAuth";
 import { useEffect, useRef, useState } from "react";
 
-import { useSearchHint } from "../features/products/useSearchHint";
+import { useSearchHint } from "../features/search/useSearchHint";
 
 const SearchBar = styled.div`
     width:100%;

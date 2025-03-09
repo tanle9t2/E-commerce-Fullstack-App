@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-import {translateFilter} from"../../utils/helper"
+import { translateFilter } from "../../utils/helper"
 import { useSearchParams } from "react-router-dom";
 const SidebarContainer = styled.div`
   width: 250px;
@@ -97,11 +97,11 @@ const FilterItem = ({ name, listItems }) => {
             <FilterTitle>{translateFilter(name)}</FilterTitle>
             <FilterContainer>
                 {listItems.map((item) => (
-                    <Label key={item.id !== null? item.id : item.name}>
+                    <Label key={item.id !== null ? item.id : item.name}>
                         <Checkbox
                             type="checkbox"
-                            checked={selectedFilters.has(item.id !== null? `${item.id}` : item.name)}
-                            onChange={() => handleCheckboxChange(item.id !== null? `${item.id}` : item.name)}
+                            checked={selectedFilters.has(item.id !== null ? `${item.id}` : item.name)}
+                            onChange={() => handleCheckboxChange(item.id !== null ? `${item.id}` : item.name)}
                         />
                         {item.name} ({item.value})
                     </Label>
@@ -111,7 +111,7 @@ const FilterItem = ({ name, listItems }) => {
     );
 };
 function Sidebar({ filters }) {
-   
+    console.log(filters)
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
     const [searchParams, setSearchParams] = useSearchParams();
@@ -123,7 +123,7 @@ function Sidebar({ filters }) {
     return (
         <SidebarContainer>
             <Header>Bộ lọc tìm kiếm</Header>
-            {filters.map(filter => <FilterItem name={filter.filterName} listItems={filter.filterItems}/>)}
+            {filters.map(filter => <FilterItem name={filter.filterName} listItems={filter.filterItems} />)}
             <FilterWrapper>
                 <FilterContainer>
                     <FilterTitle>Khoảng Giá</FilterTitle>
@@ -142,7 +142,7 @@ function Sidebar({ filters }) {
                             onChange={(e) => setMaxPrice(e.target.value)}
                         />
                     </InputContainer>
-                    <ApplyButton onClick={()=> handleOnClick()} >Áp Dụng</ApplyButton>
+                    <ApplyButton onClick={() => handleOnClick()} >Áp Dụng</ApplyButton>
                 </FilterContainer>
             </FilterWrapper>
         </SidebarContainer>

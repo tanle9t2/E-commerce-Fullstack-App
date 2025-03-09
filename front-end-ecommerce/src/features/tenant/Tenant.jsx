@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import Button from '../../ui/Button';
 import ProductSearch from '../products/ProductSearch';
@@ -8,12 +8,9 @@ import { PAGE_SIZE_PRODUCT_TENANT } from '../../utils/constant';
 import { calculateDayDifference } from '../../utils/helper';
 import { Avatar } from '@mui/material';
 import LayoutWithSideBar from '../../ui/LayoutWithSideBar';
-import Sidebar from '../products/SiderBar';
 import TenantMenuCategory from './TenantMenuCategory';
-import { useGetProductByCategory } from './useGetProductByCategory';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { data } from 'autoprefixer';
-import { use } from 'react';
+import { useSearchProduct } from '../search/useSearchProduct';
 
 // Header Section
 const Header = styled.header`
@@ -71,31 +68,18 @@ const NavItem = styled.a`
 
 
 const Tenant = () => {
-  const { isLoading, tenantInfor, categories, products } = useTenants();
+  const { isLoading, tenantInfor, categories } = useTenants();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeCategory, setActiveCateogry] = useState(null)
-  const { shopId } = useParams("shopId");
-  const [productsData, setProducts] = useState([])
-  const { isLoading: gettingProducts, getProducts } = useGetProductByCategory()
-  useEffect(() => {
-    if (!isLoading) {
-      setProducts(products.data);
-    }
-  }, [isLoading, products])
-  console.log(categories)
+  const { isLoading: gettingProducts, products, count } = useSearchProduct()
   function handleOnClickCategory(id, lft, rgt) {
     setActiveCateogry({ id, lft, rgt })
-    getProducts({ tenantId: shopId, category: id, lft, rgt },
-      {
-        onSuccess: (data) => {
-          setProducts(data.data)
-          searchParams.set("category", id)
-          setSearchParams(searchParams);
-        }
-      })
+    searchParams.set("lft", lft)
+    searchParams.set("rgt", rgt)
+    searchParams.set("category", id)
+    setSearchParams(searchParams)
   }
   if (isLoading) return <Spinner />
-  const { count, } = products;
   const { name, totalProduct, totalComment, follower, following, createdAt, tenantImage } = tenantInfor;
   const pages = Math.ceil(count / PAGE_SIZE_PRODUCT_TENANT);
   return (
@@ -135,7 +119,7 @@ const Tenant = () => {
       <LayoutWithSideBar>
         <TenantMenuCategory activeCategory={activeCategory} handleOnClickCategory={handleOnClickCategory} categories={categories} />
         {
-          (gettingProducts) ? <Spinner /> : <ProductSearch columns={5} products={productsData} totalPages={pages} />
+          (gettingProducts) ? <Spinner /> : <ProductSearch columns={5} products={products} totalPages={pages} />
         }
       </LayoutWithSideBar>
     </div>

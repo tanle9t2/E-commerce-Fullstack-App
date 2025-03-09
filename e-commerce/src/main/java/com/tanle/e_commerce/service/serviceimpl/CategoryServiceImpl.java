@@ -56,7 +56,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDTO> getSubCategoryFollowLevel(int parentId, int tenantId, int level) {
-        List<Object[]> result = categoryRepository.getSubcategoryFollowLevel(tenantId, level,parentId);
+        List<Object[]> result = categoryRepository.getSubcategoryFollowLevel(tenantId, level, parentId);
         return result.stream()
                 .map(r -> CategoryDTO.builder()
                         .id((int) r[0])
@@ -111,8 +111,8 @@ public class CategoryServiceImpl implements CategoryService {
         List<Category> categories = categoryRepository.findAll(CategorySpecification.getSinglePath(categoryId));
         String path = categories.stream()
                 .map(c -> c.getName() + ">")
-                .toString();
-        return path.substring(0, path.length() - 1);
+                .collect(Collectors.joining(" > "));
+        return path;
     }
 
     @Override

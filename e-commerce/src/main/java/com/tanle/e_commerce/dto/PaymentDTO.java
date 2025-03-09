@@ -14,4 +14,7 @@ public class PaymentDTO {
     private double amount;
     private LocalDateTime createdAt;
     private String status;
+    private int userId;
+    private String email;
+    private OrderDTO order;
 }

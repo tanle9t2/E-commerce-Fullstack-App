@@ -6,10 +6,12 @@ import com.tanle.e_commerce.config.payment.VNPayConfig;
 import com.tanle.e_commerce.dto.PaymentDTO;
 import com.tanle.e_commerce.entities.Order;
 import com.tanle.e_commerce.entities.Payment;
-import com.tanle.e_commerce.entities.PaymentStatus;
 import com.tanle.e_commerce.entities.enums.StatusOrder;
 import com.tanle.e_commerce.entities.enums.StatusPayment;
+import com.tanle.e_commerce.event.PaymentEvent;
+import com.tanle.e_commerce.event.PaymentStatus;
 import com.tanle.e_commerce.exception.ResourceNotFoundExeption;
+import com.tanle.e_commerce.kafka.KafkaPublisher;
 import com.tanle.e_commerce.mapper.PaymentMapper;
 import com.tanle.e_commerce.respone.PaymentRespone;
 import com.tanle.e_commerce.service.PaymentService;
@@ -41,6 +43,8 @@ public class PaymentServiceImpl implements PaymentService {
     private PaymentRepository paymentRepository;
     @Autowired
     private PaymentMapper paymentMapper;
+    @Autowired
+    private KafkaPublisher publisher;
 
     @Override
     @Transactional
@@ -132,6 +136,11 @@ public class PaymentServiceImpl implements PaymentService {
                         .order(order)
                         .build();
                 paymentRepository.save(payment);
+                PaymentEvent event = PaymentEvent.builder()
+                        .paymentRequestDto(paymentMapper.convertDTO(payment))
+                        .paymentStatus(PaymentStatus.PAYMENT_COMPLETED)
+                        .build();
+                publisher.sendPaymentConfirmation(event);
             });
             paymentRespone.setMessage("Successfully payment");
 

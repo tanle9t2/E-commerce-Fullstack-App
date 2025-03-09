@@ -18,11 +18,10 @@ import java.time.LocalDateTime;
 public class OrderDetailDTO {
 
     private int skuId;
+    private int productId;
     private int quantity;
     private String variation;
     private String productName;
     private String image;
     private double price;
-    @Field(type = FieldType.Date, format = DateFormat.date_hour_minute_second)
-    private LocalDateTime createdAt;
 }

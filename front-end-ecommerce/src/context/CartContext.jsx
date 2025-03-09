@@ -18,7 +18,6 @@ function CartContextProvider({ children }) {
     setCartItemTick(cartItemTick => cartItemTick.map(item => item.skuId === skuId ? { ...item, quantity } : item))
   }
   function handleRemoveCartItemTick(removeItem) {
-    console.log(removeItem)
     setCartItemTick(cartItemTick => cartItemTick.filter(item => !removeItem.includes(item.skuId)))
   }
   function handleRemoveAll() {

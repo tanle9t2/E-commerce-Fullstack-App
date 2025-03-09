@@ -1,11 +1,11 @@
-import { axiosPrivate } from "./api";
+import api from "./api";
 
 
 
 
 export async function verifyEmail(toEmail) {
     try {
-        const res = await axiosPrivate.post("/sendOtp",
+        const res = await api.post("/email/sendOtp",
             toEmail
         );
         return res.data;
@@ -15,7 +15,7 @@ export async function verifyEmail(toEmail) {
 }
 export async function verifyOtp(otp) {
     try {
-        const res = await axiosPrivate.post("/verify-otp", otp
+        const res = await api.post("/email/verify-otp", otp
         );
         return res.data;
     } catch (error) {

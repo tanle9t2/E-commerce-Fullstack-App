@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import Highlight from "../../ui/Highlight";
-import  Button  from "../../ui/Button";
+import Button from "../../ui/Button";
 import OrderItem from "./OrderItem";
 import { formatCurrencyVND, translateStatus } from "../../utils/helper";
 const OrderCard = styled.div`
@@ -10,7 +10,7 @@ const OrderCard = styled.div`
   background: #fff;
 `;
 
-const StoreName = styled.h3`
+const StoreName = styled.a`
   font-size: 16px;
   margin-bottom: 10px;
 `;
@@ -33,32 +33,32 @@ const CustomerHighlight = styled(Highlight)`
     font-size:2.5rem;
 `
 function OderCard({ order }) {
-    const {  tenantOrder, status,itemList,totalPrice } = order;
-    
-    return (
-        <>
-            <OrderCard >
-                <div className="flex justify-between">
-                    <StoreName>{tenantOrder.tenantName}</StoreName>
-                    <Status status={status}>{translateStatus(status)}</Status>
-                </div>
-                {
-                    itemList.map(item => <OrderItem key={item.skuId} item={item}/>)
-                }
-            </OrderCard>
-            <OrderFooter>
-                <span>Thành tiền: <CustomerHighlight>{formatCurrencyVND(totalPrice)}</CustomerHighlight></span>
-                <div className="mt-5 flex justify-end items-center">
-                    {
-                      (status === "PROCESSING" || status === "AWAITING_PAYMENT" ) 
-                      ? <Button className="mr-5" size="large">Hủy đơn hàng</Button>
-                      : <Button className="mr-5" size="large">Mua lại</Button>
-                    }
-                    <Button size="large" variation="secondary">Liên hệ người bán</Button>
-                </div>
-            </OrderFooter>
-        </>
-    )
+  const { tenantOrder, status, itemList, totalPrice } = order;
+
+  return (
+    <>
+      <OrderCard >
+        <div className="flex justify-between">
+          <StoreName href={`/shop/${tenantOrder.tenantId}`} >{tenantOrder.tenantName}</StoreName>
+          <Status status={status}>{translateStatus(status)}</Status>
+        </div>
+        {
+          itemList.map(item => <OrderItem key={item.skuId} item={item} />)
+        }
+      </OrderCard >
+      <OrderFooter>
+        <span>Thành tiền: <CustomerHighlight>{formatCurrencyVND(totalPrice)}</CustomerHighlight></span>
+        <div className="mt-5 flex justify-end items-center">
+          {
+            (status === "PROCESSING" || status === "AWAITING_PAYMENT")
+              ? <Button className="mr-5" size="large">Hủy đơn hàng</Button>
+              : <Button className="mr-5" size="large">Mua lại</Button>
+          }
+          <Button size="large" variation="secondary">Liên hệ người bán</Button>
+        </div>
+      </OrderFooter>
+    </>
+  )
 }
 
 export default OderCard

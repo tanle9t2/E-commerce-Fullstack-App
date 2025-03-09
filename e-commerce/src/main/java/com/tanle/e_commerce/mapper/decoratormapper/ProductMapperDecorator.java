@@ -17,11 +17,6 @@ public abstract class ProductMapperDecorator implements ProductMapper {
     private ProductMapper delegate;
     @Autowired
     private OrderDetailRepository orderDetailRepository;
-    @Autowired
-    private CommentRepository commentRepository;
-    @Autowired
-    private CommentMapper commentMapper;
-
 
     @Override
     public ProductDTO asInput(Product product) {
