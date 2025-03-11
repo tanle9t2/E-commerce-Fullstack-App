@@ -22,6 +22,7 @@ const StyledAvatar = styled.div`
   overflow: hidden;
   /* Size */
   height: ${(props => props.height ? `${props.height}px` : "25px")};
+  width: ${(props => props.width ? `${props.width}px` : "none")};
   aspect-ratio: 1 / 1;
   border: ${(props => props.isBorder ? '1px solid black;' : "none")};
 `
@@ -29,9 +30,9 @@ const Img = styled.img`
   width: 100%;
   height: 100%;
 `
-function Avatar({ height, url, isBorder = false }) {
+function Avatar({ width, height, url, isBorder = false }) {
   return (
-    <StyledAvatar height={height} isBorder={isBorder}>
+    <StyledAvatar width={width} height={height} isBorder={isBorder}>
       <Img src={url} />
     </StyledAvatar>
   )

@@ -44,9 +44,9 @@ public class SecurityConfig {
 
 
     private final String[] URL_PERMIT_ALL = new String[]{
-
             "/api/v1/user/register"
             ,"/test"
+            ,"/api/v1/ws/**"
             ,"/api/v1/email/sendOtp"
             ,"/api/v1/email/verify-otp"
             ,"/api/v1/products"

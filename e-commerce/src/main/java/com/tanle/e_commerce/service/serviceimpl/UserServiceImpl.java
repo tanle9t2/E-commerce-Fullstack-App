@@ -23,6 +23,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -61,6 +62,14 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDTO> findAllUser() {
         return null;
+    }
+
+    @Override
+    public List<UserDTO> findUserChat(int userId) {
+        List<UserDTO> users = userRepository.findUserChat(userId)
+                .stream().map(u -> mapper.convertDTO(u))
+                .collect(Collectors.toList());
+        return users;
     }
 
     @Override

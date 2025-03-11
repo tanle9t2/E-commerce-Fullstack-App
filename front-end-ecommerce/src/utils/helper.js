@@ -99,10 +99,11 @@ export const getDateRange = () => {
 }
 
 export const getAuth = () => {
-    return JSON.parse(localStorage.getItem("auth"));
+    if (!localStorage.getItem("auth"))
+        setAuth({})
+    return JSON.parse(localStorage.getItem("auth") ? localStorage.getItem("auth") : {});
 }
 export const setAuth = (auth) => {
-
     localStorage.setItem("auth", JSON.stringify(auth));
 
 }

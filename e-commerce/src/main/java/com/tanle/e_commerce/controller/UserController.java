@@ -40,6 +40,12 @@ public class UserController extends BaseUserController {
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }
 
+    @GetMapping("/chat")
+    public ResponseEntity<List<UserDTO>> findUserChatById(@AuthenticationPrincipal MyUser myUser) {
+        List<UserDTO> userDTO = userService.findUserChat(myUser.getId());
+        return new ResponseEntity<>(userDTO, HttpStatus.OK);
+    }
+
     @GetMapping("/")
     public ResponseEntity<UserDTO> findUserByUsername(@AuthenticationPrincipal MyUser user) {
         UserDTO userDTO = userService.findByUsername(user.getUsername());

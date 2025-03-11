@@ -8,12 +8,6 @@ spring:
       max-request-size: 50MB
   application:
     name: e-commerce
-  #  security:
-  #    oauth2:
-  #      resourceserver:
-  #        jwt:
-  #          issuer-uri: http://localhost:8082/realms/TanLe"
-  #          jwk-set-uri: ${spring.security.oauth2.resourceserver.jwt.issuer-uri}/protocol/openid-connect/certs
   datasource:
     url: jdbc:mysql://localhost:3307/ecommerce
     username: root
@@ -23,15 +17,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    # Uncomment if needed
-    # hibernate:
-    #   ddl-auto: update
 
-  jackson:
-  # Uncomment if needed
-  # date-format: dd-MM-yyyy HH:mm:ss
-  # serialization:
-  #   write-dates-as-timestamps: false
 
   elasticsearch:
     uris: http://localhost:9200
@@ -118,3 +104,5 @@ cloudinary:
 
 sendgrid:
   template-confirm-payment-id: d-d48c1e0a0ccf408397ee8a244d959d56
+firebase:
+  path: ${FIREBASE_PATH}
