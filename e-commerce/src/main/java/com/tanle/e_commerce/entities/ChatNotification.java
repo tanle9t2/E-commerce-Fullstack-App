@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatNotification {
-    private int id;
+    private String id;
     private int senderId;
     private int recipientId;
-    private LocalDateTime createdAt;
+    private Long timestamp;
     private String content;
 }

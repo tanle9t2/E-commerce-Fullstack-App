@@ -9,9 +9,10 @@ import java.util.List;
 public interface FirebaseService {
     String findChatRoomIdByRecipientAndSender(int senderId, int recipientId);
 
-    ChatRoom getChatRoomBySenderAndRecipient(int senderId, int recipientId);
+    String createChatRoom(int senderId, int recipientId);
+    List<ChatMessage> getChatMessageByRoom(int senderId, int recipientId);
+    ChatMessage saveMessage(ChatMessage chatMessage, int senderId, int recipientId);
 
-    ChatRoom createChatRoom(int senderId, int recipientId);
-    List<ChatMessageDTO> getChatMessageByRoom(int senderId, int recipientId);
-    ChatMessageDTO saveMessage(ChatMessage chatMessage, int senderId, int recipientId);
+    List<ChatRoom> getAllChatRoomSender(int senderId);
+    void  updateChatRoomStatus(String roomName,int userId,boolean isRead);
 }

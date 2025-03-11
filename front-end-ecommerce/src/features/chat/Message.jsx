@@ -29,17 +29,17 @@ const TimeStamp = styled.p`
   margin-top: 10px;
   margin-left:5px;
 `;
-function Message({ isSender, content, time }) {
-    return (
-        <StyledMessage >
-            <MessageBubble isSender={isSender}>{content}
-                <TimeStamp>{time}</TimeStamp>
-            </MessageBubble>
+function Message({ isSender, content, timestamp }) {
+  return (
+    <StyledMessage >
+      <MessageBubble isSender={isSender}>{content}
+        <TimeStamp>{new Date(timestamp).toDateString()}</TimeStamp>
+      </MessageBubble>
 
-        </StyledMessage>
+    </StyledMessage>
 
 
-    )
+  )
 }
 
 export default Message

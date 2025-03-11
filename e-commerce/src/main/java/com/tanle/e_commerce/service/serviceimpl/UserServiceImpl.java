@@ -15,6 +15,7 @@ import com.tanle.e_commerce.mapper.AddressMapper;
 import com.tanle.e_commerce.mapper.UserMapper;
 import com.tanle.e_commerce.request.UpdateUserInforRequeset;
 import com.tanle.e_commerce.respone.MessageResponse;
+import com.tanle.e_commerce.service.FirebaseService;
 import com.tanle.e_commerce.service.UserService;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +58,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private AddressMapper addressMapper;
     @Autowired
+    private FirebaseService firebaseService;
+    @Autowired
     private CloudinaryService cloudinaryService;
 
     @Override
@@ -66,10 +69,14 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserDTO> findUserChat(int userId) {
-        List<UserDTO> users = userRepository.findUserChat(userId)
-                .stream().map(u -> mapper.convertDTO(u))
+        List<Integer> chatRooms = firebaseService.getAllChatRoomSender(userId)
+                .stream().map(ChatRoom::getRecipientId)
                 .collect(Collectors.toList());
-        return users;
+
+        return userRepository.findUserChat(chatRooms)
+                .stream()
+                .map(u -> mapper.convertDTO(u))
+                .collect(Collectors.toList());
     }
 
     @Override

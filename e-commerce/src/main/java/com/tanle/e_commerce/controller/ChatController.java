@@ -5,6 +5,7 @@ import com.tanle.e_commerce.entities.ChatMessage;
 import com.tanle.e_commerce.entities.ChatNotification;
 import com.tanle.e_commerce.entities.MyUser;
 import com.tanle.e_commerce.service.ChatMessageService;
+import com.tanle.e_commerce.service.FirebaseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -22,30 +23,30 @@ import java.util.List;
 public class ChatController {
     @Autowired
     private SimpMessagingTemplate messagingTemplate;
+
     @Autowired
-    private ChatMessageService chatMessageService;
+    private FirebaseService firebaseService;
 
     @MessageMapping("/chat/{sender}/{receiver}")
     public void processingMessage(@Payload ChatMessage chatMessage,
                                   @DestinationVariable String sender,
                                   @DestinationVariable String receiver) {
-        ChatMessageDTO svChat = chatMessageService.saveMessage(chatMessage, Integer.parseInt(sender)
+        ChatMessage svChat = firebaseService.saveMessage(chatMessage, Integer.parseInt(sender)
                 , Integer.parseInt(receiver));
         messagingTemplate.convertAndSendToUser(receiver, "/queue/messages",
                 ChatNotification.builder()
                         .id(svChat.getId())
                         .senderId(Integer.parseInt(sender))
-                        .createdAt(svChat.getCreatedAt())
+                        .timestamp(svChat.getTimestamp())
                         .recipientId(Integer.parseInt(receiver))
                         .content(svChat.getContent())
                         .build());
     }
 
     @GetMapping("/messages/{recipientId}")
-    public ResponseEntity<List<ChatMessageDTO>> findChatMessages(@AuthenticationPrincipal MyUser user,
-                                                                 @PathVariable int recipientId) {
-
-        List<ChatMessageDTO> chatMessages = chatMessageService.getChatMessageByRoom(user.getId(), recipientId);
+    public ResponseEntity<List<ChatMessage>> findChatMessages(@AuthenticationPrincipal MyUser user,
+                                                              @PathVariable int recipientId) {
+        List<ChatMessage> chatMessages = firebaseService.getChatMessageByRoom(user.getId(), recipientId);
         return ResponseEntity.ok(chatMessages);
     }
 }

@@ -2,10 +2,12 @@ package com.tanle.e_commerce.controller;
 
 import com.tanle.e_commerce.dto.*;
 import com.tanle.e_commerce.entities.Address;
+import com.tanle.e_commerce.entities.ChatRoom;
 import com.tanle.e_commerce.entities.MyUser;
 import com.tanle.e_commerce.request.UpdateUserInforRequeset;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.service.CartService;
+import com.tanle.e_commerce.service.FirebaseService;
 import com.tanle.e_commerce.service.OrderService;
 import com.tanle.e_commerce.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -29,8 +32,6 @@ import java.util.Map;
 public class UserController extends BaseUserController {
     @Autowired
     private UserService userService;
-    @Autowired
-    private OrderService orderService;
     @Autowired
     private CartService cartService;
 
@@ -42,6 +43,7 @@ public class UserController extends BaseUserController {
 
     @GetMapping("/chat")
     public ResponseEntity<List<UserDTO>> findUserChatById(@AuthenticationPrincipal MyUser myUser) {
+
         List<UserDTO> userDTO = userService.findUserChat(myUser.getId());
         return new ResponseEntity<>(userDTO, HttpStatus.OK);
     }

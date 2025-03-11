@@ -15,7 +15,7 @@ import java.io.IOException;
 
 @Configuration
 public class FirebaseConfig {
-    @Value("firebase.path")
+    @Value("${firebase.path}")
     private String path;
 
     @Bean

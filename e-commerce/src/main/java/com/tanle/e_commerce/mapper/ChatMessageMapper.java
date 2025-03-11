@@ -8,8 +8,8 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface ChatMessageMapper {
 
-    @Mapping(target = "senderId",source = "chatRoom.sender.id")
-    @Mapping(target = "recipientId",source = "chatRoom.recipient.id")
+//    @Mapping(target = "senderId",source = "chatRoom.sender.id")
+//    @Mapping(target = "recipientId",source = "chatRoom.recipient.id")
     ChatMessageDTO convertDTO(ChatMessage chatMessage);
     ChatMessage convertEntity(ChatMessageDTO chatMessageDTO);
 }

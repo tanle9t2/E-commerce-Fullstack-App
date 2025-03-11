@@ -20,10 +20,9 @@ public interface UserRepository extends JpaRepository<MyUser, Integer> {
     Optional<MyUser> findByEmail(@Param("email") String email);
 
     @Query("""
-                SELECT c.recipient
-                FROM  MyUser u, ChatRoom c
-                WHERE  u.id = c.sender.id
-                AND  u.id =:id
-            """)
-    List<MyUser> findUserChat(@Param("id") int id);
+        SELECT u 
+        FROM MyUser u
+        WHERE u.id IN :ids
+       """)
+    List<MyUser> findUserChat(@Param("ids") List<Integer> ids);
 }

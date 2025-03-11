@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled, { keyframes } from 'styled-components';
 import Input from '../../ui/Input';
 import Avatar from '../../ui/Avatar';
@@ -10,6 +10,7 @@ import { getAuth } from '../../utils/helper';
 import { useAuthContext } from '../../context/AuthContext';
 import Message from './Message';
 import { useGetMessage } from './useGetMessage';
+import { useChatContext } from '../../context/ChatContext';
 const StyledChat = styled.div`
     position:fixed;
     bottom:0;
@@ -122,10 +123,10 @@ const MessageText = styled.div`
 `;
 
 const ChatInputArea = styled.div`
-    display:flex;
-    flex-direction:column;
-    justify-content:space-between;
-  padding: 10px;
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
   border-top: 1px solid #ddd;
   gap: 10px;
 `;
@@ -162,10 +163,11 @@ const ChatMain = styled.div`
 const ChatContent = styled.div`
     flex: 1;
     max-height:400px;
+    position:relative;
     overflow-y:auto;
 `
 const ChatOperator = styled.div`
-display:flex;
+    display:flex;
     width:100%;
 `
 const ChatSelect = styled.div`
@@ -179,51 +181,38 @@ const ChatSelect = styled.div`
 const ChatLeft = styled.div`
   border-right:1px solid var(--color-grey-50);
 `
+const HeaderChatContent = styled.div`
+
+  width: 100%;
+  padding:10px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+`
 const WS_URL = `http://localhost:8080/ecommerce-server/api/v1/ws`
 // Main component
 function Chat() {
   const { auth } = useAuthContext();
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const [stompClient, setStompClient] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const { isChatOpen, setIsChatOpen, selectedUser, messages, setMessages, stompClient, handleSelectedUser } = useChatContext();
   const { isLoading, userChat } = useUserChats()
-  const { accessToken } = getAuth();
-  const { isLoading: loadingMessages, getMessage } = useGetMessage()
-  const [messages, setMessages] = useState(null);
+  const { loadingMessages, getMessage } = useGetMessage()
   const [newMessage, setNewMessage] = useState('');
+  const messagesEndRef = useRef(null);
+  useEffect(() => {
+    console.log(messagesEndRef.current)
+    messagesEndRef.current?.scrollTo({
+      top: messagesEndRef.current.scrollHeight,
+      behavior: "smooth"
+    });
+  }, [messages]);
   if (isLoading) return
-  const connectWebSocket = (user) => {
-    const socket = new SockJS(`${WS_URL}?token=${accessToken}`, null, {
-      transports: ["websocket", "xhr-streaming", "eventsource", "xhr-polling"], // ✅ Allow fallbacks
-      withCredentials: true // ✅ Ensure CORS credentials are allowed
-    });
-    const client = new Client({
-      webSocketFactory: () => socket,
-      onConnect: () => {
-
-        // Subscribe to user's private chat
-        client.subscribe(`/user/${auth.id}/queue/messages`, onMessageReceived);
-        client.subscribe(`/user/public`, onMessageReceived);
-      },
-    });
-
-    client.activate();
-    setStompClient(client);
-  };
-  const onMessageReceived = (message) => {
-    console.log(message)
-    const receivedMessage = JSON.parse(message.body);
-    setMessages((prev) => [...prev, receivedMessage]);
-  };
-  // Function to send message
   const sendMessage = (content) => {
     if (stompClient && selectedUser) {
       stompClient.publish({
-        destination: `/app/chat/${auth.id}/${selectedUser}`,
+        destination: `/app/chat/${auth.id}/${selectedUser.recipientId}`,
         body: JSON.stringify({ content }),
       });
     }
   };
+
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
   };
@@ -231,25 +220,21 @@ function Chat() {
   const closeChat = () => {
     setIsChatOpen(false);
   };
-
   const handleSendMessage = () => {
     if (newMessage.trim()) {
       sendMessage(newMessage)
-      setMessages([...messages, { id: Date.now(), senderId: auth.id, content: newMessage, createdAt: new Date().toLocaleDateString() }]);
+      setMessages([...messages, { id: Date.now(), senderId: auth.id, content: newMessage, timestamp: Date.now() }]);
       setNewMessage('');
     }
   };
-  function handleSelectedUser(recipientId, username) {
-    if (recipientId !== selectedUser)
-      getMessage(recipientId, {
-        onSuccess: (data) => {
-          connectWebSocket(recipientId)
-          setSelectedUser(recipientId)
-          setMessages(data)
-        }
-      })
-    else
-      setSelectedUser(null)
+  function hanleSelected(userId, fullName) {
+    getMessage(userId, {
+      onSuccess: (data) => {
+        handleSelectedUser(userId, fullName)
+        setMessages(data)
+      }
+    })
+
   }
   return (
     <StyledChat>
@@ -270,7 +255,7 @@ function Chat() {
             </ChatSearch>
             <ChatMessages>
               {!userChat.length ? null : userChat.map(({ userId, firstName, lastName, avtUrl, username }) => (
-                <Recipient isActive={userId === selectedUser} onClick={() => handleSelectedUser(userId, username)} key={userId}>
+                <Recipient isActive={userId === selectedUser?.recipientId} onClick={() => hanleSelected(userId, `${firstName} ${lastName}`)} key={userId}>
                   <Avatar url={avtUrl} width={30} height={30} />
                   <MessageText>
                     <div className='flex'>
@@ -285,12 +270,13 @@ function Chat() {
             </ChatMessages>
           </ChatLeft>
 
-          <ChatInputArea>
+          <ChatInputArea >
             {selectedUser ? <>
-              {!loadingMessages && <ChatContent>
+              {!loadingMessages && <ChatContent ref={messagesEndRef}>
+                <HeaderChatContent>{selectedUser.fullName}</HeaderChatContent>
                 {messages
-                  .map(({ id, senderId, createdAt, content }) => (
-                    <Message key={id} content={content} time={createdAt} isSender={senderId === auth.id} />
+                  .map(({ id, senderId, timestamp, content }) => (
+                    <Message key={id} content={content} timestamp={timestamp} isSender={senderId === auth.id} />
                   ))}
               </ChatContent>}
               <ChatOperator>
@@ -299,7 +285,7 @@ function Chat() {
                   onChange={(e) => setNewMessage(e.target.value)}
                   placeholder="Type your message..."
                 />
-                <SendButton onClick={() => handleSendMessage()}>Send</SendButton>
+                <SendButton onClick={() => handleSendMessage()}>Gửi</SendButton>
               </ChatOperator>
             </>
               :

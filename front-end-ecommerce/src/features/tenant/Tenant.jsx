@@ -11,6 +11,8 @@ import LayoutWithSideBar from '../../ui/LayoutWithSideBar';
 import TenantMenuCategory from './TenantMenuCategory';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useSearchProduct } from '../search/useSearchProduct';
+import { useChatContext } from '../../context/ChatContext';
+import { set } from 'react-hook-form';
 
 // Header Section
 const Header = styled.header`
@@ -21,11 +23,6 @@ const Header = styled.header`
   grid-template-columns:0.4fr 0.6fr;
   align-items: center;
 `;
-
-
-
-
-
 const SellerName = styled.span`
   font-weight: bold;
 `;
@@ -70,6 +67,7 @@ const NavItem = styled.a`
 const Tenant = () => {
   const { isLoading, tenantInfor, categories } = useTenants();
   const [searchParams, setSearchParams] = useSearchParams();
+  const { setIsChatOpen, handleSelectedUser } = useChatContext()
   const [activeCategory, setActiveCateogry] = useState(null)
   const { isLoading: gettingProducts, products, count } = useSearchProduct()
   function handleOnClickCategory(id, lft, rgt) {
@@ -80,8 +78,12 @@ const Tenant = () => {
     setSearchParams(searchParams)
   }
   if (isLoading) return <Spinner />
-  const { name, totalProduct, totalComment, follower, following, createdAt, tenantImage } = tenantInfor;
+  const { name, totalProduct, totalComment, follower, following, createdAt, tenantImage, userId } = tenantInfor;
   const pages = Math.ceil(count / PAGE_SIZE_PRODUCT_TENANT);
+  function hanleOnClickChat() {
+    setIsChatOpen(true)
+    handleSelectedUser(userId, name);
+  }
   return (
     <div>
       <Header>
@@ -94,7 +96,7 @@ const Tenant = () => {
             </div>
           </div>
           <div className='mt-5 flex justify-between'>
-            <ChatButton>Chat</ChatButton>
+            <ChatButton onClick={() => hanleOnClickChat()}>Chat</ChatButton>
             <ChatButton>+ Theo dõi</ChatButton>
           </div>
         </div>
