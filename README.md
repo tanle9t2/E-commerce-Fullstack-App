@@ -8,7 +8,7 @@ ensures secure authentication using JWT.</p>
 
 <h2>Technology</h2>
 <ul>
-    <li><strong>Back-end:</strong> Spring Boot, Spring Security, Spring Data JPA, JWT, Docker, Elasticsearch, Kafka.</li>
+    <li><strong>Back-end:</strong> Spring Boot, Spring Security, Spring Data JPA,Spring Websocket, Firebase, JWT, Docker, Elasticsearch, Kafka.</li>
     <li><strong>Front-end:</strong> React.js, React Query.</li>
     <li><strong>Database:</strong> MySQL.</li>
 </ul>
@@ -22,6 +22,7 @@ ensures secure authentication using JWT.</p>
     <li>Seller registration and product management with variations.</li>
     <li>Images are stored on Cloudinary for efficient media management.</li>  
     <li>Order tracking, sales performance monitoring, and order cancellation.</li>
+    <li>One-one chat feature between users with messages stored on Firebase</li>
 </ul>
 <h2>Installation</h2>
 <p>Docker installation is required! Please pay attention to environment variables. Execute the command below to run the project: </p>
