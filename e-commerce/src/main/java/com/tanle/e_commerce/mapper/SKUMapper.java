@@ -6,6 +6,7 @@ import com.tanle.e_commerce.entities.OptionValue;
 import com.tanle.e_commerce.entities.Product;
 import com.tanle.e_commerce.entities.SKU;
 import com.tanle.e_commerce.mapper.decoratormapper.SKUMapperDecorator;
+import org.checkerframework.checker.units.qual.N;
 import org.mapstruct.DecoratedWith;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -24,6 +25,7 @@ public interface SKUMapper {
     @Mapping(target = "skuId", source = "sku.id")
     @Mapping(target = "skuStock", source = "sku.stock")
     @Mapping(target = "skuPrice", source = "sku.price")
+    @Mapping(target = "modelName", expression = "java(mapModelName(sku))")
     SKUDTO convertDTO(SKU sku);
 
     @Mapping(target = "optionValues", expression = "java(mapOptionValuesBack(skudto,product))")
@@ -32,7 +34,9 @@ public interface SKUMapper {
     @Mapping(target = "product", source = "product")
     SKU convertEntity(SKUDTO skudto, Product product);
 
-
+    default String mapModelName(SKU sku) {
+        return sku.getModalName();
+    }
 
     default List<OptionValue> mapOptionValuesBack(SKUDTO sku, Product product) {
         if (product == null || sku == null) return null;

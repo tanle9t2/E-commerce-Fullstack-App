@@ -52,6 +52,7 @@ public abstract class CategoryMapperDecorator implements CategoryMapper {
 
     @Override
     public CategoryDTO convertDTO(Category category) {
+        if(category == null) return null;
         CategoryDTO categoryDTO = delegate.convertDTO(category);
         List<String> categories = categoryRepository.getPath(categoryDTO.getId());
         categoryDTO.setPathCategory(categories);

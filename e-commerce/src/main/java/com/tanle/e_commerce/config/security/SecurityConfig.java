@@ -35,7 +35,7 @@ public class SecurityConfig {
     private UserDetailsService userDetailsService;
     @Autowired
     private JwtFilter jwtFilter;
-//    @Autowired
+    //    @Autowired
 //    private ContentCachingFilter contentCachingFilter;
     @Autowired
     private MyAuthorizationManager authorizationManager;
@@ -45,15 +45,15 @@ public class SecurityConfig {
 
     private final String[] URL_PERMIT_ALL = new String[]{
             "/api/v1/user/register"
-            ,"/test"
-            ,"/api/v1/ws/**"
-            ,"/api/v1/email/sendOtp"
-            ,"/api/v1/email/verify-otp"
-            ,"/api/v1/products"
-            ,"/api/v1/search"
-            ,"/api/v1/tenant/tenant-infor/{tenantId}"
-            ,"/api/v1/search-hint"
-            ,"/api/v1/filter-search"
+            , "/test"
+            , "/api/v1/ws/**"
+            , "/api/v1/email/sendOtp"
+            , "/api/v1/email/verify-otp"
+            , "/api/v1/products"
+            , "/api/v1/search"
+            , "/api/v1/tenant/tenant-infor/{tenantId}"
+            , "/api/v1/search-hint"
+            , "/api/v1/filter-search"
             , "/api/v1/user/login"
             , "/api/v1/tenant/login"
             , "/api/v1/user/refreshToken"
@@ -61,9 +61,10 @@ public class SecurityConfig {
             , "/api/v1/vn-pay-callback"
             , "/api/v1/product_list"
             , "api/v1/tenant/{tenantId}"
-            ,"api/v1/product/{productId}"
-            ,"api/v1/product/sku/{skuId}"
-            ,"api/v1/comment/product/{productId}"
+            , "api/v1/product/{productId}"
+            , "api/v1/product/tenant/{tenantId}"
+            , "api/v1/product/sku/{skuId}"
+            , "api/v1/comment/product/{productId}"
     };
 
     @Bean
@@ -85,16 +86,17 @@ public class SecurityConfig {
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers(URL_PERMIT_ALL).permitAll()
+                                .requestMatchers(URL_PERMIT_ALL).permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/v1/product").permitAll()
 //                        .requestMatchers(URL_ADMIN).hasAuthority("ADMIN")
-                        .requestMatchers("/api/v1/user/").authenticated()
+                                .requestMatchers("/api/v1/user/").authenticated()
 ////                        .requestMatchers("/api/v1/cart/cartItem").access(authorizationManager)
 //                        .requestMatchers("/api/v1/order/status"
 //                                , "/api/v1/order/cancelOrder").hasAnyAuthority("ADMIN", "SELLER")
 //                        .requestMatchers(HttpMethod.GET, "/api/v1/order").hasAnyAuthority("ADMIN", "SELLER")
 //                        .requestMatchers("/api/v1/user/registerToken/**"
 //                                , "/api/v1/user/registerToken").hasAuthority("ADMIN")
-                        .anyRequest().authenticated()
+                                .anyRequest().authenticated()
                 )
                 .exceptionHandling(e -> e.accessDeniedHandler(accessDeniedException))
                 .logout(l -> {
@@ -107,12 +109,13 @@ public class SecurityConfig {
 
         return httpSecurity.build();
     }
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5173")); // Frontend
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:5174")); // Frontend
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type","X-Requested-With"));
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Requested-With"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);
 

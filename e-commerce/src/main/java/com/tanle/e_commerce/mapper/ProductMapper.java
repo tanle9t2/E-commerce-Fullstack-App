@@ -52,6 +52,7 @@ public interface ProductMapper {
         return product.getMaxPrice();
     }
 
+
     default int mapStock(Product product) {
         return product.getSkus().stream()
                 .mapToInt(SKU::getStock)

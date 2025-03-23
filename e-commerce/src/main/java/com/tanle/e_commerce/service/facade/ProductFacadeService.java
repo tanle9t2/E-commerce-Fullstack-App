@@ -30,8 +30,8 @@ public class ProductFacadeService {
     @Transactional
     public ProductDTO creatProduct(ProductCreationRequest productCreationRequest) {
         Product product = productCreationRequest.getProduct();
-        product.setOptions(productCreationRequest.getOptions());
-
+//        product.setOptions(productCreationRequest.getOptions());
+//
 
 
 

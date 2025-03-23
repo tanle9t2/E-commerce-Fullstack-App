@@ -1,10 +1,7 @@
 package com.tanle.e_commerce.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Objects;
 
@@ -12,8 +9,8 @@ import java.util.Objects;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+@Data
+@Builder
 public class OptionValue {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

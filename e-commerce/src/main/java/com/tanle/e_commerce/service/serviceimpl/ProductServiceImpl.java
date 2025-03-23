@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.json.JsonPatch;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,7 +36,7 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private ProductMapper productMapper;
     @Autowired
-    private CategoryRepository categoryRepository;
+    private CloudinaryService cloudinaryService;
     @Autowired
     private SKURepository skuRepository;
     @Autowired
@@ -126,12 +127,30 @@ public class ProductServiceImpl implements ProductService {
     public ProductDTO save(ProductCreationRequest productCreationRequest) {
         Product product = productCreationRequest.getProduct();
         product.setCreatedAt(LocalDateTime.now());
+
+        List<Option> options = productCreationRequest.getOptions().stream()
+                .map(s -> Option.builder()
+                        .name(s.getName())
+                        .optionValues(s.convertOptionValue())
+                        .build())
+                .collect(Collectors.toList());
         //set options
-        product.setOptions(productCreationRequest.getOptions());
-        //set Category
-        Category category = categoryRepository.findById(product.getCategory().getId())
-                .orElseThrow(() -> new ResourceNotFoundExeption("Not found category"));
-        product.setCategory(category);
+        product.setOptions(options);
+        //save image
+        List<Image> images = productCreationRequest.getImages().stream()
+                .map(image -> {
+                    try {
+                        String url = cloudinaryService.uploadFile(image);
+                        return Image.builder()
+                                .createAt(LocalDateTime.now())
+                                .imageUrl(url)
+                                .build();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .collect(Collectors.toList());
+        product.setImages(images);
         Product productDB = productRepository.save(product);
 
         //create SKU
@@ -141,7 +160,7 @@ public class ProductServiceImpl implements ProductService {
         productDB.addSKU(skus);
 
         productRepository.save(product);
-        return productDB.converDTO();
+        return productMapper.asInput(product);
     }
 
     @Override
@@ -185,7 +204,13 @@ public class ProductServiceImpl implements ProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found product"));
         //save options
-        product.getOptions().addAll(request.getOptions());
+        List<Option> options = request.getOptions().stream()
+                .map(s -> Option.builder()
+                        .name(s.getName())
+                        .optionValues(s.convertOptionValue())
+                        .build())
+                .collect(Collectors.toList());
+        product.getOptions().addAll(options);
         productRepository.save(product);
         //save skus
         List<SKU> skus = request.getSkus().stream()

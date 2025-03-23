@@ -1,8 +1,8 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext } from "react";
 
 
 import { useLocalStorageState } from "../hook/useLocalStorageState";
-import { setAccessToken } from "../services/api";
+
 
 
 const AuthContext = createContext()

@@ -24,7 +24,7 @@ public class SkuDocumentDeserializer implements JsonDeserializer<SKUDTO> {
 
         // Extracting fields safely
         skudto.setSkuId(getIntValue(obj, "sku_id"));
-        skudto.setSkuName(getStringValue(obj, "sku_name"));
+        skudto.setModelName(getStringValue(obj, "sku_name"));
         skudto.setSkuNo(getStringValue(obj, "sku_no"));
         skudto.setStatus(getEnumValue(obj, "status", Status.class));
         skudto.setSkuStock(getIntValue(obj, "sku_stock"));

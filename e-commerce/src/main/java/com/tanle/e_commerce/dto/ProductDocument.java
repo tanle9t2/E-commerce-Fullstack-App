@@ -63,11 +63,20 @@ public class ProductDocument {
     private Map<String, Option> options;
 
     @Field(type = FieldType.Object, name = "images")
-    private List<Image> images;
+    private List<ImageDocument> images;
+
     @Data
     public static class TenantDocument {
         private int id;
         private String name;
         private String location;
+    }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ImageDocument {
+        private int id;
+        private String imageUrl;
     }
 }

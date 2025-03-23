@@ -93,7 +93,7 @@ public class SKU {
         return SKUDTO.builder()
                 .skuId(this.id)
                 .skuNo(this.skuNo)
-                .skuName(getModalName())
+                .modelName(getModalName())
                 .skuPrice(this.price)
                 .status(this.status)
                 .skuStock(this.stock)

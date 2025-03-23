@@ -1,9 +1,12 @@
 package com.tanle.e_commerce.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tanle.e_commerce.dto.ProductDTO;
 import com.tanle.e_commerce.dto.SKUDTO;
 import com.tanle.e_commerce.entities.Option;
+import com.tanle.e_commerce.entities.Product;
 import com.tanle.e_commerce.respone.ApiResponse;
 import com.tanle.e_commerce.respone.MessageResponse;
 import com.tanle.e_commerce.respone.PageResponse;
@@ -16,21 +19,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.json.JsonPatch;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.tanle.e_commerce.utils.AppConstant.*;
 
 @RestController
 @RequestMapping("/api/v1/")
-@CrossOrigin(origins = "http://localhost:5173") // React app URL
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 public class ProductController {
     @Autowired
     private ProductService productService;
@@ -40,6 +42,8 @@ public class ProductController {
     private OptionService optionService;
     @Autowired
     private CommentService commentService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @RequestMapping(value = "/product_list", method = RequestMethod.GET)
     public ResponseEntity<?> getProducts(
@@ -134,16 +138,39 @@ public class ProductController {
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 
-    @PostMapping("/product")
-    public ApiResponse<ProductDTO> createProduct(@RequestBody ProductCreationRequest product) {
-        ProductDTO productDTO = productService.save(product);
+    @PostMapping(value = "/product", consumes = {MediaType.MULTIPART_FORM_DATA_VALUE})
+    public ApiResponse<ProductDTO> createProduct(@RequestParam("product") String productJson,
+                                                 @RequestParam("options") String optionsJson,
+                                                 @RequestParam("skus") String skusJson,
+                                                 @RequestParam("images") List<MultipartFile> images) throws JsonProcessingException {
 
 
-        return ApiResponse.<ProductDTO>builder()
-                .data(productDTO)
-                .status(HttpStatus.OK)
-                .message("Successfully create Product")
-                .build();
+        try {
+            // Convert JSON strings to Java objects
+            ObjectMapper objectMapper = new ObjectMapper();
+            Product product = objectMapper.readValue(productJson, Product.class);
+            List<ProductCreationRequest.OptionRequest> options = objectMapper.readValue(optionsJson,
+                    new TypeReference<List<ProductCreationRequest.OptionRequest>>() {
+                    });
+            List<SKUDTO> skus = objectMapper.readValue(skusJson, new TypeReference<List<SKUDTO>>() {
+            });
+            ProductCreationRequest productRequest = new ProductCreationRequest();
+            productRequest.setProduct(product);
+            productRequest.setImages(images);
+            productRequest.setSkus(skus);
+            productRequest.setOptions(options);
+
+            ProductDTO productDTO = productService.save(productRequest);
+
+            return ApiResponse.<ProductDTO>builder()
+                    .data(productDTO)
+                    .status(HttpStatus.OK)
+                    .message("Successfully create Product")
+                    .build();
+        } catch (Exception e) {
+            throw new  RuntimeException(e.getMessage());
+        }
+
     }
     //update
 

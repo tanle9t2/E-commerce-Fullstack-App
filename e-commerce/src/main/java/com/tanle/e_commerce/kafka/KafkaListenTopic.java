@@ -47,11 +47,11 @@ public class KafkaListenTopic {
                 Integer skuId = null;
 
                 switch (op) {
-                    case KafkaOperator.CREATE:
-                        productId = Integer.parseInt(payload.get("after").getAsJsonObject().get("product_id").toString());
-                        skuId = Integer.parseInt(payload.get("after").getAsJsonObject().get("sku_id").toString());
-                        productAsycnService.createSku(productId, skuId);
-                        break;
+//                    case KafkaOperator.CREATE:
+//                        productId = Integer.parseInt(payload.get("after").getAsJsonObject().get("product_id").toString());
+//                        skuId = Integer.parseInt(payload.get("after").getAsJsonObject().get("sku_id").toString());
+//                        productAsycnService.createSku(productId, skuId);
+//                        break;
                     case KafkaOperator.UPDATE:
                         productId = Integer.parseInt(payload.get("after").getAsJsonObject().get("product_id").toString());
                         SKUDTO skudto = gson.fromJson(payload.get("after"), SKUDTO.class);

@@ -41,6 +41,7 @@ import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Query;
 import org.springframework.data.elasticsearch.core.query.UpdateQuery;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -64,6 +65,7 @@ public class ProductAsynServiceImpl implements ProductAsycnService {
     private static final Logger LOG = LoggerFactory.getLogger(ProductAsycnService.class);
 
     @Override
+    @Transactional
     public void create(int entityId) {
         IndexCoordinates indexCoordinates = IndexCoordinates.of(INDEX_NAME);
         // Check if the index exists
@@ -73,12 +75,12 @@ public class ProductAsynServiceImpl implements ProductAsycnService {
             indexOperations.create();
             System.out.println("Index created: " + INDEX_NAME);
         }
-        Product product = productRepository.findById(entityId)
+        ProductDocument product = productRepository.findById(entityId)
+                .map(p -> productMapper.toDocument(p))
                 .orElseThrow(() -> new ResourceNotFoundExeption("Not found"));
-        elasticsearchRestTemplate.save(productMapper.toDocument(product));
+        elasticsearchRestTemplate.save(product);
         LOG.info("Create Product - {}", product.getId());
     }
-
 
     @Override
     public void update(ProductDocument productDocument) {

@@ -20,7 +20,7 @@ import java.util.List;
 @Data
 public class SKUDTO {
     private Integer skuId;
-    private String skuName;
+    private String modelName;
     private String itemName;
     private String skuNo;
     @Enumerated(EnumType.STRING)
