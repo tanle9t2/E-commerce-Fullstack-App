@@ -1,3 +1,9 @@
 [submodule "E-commerce-Backend-App"]
 	path = E-commerce-Backend-App
 	url = https://github.com/tanle9t2/E-commerce-Backend-App
+[submodule "Seller-App"]
+	path = Seller-App
+	url = https://github.com/tanle9t2/Seller-Ecommerce-App
+[submodule "Client-App"]
+	path = Client-App
+	url = https://github.com/tanle9t2/Client-Ecommerce-App
