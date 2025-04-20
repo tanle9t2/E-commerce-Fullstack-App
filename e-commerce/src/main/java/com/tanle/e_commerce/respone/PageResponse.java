@@ -12,11 +12,12 @@ import java.util.List;
 @AllArgsConstructor
 @Data
 @Builder
-public class PageResponse<T>{
+public class PageResponse<T> {
     private List<T> data;
     private int page;
     private int totalElement;
     private Long count;
+
     private HttpStatus status;
 
 }

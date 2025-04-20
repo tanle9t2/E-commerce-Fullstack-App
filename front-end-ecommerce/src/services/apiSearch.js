@@ -1,8 +1,7 @@
 import api, { axiosPrivate } from "./api";
-
-
 export async function searchProduct({ keyword, tenantId, location, category, minPrice, maxPrice, lft, rgt, sortBy, order, size, page }) {
     const params = {};
+
     if (keyword) params.keyword = keyword;
     if (category) params.category = category;
     if (minPrice) params.minPrice = minPrice;

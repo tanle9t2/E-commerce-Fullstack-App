@@ -64,16 +64,17 @@ public class ProductController {
     }
 
     @GetMapping("/product/tenant/{tenantId}")
-    private ResponseEntity<PageResponse<ProductDTO>> getAllProductByTenant
-            (@PathVariable int tenantId,
-             @RequestParam(name = "page", required = false, defaultValue = PAGE_DEFAULT) String page,
-             @RequestParam(name = "sort", required = false, defaultValue = "id") String field,
-             @RequestParam(name = "order", required = false, defaultValue = DIRECTION_SORT_DEFAULT) String direction
-
-            ) {
+    private ResponseEntity<PageResponse<ProductDTO>> getAllProductByTenant(
+            @PathVariable int tenantId,
+            @RequestParam(name = "page", required = false, defaultValue = PAGE_DEFAULT) String page,
+            @RequestParam(name = "sort", required = false, defaultValue = "createdAt") String field,
+            @RequestParam(name = "order", required = false, defaultValue = "DESC") String direction,
+            @RequestParam(name = "keyword", required = false ) String keyword,
+            @RequestParam(name = "minPrice", required = false) String minPrice,
+            @RequestParam(name = "maxPrice", required = false) String maxPrice
+    ) {
         PageResponse<ProductDTO> pageResponse = productService.findByTenant(tenantId, Integer.parseInt(page)
-                , Integer.parseInt(PAGE_SIZE), direction, field);
-
+                , Integer.parseInt(PAGE_SIZE), direction,keyword,minPrice,maxPrice,field);
         return ResponseEntity.ok(pageResponse);
     }
 
@@ -168,7 +169,7 @@ public class ProductController {
                     .message("Successfully create Product")
                     .build();
         } catch (Exception e) {
-            throw new  RuntimeException(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
 
     }

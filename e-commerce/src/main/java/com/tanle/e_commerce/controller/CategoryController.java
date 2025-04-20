@@ -68,12 +68,13 @@ public class CategoryController {
         return new ResponseEntity<>(messageResponse, HttpStatus.OK);
     }
 
-    @PutMapping("/category/listproduct")
+    @PutMapping("/category/{categoryId}/listproduct")
     public ResponseEntity<Map<String, Object>> addProductToCatogory(
-            @RequestParam(name = "categoryId") String categoryId,
+            @PathVariable int categoryId,
+            @RequestParam(name = "tenantId", required = false) String tenantId,
             @RequestBody List<Integer> productList
     ) {
-        Map<String, Object> response = categoryService.addProductToCategory(Integer.parseInt(categoryId), productList);
+        Map<String, Object> response = categoryService.addProductToCategory(categoryId, productList);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

@@ -96,7 +96,7 @@ function LoginForm() {
         />
       </FormRowVertical>
       <FormRowVertical error={loginError}>
-        <CustomButton disabled={isLoading}>
+        <CustomButton variation="primary" disabled={isLoading}>
           {!isLoading ? "Đăng nhập" : <SpinnerMini />}
         </CustomButton>
       </FormRowVertical>

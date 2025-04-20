@@ -65,7 +65,7 @@ const Button = styled.button`
   display: flex;
   align-items: center;
   justify-content:center;
-  border: ${(props) => props.active !==0 ? `1px solid var(--primary-color)!important` :`none`};
+  border: ${(props) => props.active !== 0 ? `1px solid var(--primary-color)!important` : `none`};
   border-radius: var(--border-radius-sm);
   box-shadow: var(--shadow-sm);
   ${(props) => sizes[props.size]}

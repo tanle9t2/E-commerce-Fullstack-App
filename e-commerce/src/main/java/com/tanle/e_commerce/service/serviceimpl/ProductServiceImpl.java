@@ -71,11 +71,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public PageResponse<ProductDTO> findByTenant(int tenantId, int page, int size, String direction, String... field) {
+    public PageResponse<ProductDTO> findByTenant(int tenantId, int page,
+                                                 int size, String direction,
+                                                 String keyword, String minPrice, String maxPrice, String... field) {
         Pageable pageable = PageRequest.of(page, size, Sort.Direction.fromString(direction), field);
-        Page<Product> products = productRepository.findAll(ProductSpecification.withOwnerId(tenantId), pageable);
-        List<ProductDTO> productDTOS = getResult(products).getData();
-
+        Page<Product> products = productRepository.findAll(
+                ProductSpecification.withOwnerId(tenantId, keyword, minPrice, maxPrice), pageable);
         return getResult(products);
     }
 

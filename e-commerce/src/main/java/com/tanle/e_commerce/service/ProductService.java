@@ -18,7 +18,9 @@ public interface ProductService extends OwnerService<Product, Integer> {
 
     PageResponse<ProductDTO> findAll(int page, int size, String direction, String... field);
 
-    PageResponse<ProductDTO> findByTenant(int tenantId, int page, int size, String direction, String... field);
+    PageResponse<ProductDTO> findByTenant(int tenantId, int page, int size, String direction,
+                                          String keyword,String minPrice,String maxPrice,
+                                          String... field);
 
     PageResponse<ProductDTO> findByName(int page, int size, String nameProduct);
 
